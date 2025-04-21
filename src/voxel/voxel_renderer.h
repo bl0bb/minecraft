@@ -1,0 +1,6 @@
+#ifndef VOXEL_RENDERER_RENDERER
+#define VOXEL_RENDERER_RENDERER
+
+
+
+#endif

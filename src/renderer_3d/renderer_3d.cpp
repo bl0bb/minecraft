@@ -60,32 +60,13 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 
 
-renderer_3d* renderer_3d_create(u16 w, u16 h, const char* title) {
-    renderer_3d* renderer = malloc(sizeof(renderer_3d));
-    *renderer = (renderer_3d) {
-        .width = w,
-        .height = h,
-
-        .shader_programs_count = 0,
-        .shader_programs = NULL,
-
-        .textures_count = 0,
-        .textures = NULL,
-
-        .objects_count = 0,
-        .objects = NULL,
-    };
-
-    // TODO: add dynamic array or something
-    renderer->shader_programs = malloc(sizeof(GLuint) * 10);
-    renderer->textures = malloc(sizeof(GLuint) * 10);
-    renderer->objects = malloc(sizeof(object_3d) * 10);
-
-
+Renderer3D::Renderer3D(u16 w, u16 h, const char* title) :
+width(w),
+height(h) {
     // Initialize GLFW
     if (!glfwInit()) {
         printf("Failed to initialize GLFW\n");
-        return NULL;
+        return;
     }
 
     // Set required options for GLFW: use OpenGL 3.3 and the core profile.
@@ -97,57 +78,51 @@ renderer_3d* renderer_3d_create(u16 w, u16 h, const char* title) {
 #endif
 
     // Create a GLFWwindow object
-    renderer->window = glfwCreateWindow(800, 600, "Spinning Cube", NULL, NULL);
-    if (renderer->window == NULL) {
+    this->window = glfwCreateWindow(800, 600, "Spinning Cube", NULL, NULL);
+    if (this->window == NULL) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
-        return NULL;
+        return;
     }
-    glfwMakeContextCurrent(renderer->window);
-    glfwSetFramebufferSizeCallback(renderer->window, framebuffer_size_callback);
+    glfwMakeContextCurrent(this->window);
+    glfwSetFramebufferSizeCallback(this->window, framebuffer_size_callback);
 
     // Initialize GLAD before calling any OpenGL function
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to initialize GLAD\n");
-        return NULL;
+        return;
     }
 
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-
-
-
-
-
-    return renderer;
 }
 
-void renderer_3d_free(renderer_3d* renderer) {
-    glfwDestroyWindow(renderer->window);
+void Renderer3D::free() {
+    glfwDestroyWindow(this->window);
     glfwTerminate();
 }
 
-bool renderer_3d_initGLFW() {
+bool Renderer3D::initGLFW() {
     return glfwInit();
 }
 
-bool renderer_3d_initGLAD() {
+bool Renderer3D::initGLAD() {
     return gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 }
 
-void renderer_3d_add_object(renderer_3d* renderer, object_3d* object) {
-    glGenVertexArrays(1, &object->VAO);
-    glGenBuffers(1, &object->VBO);
-    glGenBuffers(1, &object->EBO);
+void Renderer3D::add_object(Object3D& object) {
+    glGenVertexArrays(1, &object.VAO);
+    glGenBuffers(1, &object.VBO);
+    glGenBuffers(1, &object.EBO);
 
     // Bind the Vertex Array Object first, then bind and set vertex buffer(s)
-    glBindVertexArray(object->VAO);
+    glBindVertexArray(object.VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, object->VBO);
-    glBufferData(GL_ARRAY_BUFFER, object->vertices_count * sizeof(f32), object->vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, object.VBO);
+    glBufferData(GL_ARRAY_BUFFER, object.vertices.size() * sizeof(f32), object.vertices.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object->EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, object->indices_count * sizeof(u32), object->indices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object.EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, object.indices.size() * sizeof(u32), object.indices.data(), GL_STATIC_DRAW);
 
 
     // Multiply by 8 because 8 floats per row (3 for vertex, 3 for normal, 2 for uv)
@@ -165,12 +140,12 @@ void renderer_3d_add_object(renderer_3d* renderer, object_3d* object) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    renderer->objects[renderer->objects_count++] = *object;
+    this->objects.push_back(object);
 }
 
 
 
-GLuint renderer_3d_create_texture(const u8* data, int width, int height, int nrChannels) {
+GLuint Renderer3D::create_texture(const u8* data, int width, int height, int nrChannels) {
     GLuint texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -193,7 +168,7 @@ GLuint renderer_3d_create_texture(const u8* data, int width, int height, int nrC
     return texture;
 }
 
-GLuint renderer_3d_compileShader(const char* vertexPath, const char* fragmentPath) {
+GLuint Renderer3D::compile_shader(const char* vertexPath, const char* fragmentPath) {
     const char* vertexCode = readFileToCharArray(vertexPath, NULL);
     const char* fragmentCode = readFileToCharArray(fragmentPath, NULL);
 
@@ -250,15 +225,15 @@ GLuint renderer_3d_compileShader(const char* vertexPath, const char* fragmentPat
     return program;
 }
 
-void renderer_3d_process_input(renderer_3d* renderer) {
-    if (glfwGetKey(renderer->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-        glfwSetWindowShouldClose(renderer->window, true);
+void Renderer3D::process_input() {
+    if (glfwGetKey(this->window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(this->window, true);
     }
 }
 
-void renderer_3d_run(renderer_3d* renderer) {
+void Renderer3D::run() {
     // Input handling
-    renderer_3d_process_input(renderer);
+    this->process_input();
 
     f64 start_time = glfwGetTime();
 
@@ -268,19 +243,14 @@ void renderer_3d_run(renderer_3d* renderer) {
 
 
     // update camera and view
-    vec3 tmp_vec = {
-        .x = 0.0,
-        .y = 0.0,
-        .z = -3.0,
-    };
+    Vec3<f64> tmp_vec(0.0, 0.0, -3.0);
     // Camera/view transformation: move a bit backwards to see the cube
-    mat4 view;
-    mat4_identity(&view);
-    mat4_translate_world_vec3(&view, &tmp_vec);
+    Mat4<f64> view;
+    view.identity();
+    view.translateWorld(tmp_vec);
 
     // Projection matrix: perspective projection
-    mat4 projection;
-    mat4_perspective(deg_to_rad(45.0f), 800.0 / 600.0, 0.1, 100.0, &projection);
+    Mat4<f64> projection = Mat4<f64>::perspective(deg_to_rad(45.0f), 800.0 / 600.0, 0.1, 100.0);
 
 
 
@@ -296,12 +266,15 @@ void renderer_3d_run(renderer_3d* renderer) {
     GLuint viewLoc;
     GLuint projLoc;
     
-    for (u16 i = 0; i < renderer->objects_count; i++) {
-        object_3d object = renderer->objects[i];
+    for (u16 i = 0; i < this->objects.size(); i++) {
+        Object3D object = this->objects[i];
 
         shader_program = object.shader_program;
         texture = object.texture;
 
+
+
+        
         // Activate shader program
         glUseProgram(shader_program);
         
@@ -309,12 +282,16 @@ void renderer_3d_run(renderer_3d* renderer) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
 
+
+
+
         // Transformation matrices
         // Calculate the model matrix: rotate over time
-        mat4 model = object.transform;
+        Mat4<f64> model = object.transform;
         f64 angle = glfwGetTime() * deg_to_rad(50.0);
-        mat4_rotate(&model, deg_to_rad(30), 0, 0);
-        mat4_rotate(&model, 0.0 * angle, 3.0 * angle, 0.0 * angle);
+        model.rotate(deg_to_rad(30), 0, 0);
+        model.rotate(0.0 * angle, 3.0 * angle, 0.0 * angle);
+
 
 
         // Retrieve the uniform locations and set them
@@ -322,18 +299,22 @@ void renderer_3d_run(renderer_3d* renderer) {
         viewLoc  = glGetUniformLocation(shader_program, "view");
         projLoc  = glGetUniformLocation(shader_program, "projection");
 
-        mat4_to_gl_mat4(&model, model_mat);
-        mat4_to_gl_mat4(&view, view_mat);
-        mat4_to_gl_mat4(&projection, projection_mat);
+        model.toGLMatrix(model_mat);
+        view.toGLMatrix(view_mat);
+        projection.toGLMatrix(projection_mat);
 
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model_mat);
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view_mat);
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, projection_mat);
 
+
+
+
+
         // Bind the VAO and draw the cube
         glBindVertexArray(object.VAO);
         // glDrawArrays(GL_TRIANGLES, 0, object.indices_count);
-        glDrawElements(GL_TRIANGLES, object.indices_count, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, object.indices.size(), GL_UNSIGNED_INT, 0);
     }
 
 
@@ -345,6 +326,6 @@ void renderer_3d_run(renderer_3d* renderer) {
 
 
     // Swap buffers and poll IO events
-    glfwSwapBuffers(renderer->window);
+    glfwSwapBuffers(this->window);
     glfwPollEvents();
 }

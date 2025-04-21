@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <math.h>
+#include <array>
+#include <stdexcept>
 
 #include "types.h"
 
@@ -15,180 +17,340 @@
 
 
 // deg rad
-static inline f64 deg_to_rad(f64 deg) {
+template<typename T>
+static inline T deg_to_rad(T deg) {
     return deg * (M_PI / 180.0);
 }
 
-static inline f64 rad_to_deg(f64 rad) {
+template<typename T>
+static inline T rad_to_deg(T rad) {
     return rad * (180.0 / M_PI);
 }
 
 
 // lerp
-static inline int lerp(int a, int b, int t) {
+template<typename T>
+static inline T lerp(T a, T b, T t) {
     return a + (b - a) * t;
 }
 
-static inline f64 lerpd(f64 a, f64 b, f64 t) {
-    return a + (b - a) * t;
-}
 
 
 
+// vec2
+template<typename T>
+struct Vec2 {
+    T x, y, z;
 
-// vector 2
-typedef struct {
-    f64 x;
-    f64 y;
-} vec2;
+    // Constructors
+    Vec2() : x(T(0)), y(T(0)) {}
+    Vec2(T x_, T y_) : x(x_), y(y_) {}
 
-f64 vec2_length(const vec2* vec);
+    // Type-casting constructor
+    template<typename U>
+    Vec2(const Vec2<U>& other)
+        : x(static_cast<T>(other.x)),
+          y(static_cast<T>(other.y)) {}
 
-vec2 vec2_normalized(const vec2* vec);
+    // Addition
+    Vec2<T> operator+(const Vec2<T>& other) const {
+        return Vec2<T>(x + other.x, y + other.y);
+    }
 
-void vec2_normalize(vec2* vec);
+    // Subtraction
+    Vec2<T> operator-(const Vec2<T>& other) const {
+        return Vec2<T>(x - other.x, y - other.y);
+    }
 
-f64 vec2_dot(const vec2* vec1, const vec2* vec_2);
+    // Scalar multiplication
+    Vec2<T> operator*(T scalar) const {
+        return Vec2<T>(x * scalar, y * scalar);
+    }
 
-f64 vec2_cross(const vec2* vec1, const vec2* vec_2);
+    // Scalar division
+    Vec2<T> operator/(T scalar) const {
+        return Vec2<T>(x / scalar, y / scalar);
+    }
 
-void vec2_add(vec2* vec1, const vec2* vec_2);
+    // Dot product
+    T dot(const Vec2<T>& other) const {
+        return x * other.x + y * other.y;
+    }
 
-void vec2_sub(vec2* vec1, const vec2* vec_2);
+    // Cross product
+    T cross(const Vec2<T>& other) const {
+        return x * other.y - y * other.x;
+    }
 
-void vec2_mul(vec2* vec1, f64 n);
+    // Magnitude (length)
+    T magnitude() const {
+        return std::sqrt(x * x + y * y);
+    }
 
-void vec2_mul_vec(vec2* vec1, const vec2* vec_2);
+    // Normalize
+    Vec2<T> normalized() const {
+        T mag = magnitude();
+        return mag == T(0) ? *this : *this / mag;
+    }
 
-void vec2_div(vec2* vec1, f64 n);
+    // Floor
+    Vec2<T> floor() const {
+        return Vec2<T>(
+            floor(y),
+            floor(z)
+        );
+    }
 
-void vec2_div_vec(vec2* vec1, const vec2* vec_2);
-
-void vec2_lerp(vec2* vec1, const vec2* vec_2, f64 t);
-
-bool vec2_equals(const vec2* vec1, const vec2* vec_2);
-
-bool vec2_is_zero(const vec2* vec1);
-
-
-
+    const T& operator[](size_t index) const {
+        switch(index) {
+            case 0: return x;
+            case 1: return y;
+            default: throw std::out_of_range("Index out of range for Vector2");
+        }
+    }
+};
 
 
+// vec3
+template<typename T>
+struct Vec3 {
+    T x, y, z;
 
-// vector 3
-typedef struct {
-    f64 x;
-    f64 y;
-    f64 z;
-} vec3;
+    // Constructors
+    Vec3() : x(T(0)), y(T(0)), z(T(0)) {}
+    Vec3(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
 
-f64 vec3_length(const vec3* vec);
+    // Type-casting constructor
+    template<typename U>
+    Vec3(const Vec3<U>& other)
+        : x(static_cast<T>(other.x)),
+          y(static_cast<T>(other.y)),
+          z(static_cast<T>(other.z)) {}
 
-vec3 vec3_normalized(const vec3* vec);
+    // Addition
+    Vec3<T> operator+(const Vec3<T>& other) const {
+        return Vec3<T>(x + other.x, y + other.y, z + other.z);
+    }
 
-void vec3_normalize(vec3* vec);
+    // Subtraction
+    Vec3<T> operator-(const Vec3<T>& other) const {
+        return Vec3<T>(x - other.x, y - other.y, z - other.z);
+    }
 
-f64 vec3_dot(const vec3* vec1, const vec3* vec_2);
+    // Scalar multiplication
+    Vec3<T> operator*(T scalar) const {
+        return Vec3<T>(x * scalar, y * scalar, z * scalar);
+    }
 
-void vec3_cross(vec3* vec1, const vec3* vec_2);
+    // Scalar division
+    Vec3<T> operator/(T scalar) const {
+        return Vec3<T>(x / scalar, y / scalar, z / scalar);
+    }
 
-void vec3_add(vec3* vec1, const vec3* vec_2);
+    // Dot product
+    T dot(const Vec3<T>& other) const {
+        return x * other.x + y * other.y + z * other.z;
+    }
 
-void vec3_sub(vec3* vec1, const vec3* vec_2);
+    // Cross product
+    Vec3<T> cross(const Vec3<T>& other) const {
+        return Vec3<T>(
+            y * other.z - z * other.y,
+            z * other.x - x * other.z,
+            x * other.y - y * other.x
+        );
+    }
 
-void vec3_mul(vec3* vec1, f64 n);
+    // Magnitude (length)
+    T magnitude() const {
+        return std::sqrt(x * x + y * y + z * z);
+    }
 
-void vec3_mul_vec(vec3* vec1, const vec3* vec_2);
+    // Normalize
+    Vec3<T> normalized() const {
+        T mag = magnitude();
+        return mag == T(0) ? *this : *this / mag;
+    }
 
-void vec3_div(vec3* vec1, f64 n);
+    // Floor
+    Vec3<T> floor() const {
+        return Vec3<T>(
+            std::floor(y),
+            std::floor(z),
+            std::floor(x)
+        );
+    }
 
-void vec3_div_vec(vec3* vec1, const vec3* vec_2);
+    const T& operator[](size_t index) const {
+        switch(index) {
+            case 0: return x;
+            case 1: return y;
+            case 2: return z;
+            default: throw std::out_of_range("Index out of range for Vector3");
+        }
+    }
+};
 
-void vec3_lerp(vec3* vec1, const vec3* vec_2, f64 t);
 
-bool vec3_equals(const vec3* vec1, const vec3* vec_2);
 
-bool vec3_is_zero(const vec3* vec1);
 
 
 
 
 
 // matrix 4
-typedef struct {
-    f64 m00;
-    f64 m01;
-    f64 m02;
-    f64 m03;
-    f64 m10;
-    f64 m11;
-    f64 m12;
-    f64 m13;
-    f64 m20;
-    f64 m21;
-    f64 m22;
-    f64 m23;
-    f64 m30;
-    f64 m31;
-    f64 m32;
-    f64 m33;
-} mat4;
+template <typename T>
+struct Mat4 {
+    std::array<std::array<T, 4>, 4> m{};
 
-void mat4_zero(mat4* mat);
+    static Mat4<T> identity() {
+        Mat4<T> mat{};
+        for (int i = 0; i < 4; ++i)
+            mat.m[i][i] = static_cast<T>(1);
+        return mat;
+    }
 
-void mat4_identity(mat4* mat1);
+    Mat4<T> operator*(const Mat4<T>& rhs) const {
+        Mat4<T> result{};
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j)
+                for (int k = 0; k < 4; ++k)
+                    result.m[i][j] += m[i][k] * rhs.m[k][j];
+        return result;
+    }
 
-void mat4_mul_mat4(mat4* mat1, const mat4* mat2);
+    Vec3<T> multiplyVec3(const Vec3<T>& vec, T w) const {
+        Vec3<T> result{};
+        result.x = vec.x * m[0][0] + vec.y * m[0][1] + vec.z * m[0][2] + w * m[0][3];
+        result.y = vec.x * m[1][0] + vec.y * m[1][1] + vec.z * m[1][2] + w * m[1][3];
+        result.z = vec.x * m[2][0] + vec.y * m[2][1] + vec.z * m[2][2] + w * m[2][3];
+        return result;
+    }
 
-void mat4_inverse(mat4* mat);
+    void scale(T x, T y, T z) {
+        *this = (*this) * scalingMatrix(x, y, z);
+    }
 
-void mat4_mul_vec3(const mat4* mat, vec3* vec, f64 w);
+    void translate(T x, T y, T z) {
+        *this = (*this) * translationMatrix(x, y, z);
+    }
 
-void mat4_scale(mat4* mat, f64 x, f64 y, f64 z);
+    void translate(const Vec3<T>& vec) {
+        translate(vec.x, vec.y, vec.z);
+    }
 
-void mat4_translate(mat4* mat, f64 x, f64 y, f64 z);
+    void translateWorld(T x, T y, T z) {
+        *this = translationMatrix(x, y, z) * (*this);
+    }
 
-void mat4_translate_vec3(mat4* mat, const vec3* vec);
+    void translateWorld(const Vec3<T>& vec) {
+        translateWorld(vec.x, vec.y, vec.z);
+    }
 
-void mat4_translate_world(mat4* mat, f64 x, f64 y, f64 z);
+    void rotate(T x, T y, T z) {
+        *this = *this * rotationMatrix(x, y, z);
+    }
 
-void mat4_translate_world_vec3(mat4* mat, const vec3* vec);
+    Vec3<T> extractPosition() const {
+        return { m[0][3], m[1][3], m[2][3] };
+    }
 
-void mat4_rotate(mat4* mat, f64 x, f64 y, f64 z);
+    static Mat4<T> perspective(T fov_y, T aspect, T z_near, T z_far) {
+        Mat4<T> result{};
+        T f = static_cast<T>(1) / std::tan(fov_y / static_cast<T>(2));
+        result.m[0][0] = f / aspect;
+        result.m[1][1] = f;
+        result.m[2][2] = (z_far + z_near) / (z_near - z_far);
+        result.m[2][3] = (static_cast<T>(2) * z_far * z_near) / (z_near - z_far);
+        result.m[3][2] = -1;
+        return result;
+    }
 
-void mat4_pos_to_vec3(const mat4* mat, vec3* vec);
+    static Mat4<T> lookAt(Vec3<T> const& eye, Vec3<T> const& center, Vec3<T> const& up) {
+        const Vec3<T> f((center - eye).normalized());
+		const Vec3<T> s(f.cross(up).normalized());
+		const Vec3<T> u(s.cross(f));
 
-void mat4_perspective(f64 fov_y, f64 aspect, f64 z_near, f64 z_far, mat4* out);
+		Mat4<T> Result = identity();
+		Result[0][0] =  s.x;
+		Result[0][1] =  s.y;
+		Result[0][2] =  s.z;
+		Result[1][0] =  u.x;
+		Result[1][1] =  u.y;
+		Result[1][2] =  u.z;
+		Result[2][0] = -f.x;
+		Result[2][1] = -f.y;
+		Result[2][2] = -f.z;
+		Result[0][3] = -s.dot(eye);
+		Result[1][3] = -u.dot(eye);
+		Result[2][3] =  f.dot(eye);
+		return Result;
+    }
 
-void mat4_to_gl_mat4(const mat4* mat, f32* out);
+    void toGLMatrix(float* out) const {
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                out[j * 4 + i] = static_cast<float>(m[i][j]);
+            }
+        }
+    }
 
+    // Overload for non-const access
+    std::array<T, 4>& operator[](size_t row) {
+        return m[row];
+    }
 
+    // Overload for const access
+    const std::array<T, 4>& operator[](size_t row) const {
+        return m[row];
+    }
 
+private:
+    static Mat4<T> scalingMatrix(T x, T y, T z) {
+        Mat4<T> mat = Mat4<T>::identity();
+        mat.m[0][0] = x;
+        mat.m[1][1] = y;
+        mat.m[2][2] = z;
+        return mat;
+    }
 
+    static Mat4<T> translationMatrix(T x, T y, T z) {
+        Mat4<T> mat = Mat4<T>::identity();
+        mat.m[0][3] = x;
+        mat.m[1][3] = y;
+        mat.m[2][3] = z;
+        return mat;
+    }
 
+    static Mat4<T> rotationMatrix(T x, T y, T z) {
+        T sin_x = sin(x);
+        T cos_x = cos(x);
+        T sin_y = sin(y);
+        T cos_y = cos(y);
+        T sin_z = sin(z);
+        T cos_z = cos(z);
 
+        Mat4<T> mat;
+        mat.m[0][0] = cos_y * cos_z;
+        mat.m[0][1] = -cos_y * sin_z;
+        mat.m[0][2] = sin_y;
+        mat.m[0][3] = 0;
+        mat.m[1][0] = sin_x * sin_y * cos_z + cos_x * sin_z;
+        mat.m[1][1] = -sin_x * sin_y * sin_z + cos_x * cos_z;
+        mat.m[1][2] = -sin_x * cos_y;
+        mat.m[1][3] = 0;
+        mat.m[2][0] = -cos_x * sin_y * cos_z + sin_x * sin_z;
+        mat.m[2][1] = cos_x * sin_y * sin_z + sin_x * cos_z;
+        mat.m[2][2] = cos_x * cos_y;
+        mat.m[2][3] = 0;
+        mat.m[3][0] = 0;
+        mat.m[3][1] = 0;
+        mat.m[3][2] = 0;
+        mat.m[3][3] = 1;
+        return mat;
+    }
+};
 
-
-
-
-
-// quat
-typedef struct {
-    f64 x;
-    f64 y;
-    f64 z;
-    f64 w;
-} quat;
-
-void quat_identity(quat* self);
-
-void quat_from_vec3(quat* self, const vec3* v, f32 theta);
-
-void quat_normalize(quat* self);
-
-mat4 quat_get_matrix(const quat *self);
-
-quat quat_mul(const quat* u, const quat* v);
 
 
 
@@ -216,7 +378,7 @@ quat quat_mul(const quat* u, const quat* v);
 typedef u32 rgba;
 
 static inline rgba rgba_create(const u8 r, const u8 g, const u8 b, const u8 a) {
-    return (r << RGBA_R_SHIFT) |
+    return  (r << RGBA_R_SHIFT) |
             (g << RGBA_G_SHIFT) |
             (b << RGBA_B_SHIFT) |
             (a << RGBA_A_SHIFT);
@@ -239,72 +401,28 @@ static inline rgba rgba_a(const rgba rgba) {
 }
 
 static inline rgba rgba_mul(const rgba rgba1, const f64 v) {
-    return ((rgba)(rgba_r(rgba1) * v) << RGBA_R_SHIFT) |
+    return  ((rgba)(rgba_r(rgba1) * v) << RGBA_R_SHIFT) |
             ((rgba)(rgba_g(rgba1) * v) << RGBA_G_SHIFT) |
             ((rgba)(rgba_b(rgba1) * v) << RGBA_B_SHIFT) |
             ((rgba)(rgba_a(rgba1) * v) << RGBA_A_SHIFT);
 }
 
 static inline rgba rgba_lerp(const rgba rgba1, const rgba rgba2, f64 t) {
-    return ((rgba)lerp(rgba_r(rgba1), rgba_r(rgba2), t) << RGBA_R_SHIFT) |
-            ((rgba)lerp(rgba_g(rgba1), rgba_g(rgba2), t) << RGBA_G_SHIFT) |
-            ((rgba)lerp(rgba_b(rgba1), rgba_b(rgba2), t) << RGBA_B_SHIFT) |
-            ((rgba)lerp(rgba_a(rgba1), rgba_a(rgba2), t) << RGBA_A_SHIFT);
+    return  ((rgba)lerp((f64)rgba_r(rgba1), (f64)rgba_r(rgba2), t) << RGBA_R_SHIFT) |
+            ((rgba)lerp((f64)rgba_g(rgba1), (f64)rgba_g(rgba2), t) << RGBA_G_SHIFT) |
+            ((rgba)lerp((f64)rgba_b(rgba1), (f64)rgba_b(rgba2), t) << RGBA_B_SHIFT) |
+            ((rgba)lerp((f64)rgba_a(rgba1), (f64)rgba_a(rgba2), t) << RGBA_A_SHIFT);
 }
 
 static inline rgba rgba_lerp_color(const rgba rgba1, const rgba rgba2, f64 t) {
-    return ((rgba)lerp(rgba_r(rgba1), rgba_r(rgba2), t) << RGBA_R_SHIFT) |
-            ((rgba)lerp(rgba_g(rgba1), rgba_g(rgba2), t) << RGBA_G_SHIFT) |
-            ((rgba)lerp(rgba_b(rgba1), rgba_b(rgba2), t) << RGBA_B_SHIFT) |
+    return  ((rgba)lerp((f64)rgba_r(rgba1), (f64)rgba_r(rgba2), t) << RGBA_R_SHIFT) |
+            ((rgba)lerp((f64)rgba_g(rgba1), (f64)rgba_g(rgba2), t) << RGBA_G_SHIFT) |
+            ((rgba)lerp((f64)rgba_b(rgba1), (f64)rgba_b(rgba2), t) << RGBA_B_SHIFT) |
             (rgba1 & RGBA_A_MASK);
 }
 
 
 
-
-
-
-// utils
-void lerp_3_attribute_vec2(
-    vec2* a, vec2* b, vec2* c,
-    f64 w0, f64 w1, f64 w2,
-    f64 z0, f64 z1, f64 z2,
-    f64 z,
-    vec2* wa, vec2* wb, vec2* wc,
-    vec2* out
-);
-
-void lerp_2_attribute_vec3(
-    vec3* a, vec3* b,
-    f64 w0, f64 w1,
-    f64 z0, f64 z1,
-    f64 z,
-    vec3* wa, vec3* wb,
-    vec3* out
-);
-
-void lerp_3_attribute_vec3(
-    vec3* a, vec3* b, vec3* c,
-    f64 w0, f64 w1, f64 w2,
-    f64 z0, f64 z1, f64 z2,
-    f64 z,
-    vec3* wa, vec3* wb, vec3* wc,
-    vec3* out
-);
-
-rgba lerp_2_attribute_rgba(
-    rgba a, rgba b,
-    f64 w0, f64 w1,
-    f64 z0, f64 z1,
-    f64 z
-);
-
-rgba lerp_3_attribute_rgba(
-    rgba a, rgba b, rgba c,
-    f64 w0, f64 w1, f64 w2,
-    f64 z0, f64 z1, f64 z2,
-    f64 z
-);
 
 
 

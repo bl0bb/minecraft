@@ -19,27 +19,30 @@ static void objparser_fill_number_string(char* number_str, darray* line, u32 j, 
     }
 }
 
-static f64 objparser_parse_vector_number(char* number_str, darray* line, u32 j, u16 *k) {
+template<typename T>
+static T objparser_parse_vector_number(char* number_str, darray* line, u32 j, u16 *k) {
     objparser_fill_number_string(number_str, line, j, k);
-    return atof(number_str);
+    return (T)atof(number_str);
 }
 
-static vec3 objparser_parse_vec3(char* number_str, darray* line, u32 j, u16 *k) {
-    vec3 v;
-    v.x = objparser_parse_vector_number(number_str, line, j, k);
+template<typename T>
+static Vec3<T> objparser_parse_vec3(char* number_str, darray* line, u32 j, u16 *k) {
+    Vec3<T> v;
+    v.x = objparser_parse_vector_number<T>(number_str, line, j, k);
     (*k)++;
-    v.y = objparser_parse_vector_number(number_str, line, j, k);
+    v.y = objparser_parse_vector_number<T>(number_str, line, j, k);
     (*k)++;
-    v.z = objparser_parse_vector_number(number_str, line, j, k);
+    v.z = objparser_parse_vector_number<T>(number_str, line, j, k);
     (*k)++;
     return v;
 }
 
-static vec2 objparser_parse_vec2(char* number_str, darray* line, u32 j, u16 *k) {
-    vec2 v;
-    v.x = objparser_parse_vector_number(number_str, line, j, k);
+template<typename T>
+static Vec2<T> objparser_parse_vec2(char* number_str, darray* line, u32 j, u16 *k) {
+    Vec2<T> v;
+    v.x = objparser_parse_vector_number<T>(number_str, line, j, k);
     (*k)++;
-    v.y = objparser_parse_vector_number(number_str, line, j, k);
+    v.y = objparser_parse_vector_number<T>(number_str, line, j, k);
     (*k)++;
     return v;
 }
@@ -47,11 +50,11 @@ static vec2 objparser_parse_vec2(char* number_str, darray* line, u32 j, u16 *k) 
 mesh objparser_parse_obj(const u32 file_count, const char* file) {
     // just start with 3 vertices to create a triangle, because i would NEVER add a mesh that doesnt have a single triangle... right?
     darray vertices;
-    darray_init(&vertices, sizeof(vec3), 3);
+    darray_init(&vertices, sizeof(Vec3<f64>), 3);
     darray tex_coords;
-    darray_init(&tex_coords, sizeof(vec2), 1);
+    darray_init(&tex_coords, sizeof(Vec2<f64>), 1);
     darray normals;
-    darray_init(&normals, sizeof(vec3), 1);
+    darray_init(&normals, sizeof(Vec3<f64>), 1);
     darray faces;
     darray_init(&faces, sizeof(u32**), 1);
 
