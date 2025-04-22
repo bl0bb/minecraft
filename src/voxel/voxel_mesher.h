@@ -8,10 +8,6 @@
 // CS = chunk size
 static constexpr u8 CS = 32;
 
-// CH = chunk height 1024 (32 for now)
-static constexpr u16 CH = 32;
-static constexpr u16 CH_P = CH + 2;
-
 // Padded chunk size
 static constexpr u8 CS_P = CS + 2;
 static constexpr u16 CS_2 = CS * CS;

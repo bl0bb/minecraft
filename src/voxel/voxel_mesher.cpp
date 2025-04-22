@@ -26,14 +26,14 @@ static inline const void insertQuad(std::vector<u64>& vertices, u64 quad, int& v
 }
 
 // x = 0-4 (5) (32)
-// y = 5-14 (10) (1024)
-// z = 15-19 (5) (32)
-// w = 20-24 (5) (32)
-// h = 25-29 (5) (32)
-// dir = 30-32 (3) (8)
-// type = 33-42 (10) (1024)
+// y = 5-9 (5) (32)
+// z = 10-14 (5) (32)
+// w = 15-19 (5) (32)
+// h = 20-24 (5) (32)
+// dir = 25-37 (3) (8)
+// type = 28-37 (10) (1024)
 static inline const u64 getQuad(u64 x, u64 y, u64 z, u64 w, u64 h, u64 dir, u64 type) {
-    return (type << 33) | (dir << 30) | (h << 25) | (w << 20) | (z << 15) | (y << 5) | x;
+    return (type << 28) | (dir << 25) | (h << 20) | (w << 15) | (z << 10) | (y << 5) | x;
 }
 
 void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
@@ -41,12 +41,12 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
     meshData.vertices = new std::vector<u64>(0);
 
     // solid voxel as binary for each x,y,z axis
-    u64 axis_cols[3 * CS_P2 * CH] = {0};
+    u64 axis_cols[3 * CS_P2] = {0};
     // the cull mask to perform greedy slicing, based on solids on previous axis_cols
-    u64 col_face_masks[3 * CS_P2 * CH] = {0};
+    u64 col_face_masks[3 * CS_P2 * 2] = {0};
 
     // build binary representation for every solid voxel y,x,z axis
-    for (u8 y = 0; y < CH_P; y++) {
+    for (u8 y = 0; y < CS_P; y++) {
         for (u8 x = 0; x < CS_P; x++) {
             for (u8 z = 0; z < CS_P; z++) {
                 // TODO: create Vec3<T1, T2, T3>
@@ -59,13 +59,6 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
                     axis_cols[z + (y * CS_P) + CS_P2] |= (u64)1 << x;
                     // x,y - z axis
                     axis_cols[x + (y * CS_P) + CS_P2 * 2] |= (u64)1 << z;
-
-                    // x,z - y axis
-                    // axis_cols[x + (z * CS_P)] |= (u64)1 << y;
-                    // z,y - x axis
-                    // axis_cols[z + (y * CS_P) + CS_P2] |= (u64)1 << x;
-                    // x,y - z axis
-                    // axis_cols[x + (y * CS_P) + CS_P2 * 2] |= (u64)1 << z;
                 }
             }
         }
@@ -83,7 +76,7 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
     }
 
     // generate quads
-    for (u8 y = 0; y < CH_P; y++) {
+    for (u8 y = 0; y < CS_P; y++) {
         for (u8 x = 0; x < CS_P; x++) {
             for (u8 z = 0; z < CS_P; z++) {
                 for (u16 j = 0; j < 2; j++) {
@@ -94,14 +87,18 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
     }
     for (u8 axis = 0; axis < 3; axis++) {
         for (u16 i = 0; i < CS_P2; i++) {
-            for (u16 j = 0; j < 2; j++) {
+            for (u8 j = 0; j < 2; j++) {
                 u8 dir = axis * 2 + j;
+
+                u8 dim_1 = i % CS_P;
+                u8 dim_2 = i % CS_P * 2;
+
                 u64 face_mask = col_face_masks[(CS_P2 * dir) + i];
                 while (face_mask) {
                     u8 tile = pop_lsb(face_mask);
-                    
+                    u8 dir_1 = i %
+                    meshData.quads.push_back(getQuad(0, 0, 0, 1, 1, dir, 1));
                 }
-                meshData.quads.push_back(getQuad(0, 0, 0, 1, 1, dir, 1));
             }
         }
     }
