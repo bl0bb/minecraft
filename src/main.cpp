@@ -154,23 +154,6 @@ int main() {
 
     generate_voxel_mesh(voxels, mainThreadMeshData);
 
-    if (mainThreadMeshData.vertexCount) {
-        u32 y = 0;
-        Vec3<i64> chunkPos(0, 0, 0);
-
-        for (u32 i = 0; i <= 5; i++) {
-            if (mainThreadMeshData.faceVertexLength[i]) {
-                u32 baseInstance = (i << 24) | (chunkPos.z << 16) | (chunkPos.y << 8) | chunkPos.x;
-
-                auto drawCommand = chunkRenderer.getDrawCommand(mainThreadMeshData.faceVertexLength[i], baseInstance);
-
-                chunkRenderData[0].faceDrawCommands[i] = drawCommand;
-
-                chunkRenderer.buffer(*drawCommand, mainThreadMeshData.vertices->data() + mainThreadMeshData.faceVertexBegin[i]);
-            }
-        }
-    }
-
 
 
 
@@ -190,20 +173,20 @@ int main() {
 
 
 
-    Shader* shader = new Shader("voxel", "voxel");
-    Camera* camera = new Camera(Vec3<f32>(0, 0, 0));
-    camera->handleResolution(WINDOW_WIDTH, WINDOW_HEIGHT);
+    // Shader* shader = new Shader("voxel", "voxel");
+    // Camera* camera = new Camera(Vec3<f32>(0, 0, 0));
+    // camera->handleResolution(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
 
-    // Main render loop
-    while (!glfwWindowShouldClose(renderer.window)) {
-        f64 current_time = glfwGetTime();
-        f64 delta_time = current_time - last_time;
-        accumulator += delta_time;
+    // // Main render loop
+    // while (!glfwWindowShouldClose(renderer.window)) {
+    //     f64 current_time = glfwGetTime();
+    //     f64 delta_time = current_time - last_time;
+    //     accumulator += delta_time;
 
-        if (accumulator >= 1.0 / 60.0) {
-            accumulator = 0;
+    //     if (accumulator >= 1.0 / 60.0) {
+    //         accumulator = 0;
             
 
 
@@ -211,62 +194,62 @@ int main() {
 
 
 
-            Vec3<i64> cameraChunkPos = camera->position / CS;
+    //         Vec3<i64> cameraChunkPos = camera->position / CS;
 
-            for (const auto& data : chunkRenderData) {
-                for (int i = 0; i < 6; i++) {
-                    auto& d = data.faceDrawCommands[i];
-                    printf("yewssss %i\n", d);
-                    if (d) {
-                        switch (i) {
-                            case 0:
-                            if (cameraChunkPos.y >= data.chunkPos.y) {
-                                chunkRenderer.addDrawCommand(*d);
-                            }
-                            break;
+    //         for (const auto& data : chunkRenderData) {
+    //             for (int i = 0; i < 6; i++) {
+    //                 auto& d = data.faceDrawCommands[i];
+    //                 printf("yewssss %i\n", d);
+    //                 if (d) {
+    //                     switch (i) {
+    //                         case 0:
+    //                         if (cameraChunkPos.y >= data.chunkPos.y) {
+    //                             chunkRenderer.addDrawCommand(*d);
+    //                         }
+    //                         break;
                 
-                            case 1:
-                            if (cameraChunkPos.y <= data.chunkPos.y) {
-                                chunkRenderer.addDrawCommand(*d);
-                            }
-                            break;
+    //                         case 1:
+    //                         if (cameraChunkPos.y <= data.chunkPos.y) {
+    //                             chunkRenderer.addDrawCommand(*d);
+    //                         }
+    //                         break;
                 
-                            case 2:
-                            if (cameraChunkPos.x >= data.chunkPos.x) {
-                                chunkRenderer.addDrawCommand(*d);
-                            }
-                            break;
+    //                         case 2:
+    //                         if (cameraChunkPos.x >= data.chunkPos.x) {
+    //                             chunkRenderer.addDrawCommand(*d);
+    //                         }
+    //                         break;
                 
-                            case 3:
-                            if (cameraChunkPos.x <= data.chunkPos.x) {
-                                chunkRenderer.addDrawCommand(*d);
-                            }
-                            break;
+    //                         case 3:
+    //                         if (cameraChunkPos.x <= data.chunkPos.x) {
+    //                             chunkRenderer.addDrawCommand(*d);
+    //                         }
+    //                         break;
                 
-                            case 4:
-                            if (cameraChunkPos.z >= data.chunkPos.z) {
-                                chunkRenderer.addDrawCommand(*d);
-                            }
-                            break;
+    //                         case 4:
+    //                         if (cameraChunkPos.z >= data.chunkPos.z) {
+    //                             chunkRenderer.addDrawCommand(*d);
+    //                         }
+    //                         break;
                 
-                            case 5:
-                            if (cameraChunkPos.z <= data.chunkPos.z) {
-                                chunkRenderer.addDrawCommand(*d);
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
+    //                         case 5:
+    //                         if (cameraChunkPos.z <= data.chunkPos.z) {
+    //                             chunkRenderer.addDrawCommand(*d);
+    //                         }
+    //                         break;
+    //                     }
+    //                 }
+    //             }
+    //         }
         
-            chunkRenderer.render(*shader, *camera);
+    //         chunkRenderer.render(*shader, *camera);
         
-            glfwSwapBuffers(renderer.window);
-            glfwPollEvents();
-        }
+    //         glfwSwapBuffers(renderer.window);
+    //         glfwPollEvents();
+    //     }
 
-        last_time = current_time;
-    }
+    //     last_time = current_time;
+    // }
 
     // TODO: free renderer?
 

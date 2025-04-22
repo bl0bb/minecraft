@@ -8,17 +8,15 @@
 // CS = chunk size
 static constexpr u8 CS = 32;
 
-// CH = chunk height 1024
-static constexpr u16 CH = 1024;
+// CH = chunk height 1024 (32 for now)
+static constexpr u16 CH = 32;
+static constexpr u16 CH_P = CH + 2;
 
 // Padded chunk size
 static constexpr u8 CS_P = CS + 2;
 static constexpr u16 CS_2 = CS * CS;
 static constexpr u16 CS_P2 = CS_P * CS_P;
 static constexpr u16 CS_P3 = CS_P * CS_P * CS_P;
-
-// voxel mask
-static constexpr u64 P_MASK = ((1ull << CS) - 1) << 1;
 
 struct MeshData {
     u64* faceMasks = nullptr;       // CS_2 * 6

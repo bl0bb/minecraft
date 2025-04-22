@@ -7,6 +7,7 @@
 struct VoxelChunk {
     Vec2<u64> pos;
     Voxel* voxels;
+    
 };
 
 #endif

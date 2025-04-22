@@ -5,5 +5,8 @@
 
 #include "voxel_chunk.h"
 
+struct VoxelWorld {
+    VoxelChunk* chunks;
+};
 
 #endif
