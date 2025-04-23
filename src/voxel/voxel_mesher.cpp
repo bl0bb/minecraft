@@ -106,17 +106,6 @@ static inline const int getAxisIndex(const int axis, const int a, const int b, c
     else return c + (a * CS_P) + (b * CS_P2);
 }
 
-static inline const void insertQuad(std::vector<u64>& vertices, u64 quad, int& vertexI, int& maxVertices) {
-    if (vertexI >= maxVertices - 6) {
-        vertices.resize(maxVertices * 2, 0);
-        maxVertices *= 2;
-    }
-
-    vertices[vertexI] = quad;
-
-    vertexI++;
-}
-
 // x = 0-4 (5) (32)
 // y = 5-9 (5) (32)
 // z = 10-14 (5) (32)
@@ -130,7 +119,7 @@ static inline const u64 getQuad(u64 x, u64 y, u64 z, u64 w, u64 h, u64 dir, u64 
 
 void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
     // 0 is just a random number
-    meshData.faces = new std::vector<u64>(0);
+    meshData.vertices = new std::vector<u64>(0);
 
     // solid voxel as binary for each x,y,z axis
     u64 axis_cols[3 * CS_P2] = {0};
@@ -144,7 +133,7 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
                 // TODO: create Vec3<T1, T2, T3>
                 Vec3<u16> pos(x - 1, y - 1, z - 1);
                 // TODO: check if voxel is solid (not see through)
-                if (true) {
+                if (voxels[get_zxy_index(x, y, z)]) {
                     // x,z - y axis
                     axis_cols[x + (z * CS_P)] |= (u64)1 << y;
                     // z,y - x axis
@@ -182,7 +171,6 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
                     if (tile == 0 || tile == CS_P - 1) {
                         continue;
                     }
-                    printf("tile %i\n", tile);
                     u8 dim_3 = tile;
 
                     u8 x, y, z;
@@ -200,22 +188,22 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
                         z = dim_3;
                     }
 
-                    meshData.faces->push_back(getQuad(x, y, z, 1, 1, dir, 1));
+                    meshData.vertices->push_back(getQuad(x, y, z, 1, 1, dir, 1));
                 }
             }
         }
     }
 
-    for (u32 i = 0; i < meshData.faces->size(); i++) {
-        printf("Face %i: ", i);
-        u64 face = (*meshData.faces)[i];
-        printf("%i %i %i\n", face & 0b11111, (face >> 5) & 0b11111, (face >> 10) & 0b11111);
-        // printBinary(face & 0b11111, 5);
-        // printf(" ");
-        // printBinary((face >> 5) & 0b11111, 5);
-        // printf(" ");
-        // printBinary((face >> 10) & 0b11111, 5);
-        // printf("\n");
-    }
-    printf("%i\n", meshData.faces->size());
+    // for (u32 i = 0; i < meshData.vertices->size(); i++) {
+    //     printf("Face %i: ", i);
+    //     u64 face = (*meshData.vertices)[i];
+    //     printf("%i %i %i\n", face & 0b11111, (face >> 5) & 0b11111, (face >> 10) & 0b11111);
+    //     // printBinary(face & 0b11111, 5);
+    //     // printf(" ");
+    //     // printBinary((face >> 5) & 0b11111, 5);
+    //     // printf(" ");
+    //     // printBinary((face >> 10) & 0b11111, 5);
+    //     // printf("\n");
+    // }
+    // printf("%i\n", meshData.vertices->size());
 }

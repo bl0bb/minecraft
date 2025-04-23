@@ -63,12 +63,14 @@ struct Vec2 {
     }
 
     // Scalar multiplication
-    Vec2<T> operator*(T scalar) const {
+    template<typename T1>
+    Vec2<T> operator*(T1 scalar) const {
         return Vec2<T>(x * scalar, y * scalar);
     }
 
     // Scalar division
-    Vec2<T> operator/(T scalar) const {
+    template<typename T1>
+    Vec2<T> operator/(T1 scalar) const {
         return Vec2<T>(x / scalar, y / scalar);
     }
 
@@ -83,7 +85,7 @@ struct Vec2 {
     }
 
     // Magnitude (length)
-    T magnitude() const {
+    f64 magnitude() const {
         return std::sqrt(x * x + y * y);
     }
 
@@ -138,12 +140,14 @@ struct Vec3 {
     }
 
     // Scalar multiplication
-    Vec3<T> operator*(T scalar) const {
+    template<typename T1>
+    Vec3<T> operator*(T1 scalar) const {
         return Vec3<T>(x * scalar, y * scalar, z * scalar);
     }
 
     // Scalar division
-    Vec3<T> operator/(T scalar) const {
+    template<typename T1>
+    Vec3<T> operator/(T1 scalar) const {
         return Vec3<T>(x / scalar, y / scalar, z / scalar);
     }
 
@@ -162,7 +166,7 @@ struct Vec3 {
     }
 
     // Magnitude (length)
-    T magnitude() const {
+    f64 magnitude() const {
         return std::sqrt(x * x + y * y + z * z);
     }
 
@@ -260,9 +264,9 @@ struct Mat4 {
         T f = static_cast<T>(1) / std::tan(fov_y / static_cast<T>(2));
         result.m[0][0] = f / aspect;
         result.m[1][1] = f;
-        result.m[2][2] = (z_far + z_near) / (z_near - z_far);
-        result.m[2][3] = (static_cast<T>(2) * z_far * z_near) / (z_near - z_far);
+        result.m[2][2] = (z_far + z_near) / (z_far - z_near);// / (z_near - z_far);
         result.m[3][2] = -1;
+        result.m[2][3] = (static_cast<T>(2) * z_far * z_near) / (z_far - z_near); // / (z_near - z_far);
         return result;
     }
 
@@ -288,11 +292,27 @@ struct Mat4 {
     }
 
     void toGLMatrix(float* out) const {
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                out[j * 4 + i] = static_cast<float>(m[i][j]);
-            }
-        }
+        out[0]  = m[0][0];
+        out[1]  = m[1][0];
+        out[2]  = m[2][0];
+        out[3]  = m[3][0];
+        out[4]  = m[0][1];
+        out[5]  = m[1][1];
+        out[6]  = m[2][1];
+        out[7]  = m[3][1];
+        out[8]  = m[0][2];
+        out[9]  = m[1][2];
+        out[10] = m[2][2];
+        out[11] = m[3][2];
+        out[12] = m[0][3];
+        out[13] = m[1][3];
+        out[14] = m[2][3];
+        out[15] = m[3][3];
+        // for (int i = 0; i < 4; ++i) {
+        //     for (int j = 0; j < 4; ++j) {
+        //         out[j * 4 + i] = static_cast<float>(m[i][j]);
+        //     }
+        // }
     }
 
     // Overload for non-const access

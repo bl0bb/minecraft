@@ -14,9 +14,16 @@ static constexpr u16 CS_2 = CS * CS;
 static constexpr u16 CS_P2 = CS_P * CS_P;
 static constexpr u16 CS_P3 = CS_P * CS_P * CS_P;
 
+
 struct MeshData {
-    std::vector<u64>* faces = nullptr;
+    std::vector<u64>* vertices = nullptr;
 };
+
+
+
+inline int get_zxy_index(int x, int y, int z) {
+    return z + (x * CS_P) + (y * CS_P2);
+}
 
 void generate_voxel_mesh(const u8* voxels, MeshData& meshData);
 

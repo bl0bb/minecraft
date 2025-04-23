@@ -21,11 +21,11 @@ FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp
 
 
 # windows
-# LIBS = -Idep/include -Ldep/lib -lglfw3dll
+LIBS = -Idep/include -Ldep/lib -lglfw3dll
 # -I./glm
 
 # macos (linux?)
-LIBS = -Idep/include -Ldep/lib
+# LIBS = -Idep/include -Ldep/lib
 
 
 
