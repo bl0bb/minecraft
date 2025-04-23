@@ -21,7 +21,7 @@ constexpr u8 VOXEL_TYPE_SHIFT = 20;
 typedef u64 Voxel;
 
 namespace Voxels {
-    inline Voxel Voxels::create(u8 x, u8 y, u8 z, u16 type) {
+    inline Voxel create(u8 x, u8 y, u8 z, u16 type) {
         return
             x & VOXEL_XZ_MASK |
             (y & VOXEL_Y_MASK) << VOXEL_Y_SHIFT |
