@@ -47,7 +47,7 @@ public:
     }
 
     Mat4<f32> getViewMatrix() {
-        Vec3<f32> intraVoxelPos = position - position.floor();
+        Vec3<f32> intraVoxelPos = position;// - position.floor();
         return Mat4<f32>::lookAt(intraVoxelPos, intraVoxelPos + front, up);
     }
 

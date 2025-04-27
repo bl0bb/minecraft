@@ -98,8 +98,8 @@ struct Vec2 {
     // Floor
     Vec2<T> floor() const {
         return Vec2<T>(
-            floor(y),
-            floor(z)
+            floor(x),
+            floor(y)
         );
     }
 
@@ -179,9 +179,9 @@ struct Vec3 {
     // Floor
     Vec3<T> floor() const {
         return Vec3<T>(
+            std::floor(x),
             std::floor(y),
-            std::floor(z),
-            std::floor(x)
+            std::floor(z)
         );
     }
 
@@ -260,13 +260,25 @@ struct Mat4 {
     }
 
     static Mat4<T> perspective(T fov_y, T aspect, T z_near, T z_far) {
-        Mat4<T> result{};
-        T f = static_cast<T>(1) / std::tan(fov_y / static_cast<T>(2));
-        result.m[0][0] = f / aspect;
-        result.m[1][1] = f;
-        result.m[2][2] = (z_far + z_near) / (z_far - z_near);// / (z_near - z_far);
-        result.m[3][2] = -1;
-        result.m[2][3] = (static_cast<T>(2) * z_far * z_near) / (z_far - z_near); // / (z_near - z_far);
+        // Mat4<T> result{};
+        // T f = static_cast<T>(1) / std::tan(fov_y / static_cast<T>(2));
+        // result.m[0][0] = f / aspect;
+        // result.m[1][1] = f;
+        // result.m[2][2] = (z_far + z_near) / (z_near - z_far);
+        // result.m[3][2] = -1;
+        // result.m[2][3] = (static_cast<T>(2) * z_far * z_near) / (z_near - z_far);
+        // return result;
+
+
+
+        f64 tan_half_fov_y = std::tan(fov_y / static_cast<T>(2));
+
+        Mat4<T> result = identity();
+        result.m[0][0] = static_cast<T>(1) / (aspect * tan_half_fov_y);
+        result.m[1][1] = static_cast<T>(1) / (tan_half_fov_y);
+        result.m[2][2] = -(z_far + z_near) / (z_far - z_near);
+        result.m[3][2] = static_cast<T>(-1);
+        result.m[2][3] = -(static_cast<T>(2) * z_far * z_near) / (z_far - z_near);
         return result;
     }
 

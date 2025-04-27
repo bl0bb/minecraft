@@ -13,6 +13,7 @@
 #include "core/camera.h"
 #include "core/shader.h"
 
+#include "voxel/voxel.h"
 #include "voxel/voxel_mesher.h"
 #include "voxel/voxel_renderer.h"
 
@@ -22,6 +23,12 @@ constexpr u16 WINDOW_WIDTH = 1920;
 constexpr u16 WINDOW_HEIGHT = 1080;
 const bool FULLSCREEN = false;
 
+
+Shader* shader;
+Camera* camera;
+
+float last_x = 0.0f;
+float last_y = 0.0f;
 
 
 
@@ -59,9 +66,9 @@ void GLAPIENTRY message_callback(
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    // camera->processMouseMovement(xpos - last_x, last_y - ypos);
-    // last_x = xpos;
-    // last_y = ypos;
+    camera->processMouseMovement(xpos - last_x, last_y - ypos);
+    last_x = xpos;
+    last_y = ypos;
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -110,7 +117,9 @@ GLFWwindow* init_window() {
         return nullptr;
     }
 
-    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    // no cursor thing
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGL()) {
@@ -121,6 +130,27 @@ GLFWwindow* init_window() {
     }
 
     return window;
+}
+
+int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight) {
+    // Load and create a texture
+    int width, height, nrChannels;
+    u8* data = stbi_load(path, &width, &height, &nrChannels, 0);
+
+    if (width != texWidth) {
+        printf("LOADED IMAGE HAS INCORRECT WIDTH: %i %i\n", width, texWidth);
+        return 1;
+    }
+    if (height != texHeight) {
+        printf("LOADED IMAGE HAS INCORRECT HEIGHT: %i %i\n", height, texHeight);
+        return 1;
+    }
+
+    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, texIdx, texWidth, texHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    stbi_image_free(data);
+
+    return 0;
 }
 
 int main() {
@@ -156,27 +186,41 @@ int main() {
     MeshData meshData;
     meshData.vertices = new std::vector<u64>(10000);
 
-    u8* voxels = new u8[CS_P3]{0};
+    EmbeddedVoxel* voxels = new EmbeddedVoxel[CS_P3]{0};
     memset(voxels, 0, CS_P3);
 
-    // int r = CS_P / 2;
-    // for (int x = -r; x < r; x++) {
-    //     for (int y = -r; y < r; y++) {
-    //         for (int z = -r; z < r; z++) {
-    //             if (std::sqrt(x * x + y * y + z * z) < 30.0f) {
-    //                 voxels[get_zxy_index(x + r, y + r, z + r)] = 8;
-    //             }
-    //         }
-    //     }
-    // }
-
-    for (int x = 0; x < 5; x++) {
-        for (int y = 0; y < 5; y++) {
-            for (int z = 0; z < 5; z++) {
-                voxels[get_zxy_index(20 + x, 20 + y, 20 + z)] = 1;
+    int r = CS_P / 2;
+    for (int x = -r; x < r; x++) {
+        for (int y = -r; y < r; y++) {
+            for (int z = -r; z < r; z++) {
+                if (std::sqrt(x * x + y * y + z * z) < 15.0f) {
+                    voxels[get_zxy_index(x + r, y + r, z + r)] = EmbeddedVoxels::create(1);
+                }
             }
         }
     }
+
+    // u8 testRegionSize = 4;
+    // for (int x = 0; x < testRegionSize; x++) {
+    //     for (int z = 0; z < testRegionSize; z++) {
+    //         voxels[get_zxy_index(x, 0, z)] = EmbeddedVoxels::create(3);
+    //     }
+    // }
+    // for (int x = 0; x < testRegionSize; x++) {
+    //     for (int z = 0; z < testRegionSize; z++) {
+    //         voxels[get_zxy_index(x, 1, z)] = EmbeddedVoxels::create(2);
+    //     }
+    // }
+    // for (int x = 0; x < testRegionSize; x++) {
+    //     for (int z = 0; z < testRegionSize; z++) {
+    //         voxels[get_zxy_index(x, 2, z)] = EmbeddedVoxels::create(1);
+    //     }
+    // }
+    // for (int x = 0; x < testRegionSize; x++) {
+    //     for (int z = 0; z < testRegionSize; z++) {
+    //         voxels[get_zxy_index(x, 3, z)] = EmbeddedVoxels::create(4);
+    //     }
+    // }
 
     generate_voxel_mesh(voxels, meshData);
 
@@ -185,13 +229,13 @@ int main() {
 
 
 
-    Shader shader = Shader("voxel", "voxel");
-    Camera camera = Camera(Vec3<f32>(0, 0, -50));
-    camera.handleResolution(WINDOW_WIDTH, WINDOW_HEIGHT);
+    shader = new Shader("voxel", "voxel");
+    camera = new Camera(Vec3<f32>(0, 0, 0));
+    camera->handleResolution(WINDOW_WIDTH, WINDOW_HEIGHT);
   
     float forwardMove = 0.0f;
     float rightMove = 0.0f;
-    float noclipSpeed = 250.0f;
+    float noclipSpeed = 10.0f;
   
     float deltaTime = 0.0f;
   
@@ -208,56 +252,95 @@ int main() {
 
 
     // rendering
-    // Unit cube vertices (centered at origin)
+    // Define your cube vertices (positions only for simplicity)
     float cubeVertices[] = {
-        -0.5f,-0.5f,-0.5f,  // 0
-        0.5f,-0.5f,-0.5f,  // 1
-        0.5f, 0.5f,-0.5f,  // 2
-        -0.5f, 0.5f,-0.5f,  // 3
-        -0.5f,-0.5f, 0.5f,  // 4
-        0.5f,-0.5f, 0.5f,  // 5
-        0.5f, 0.5f, 0.5f,  // 6
-        -0.5f, 0.5f, 0.5f   // 7
+        0, 0, 0,
+        1, 0, 0,
+        1, 1, 0,
+        0, 1, 0,
+
+        // -0.5f, -0.5f, -0.5f,
+        // 0.5f, -0.5f, -0.5f,
+        // 0.5f,  0.5f, -0.5f,
+        // -0.5f,  0.5f, -0.5f,
+        // -0.5f, -0.5f,  0.5f,
+        // 0.5f, -0.5f,  0.5f,
+        // 0.5f,  0.5f,  0.5f,
+        // -0.5f,  0.5f,  0.5f
     };
 
+    // Define indices for the cube (using an IBO)
     unsigned int cubeIndices[] = {
-        0,1,2, 2,3,0, // back
-        4,5,6, 6,7,4, // front
-        4,5,1, 1,0,4, // bottom
-        7,6,2, 2,3,7, // top
-        4,0,3, 3,7,4, // left
-        5,1,2, 2,6,5  // right
+        2, 1, 0, 0, 3, 2,
+
+        // 2, 1, 0, 0, 3, 2,   // right face
+        // 4, 5, 6, 6, 7, 4,   // left face
+        // 1, 5, 4, 4, 0, 1,   // bottom face
+        // 3, 7, 6, 6, 2, 3,   // top face
+        // 4, 7, 3, 3, 0, 4,   // front face
+        // 2, 6, 5, 5, 1, 2    // back face
     };
 
-    // Setup VAO/VBO/EBO
-    GLuint vao, vbo, ebo;
+    GLuint vao, vbo, ebo, ssbo;
+    // Create VAO
     glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-
     glBindVertexArray(vao);
 
+    // Create VBO for cube vertices
+    glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
 
+    // Create EBO for cube indices
+    glGenBuffers(1, &ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
-    // Vertex positions
+    // Setup vertex attribute for positions
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(f32), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-    glBindVertexArray(0);
-
-    // SSBO Setup
-    GLuint ssbo;
+    // Create SSBO for instance positions
     glGenBuffers(1, &ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER, meshData.vertices->size() * sizeof(u64), meshData.vertices->data(), GL_STATIC_DRAW);
-
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+    // Unbind VAO
+    glBindVertexArray(0);
+
+
+
+    // textures
+    GLuint textureArray;
+    glGenTextures(1, &textureArray);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
+
+    // Allocate storage
+    u16 numTextures = 32; // big number
+    u8 texWidth = 16;
+    u8 texHeight = 16;
+
+    u16 texIdx = 0;
+
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGB8, texWidth, texHeight, numTextures);
+
+    // set to default settings
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // turn off texture smoothing
+    glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+
+    // LOAD TEXTURES
+    load_texture("assets/textures/grass_block_side.png", texIdx++, texWidth, texHeight);
+    load_texture("assets/textures/dirt.png", texIdx++, texWidth, texHeight);
+    load_texture("assets/textures/cobblestone.png", texIdx++, texWidth, texHeight);
+    load_texture("assets/textures/oak_planks.png", texIdx++, texWidth, texHeight);
 
 
 
@@ -267,61 +350,68 @@ int main() {
 
 
     while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        if (deltaTime >= (f32)1 / 60) {
+            lastFrame = currentFrame;
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) forwardMove = 1.0f;
-        else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) forwardMove = -1.0f;
-        else forwardMove = 0.0f;
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) rightMove = 1.0f;
-        else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) rightMove = -1.0f;
-        else rightMove = 0.0f;
-        auto wishdir = (camera.front * forwardMove) + (camera.right * rightMove);
-        camera.position = camera.position + wishdir * noclipSpeed * deltaTime;
+            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) forwardMove = 1.0f;
+            else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) forwardMove = -1.0f;
+            else forwardMove = 0.0f;
 
-        Vec3<i64> cameraChunkPos = camera.position / CS;
+            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) rightMove = 1.0f;
+            else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) rightMove = -1.0f;
+            else rightMove = 0.0f;
+            auto wishdir = (camera->front * forwardMove) + (camera->right * rightMove);
+            camera->position = camera->position + wishdir * noclipSpeed * deltaTime;
+
+            // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
+
+            Vec3<i64> cameraChunkPos = camera->position / CS;
+
+            
+
+            int numCommands = meshData.vertices->size();
+
+
+            // rendering
+            f32 proj_mat[16];
+            camera->projection.toGLMatrix(proj_mat);
+
+            f32 view_mat[16];
+            camera->getViewMatrix().toGLMatrix(view_mat);
+
+            shader->use();
+            shader->setMat4("u_projection", proj_mat);
+            shader->setMat4("u_view", view_mat);
+            shader->setVec3("eye_position", camera->position);
+
+            Vec3<i64> intCamPosition = camera->position;
+            shader->setIVec3("eye_position_int", intCamPosition);
+
+
+            // bind textures
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
+            shader->setInt("texArray", 0);
+
+
+
+            // Bind VAO and draw
+            glBindVertexArray(vao);
+            glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, meshData.vertices->size());
+            glBindVertexArray(0);
+
+
+
+
 
         
-
-        int numCommands = meshData.vertices->size();
-
-
-
-        // rendering
-        f32 proj_mat[16];
-        camera.projection.toGLMatrix(proj_mat);
-
-        f32 view_mat[16];
-        camera.getViewMatrix().toGLMatrix(view_mat);
-
-        shader.use();
-        shader.setMat4("u_projection", proj_mat);
-        shader.setMat4("u_view", view_mat);
-        shader.setVec3("eye_position", camera.position);
-
-        Vec3<i64> intCamPosition = camera.position; // TODO: floor?
-        shader.setIVec3("eye_position_int", intCamPosition);
-
-        glBindVertexArray(vao);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
-
-        glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, numCommands);
-
-
-
-
-
-
-
-
-
-
-    
-        glfwSwapBuffers(window);
+            glfwSwapBuffers(window);
+        }
+        
         glfwPollEvents();
     }
 

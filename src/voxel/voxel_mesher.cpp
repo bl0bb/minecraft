@@ -3,6 +3,8 @@
 #include "../core/maths.h"
 #include "../core/types.h"
 
+#include "voxel.h"
+
 #include "voxel_mesher.h"
 
 
@@ -100,22 +102,7 @@ void printBinary(unsigned int num, u8 count) {
 
 
 
-static inline const int getAxisIndex(const int axis, const int a, const int b, const int c) {
-    if (axis == 0) return b + (a * CS_P) + (c * CS_P2);
-    else if (axis == 1) return b + (c * CS_P) + (a * CS_P2);
-    else return c + (a * CS_P) + (b * CS_P2);
-}
 
-// x = 0-4 (5) (32)
-// y = 5-9 (5) (32)
-// z = 10-14 (5) (32)
-// w = 15-19 (5) (32)
-// h = 20-24 (5) (32)
-// dir = 25-37 (3) (8)
-// type = 28-37 (10) (1024)
-static inline const u64 getQuad(u64 x, u64 y, u64 z, u64 w, u64 h, u64 dir, u64 type) {
-    return (type << 28) | (dir << 25) | (h << 20) | (w << 15) | (z << 10) | (y << 5) | x;
-}
 
 void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
     // 0 is just a random number
@@ -150,27 +137,27 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
         for (u16 i = 0; i < CS_P2; i++) {
             u64 col = axis_cols[(CS_P2 * axis) + i];
             // sample ascending axis, and set true when air meets solid
-            col_face_masks[(CS_P2 * (axis * 2 + 1)) + i] = col & ~(col >> 1);
+            col_face_masks[(CS_P2 * (axis * 2 + 0)) + i] = col & ~(col >> 1);
             // sample descending axis, and set true when air meets solid
-            col_face_masks[(CS_P2 * (axis * 2 + 0)) + i] = col & ~(col << 1);
+            col_face_masks[(CS_P2 * (axis * 2 + 1)) + i] = col & ~(col << 1);
         }
     }
 
     // generate quads
     for (u8 axis = 0; axis < 3; axis++) {
-        for (u16 i = 0; i < CS_P2; i++) {
-            for (u8 j = 0; j < 2; j++) {
-                u8 dir = axis * 2 + j;
-
+        for (u8 j = 0; j < 2; j++) {
+            u8 dir = axis * 2 + j;
+            for (u16 i = 0; i < CS_P2; i++) {
                 u8 dim_1 = i % CS_P;
                 u8 dim_2 = i / CS_P;
 
                 u64 face_mask = col_face_masks[(CS_P2 * dir) + i];
                 while (face_mask) {
                     u8 tile = pop_lsb(face_mask);
-                    if (tile == 0 || tile == CS_P - 1) {
-                        continue;
-                    }
+                    // // tile is first or tile is last?
+                    // if (tile == 0) {
+                    //     continue;
+                    // }
                     u8 dim_3 = tile;
 
                     u8 x, y, z;
@@ -178,7 +165,7 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
                         x = dim_1;
                         z = dim_2;
                         y = dim_3;
-                    } else if (axis == 0) {
+                    } else if (axis == 1) {
                         z = dim_1;
                         y = dim_2;
                         x = dim_3;
@@ -188,7 +175,8 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
                         z = dim_3;
                     }
 
-                    meshData.vertices->push_back(getQuad(x, y, z, 1, 1, dir, 1));
+                    // TODO: find faster / better way to find material??
+                    meshData.vertices->push_back(getQuad(x, y, z, 1, 1, dir, EmbeddedVoxels::get_type(voxels[get_zxy_index(x, y, z)])));
                 }
             }
         }
