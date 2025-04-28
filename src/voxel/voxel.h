@@ -61,22 +61,22 @@ namespace Voxels {
 
 
 // embedded voxel
-// type = 0-7 (8) (256)
+// texture = 0-9 (10) (1024)
 
-constexpr u8 EMBEDDED_VOXEL_TYPE_SHIFT = 0;
+constexpr u8 EMBEDDED_VOXEL_TEXTURE_SHIFT = 0;
 
-constexpr u8 EMBEDDED_VOXEL_TYPE_MASK = 0b11111111;
+constexpr u16 EMBEDDED_VOXEL_TEXTURE_MASK = 0b1111111111;
 
-typedef u8 EmbeddedVoxel;
+typedef u16 EmbeddedVoxel;
 
 namespace EmbeddedVoxels {
-    inline EmbeddedVoxel create(u8 type) {
+    inline EmbeddedVoxel create(u16 type) {
         return
-            (type & EMBEDDED_VOXEL_TYPE_MASK) << EMBEDDED_VOXEL_TYPE_SHIFT;
+            (type & EMBEDDED_VOXEL_TEXTURE_MASK) << EMBEDDED_VOXEL_TEXTURE_SHIFT;
     }
 
-    inline u8 get_type(EmbeddedVoxel voxel) {
-        return (voxel >> EMBEDDED_VOXEL_TYPE_SHIFT) & EMBEDDED_VOXEL_TYPE_MASK;
+    inline u16 get_type(EmbeddedVoxel voxel) {
+        return (voxel >> EMBEDDED_VOXEL_TEXTURE_SHIFT) & EMBEDDED_VOXEL_TEXTURE_MASK;
     }
 }
 

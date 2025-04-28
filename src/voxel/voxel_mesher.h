@@ -42,6 +42,6 @@ inline const u64 getQuad(u64 x, u64 y, u64 z, u64 w, u64 h, u64 dir, u64 type) {
     return (type << 28) | (dir << 25) | (h << 20) | (w << 15) | (z << 10) | (y << 5) | x;
 }
 
-void generate_voxel_mesh(const u8* voxels, MeshData& meshData);
+void generate_voxel_mesh(const EmbeddedVoxel* voxels, MeshData& meshData);
 
 #endif

@@ -4,6 +4,9 @@ layout(location = 0) in vec3 aPos;
 
 out flat int texIndex; // Pass to fragment shader without interpolation
 out vec2 texUv; // Pass to fragment shader without interpolation
+// ao
+out vec3 FragPos;
+out vec3 Normal;
 
 struct QuadData {
   uint data1;
@@ -79,6 +82,10 @@ void main() {
 
 
 
-  texIndex = int((data1 >> 28) & 15) - 1;
+  texIndex = int((data1 >> 28) & 15);
   texUv = vec2(aPos.x, 1 - aPos.y);
+
+
+  Normal = normalLookup[axis];
+  FragPos = vec3(gl_Position);
 }

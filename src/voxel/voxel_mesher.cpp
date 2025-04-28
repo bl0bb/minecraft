@@ -1,7 +1,9 @@
 #include <vector>
 
-#include "../core/maths.h"
 #include "../core/types.h"
+#include "../core/bits.h"
+
+#include "../blocks.h"
 
 #include "voxel.h"
 
@@ -11,76 +13,7 @@
 
 
 
-// Returns the least significant bit in a non-zero bitboard.
-inline u64 lsb(u64 b) {
-#if defined(__GNUC__)  // GCC, Clang, ICX
 
-    return u64(__builtin_ctzll(b));
-
-#elif defined(_MSC_VER)
-    #ifdef _WIN64  // MSVC, WIN64
-
-    unsigned long idx;
-    _BitScanForward64(&idx, b);
-    return u64(idx);
-
-    #else  // MSVC, WIN32
-    unsigned long idx;
-
-    if (b & 0xffffffff)
-    {
-        _BitScanForward(&idx, int32_t(b));
-        return u64(idx);
-    }
-    else
-    {
-        _BitScanForward(&idx, int32_t(b >> 32));
-        return u64(idx + 32);
-    }
-    #endif
-#else  // Compiler is neither GCC nor MSVC compatible
-    #error "Compiler not supported."
-#endif
-}
-
-// Returns the most significant bit in a non-zero bitboard.
-inline u64 msb(u64 b) {
-#if defined(__GNUC__)  // GCC, Clang, ICX
-
-    return u64(63 ^ __builtin_clzll(b));
-
-#elif defined(_MSC_VER)
-    #ifdef _WIN64  // MSVC, WIN64
-
-    unsigned long idx;
-    _BitScanReverse64(&idx, b);
-    return u64(idx);
-
-    #else  // MSVC, WIN32
-
-    unsigned long idx;
-
-    if (b >> 32)
-    {
-        _BitScanReverse(&idx, int32_t(b >> 32));
-        return u64(idx + 32);
-    }
-    else
-    {
-        _BitScanReverse(&idx, int32_t(b));
-        return u64(idx);
-    }
-    #endif
-#else  // Compiler is neither GCC nor MSVC compatible
-    #error "Compiler not supported."
-#endif
-}
-
-inline u8 pop_lsb(u64& b) {
-    const u64 s = lsb(b);
-    b &= b - 1;
-    return s;
-}
 
 
 
@@ -104,7 +37,7 @@ void printBinary(unsigned int num, u8 count) {
 
 
 
-void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
+void generate_voxel_mesh(const EmbeddedVoxel* voxels, MeshData& meshData) {
     // 0 is just a random number
     meshData.vertices = new std::vector<u64>(0);
 
@@ -176,7 +109,7 @@ void generate_voxel_mesh(const u8* voxels, MeshData& meshData) {
                     }
 
                     // TODO: find faster / better way to find material??
-                    meshData.vertices->push_back(getQuad(x, y, z, 1, 1, dir, EmbeddedVoxels::get_type(voxels[get_zxy_index(x, y, z)])));
+                    meshData.vertices->push_back(getQuad(x, y, z, 1, 1, dir, BlockVoxelDatas::get_face(block_voxel_datas[EmbeddedVoxels::get_type(voxels[get_zxy_index(x, y, z)]) - 1], dir)));
                 }
             }
         }

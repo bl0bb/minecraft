@@ -13,7 +13,8 @@ src/voxel/voxel_chunk.cpp\
 src/voxel/voxel_mesher.cpp\
 src/voxel/voxel_world.cpp\
 src/voxel/voxel.cpp\
-src/core/maths.cpp
+src/core/maths.cpp\
+src/shading/ambient_occlusion.cpp
 DEP_FILES = dep/src/glad.c
 
 FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp

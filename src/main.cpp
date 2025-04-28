@@ -17,6 +17,12 @@
 #include "voxel/voxel_mesher.h"
 #include "voxel/voxel_renderer.h"
 
+#include "core/array.h"
+#include "blocks.h"
+
+#include "shading/ambient_occlusion.h"
+#include "quad.h"
+
 // TODO: add quad support for rendering and for obj importing??
 
 constexpr u16 WINDOW_WIDTH = 1920;
@@ -189,17 +195,19 @@ int main() {
     EmbeddedVoxel* voxels = new EmbeddedVoxel[CS_P3]{0};
     memset(voxels, 0, CS_P3);
 
-    int r = CS_P / 2;
-    for (int x = -r; x < r; x++) {
-        for (int y = -r; y < r; y++) {
-            for (int z = -r; z < r; z++) {
-                if (std::sqrt(x * x + y * y + z * z) < 15.0f) {
-                    voxels[get_zxy_index(x + r, y + r, z + r)] = EmbeddedVoxels::create(1);
-                }
-            }
-        }
-    }
+    // sphere
+    // int r = CS_P / 2;
+    // for (int x = -r; x < r; x++) {
+    //     for (int y = -r; y < r; y++) {
+    //         for (int z = -r; z < r; z++) {
+    //             if (std::sqrt(x * x + y * y + z * z) < 15.0f) {
+    //                 voxels[get_zxy_index(x + r, y + r, z + r)] = EmbeddedVoxels::create(1);
+    //             }
+    //         }
+    //     }
+    // }
 
+    // layers
     // u8 testRegionSize = 4;
     // for (int x = 0; x < testRegionSize; x++) {
     //     for (int z = 0; z < testRegionSize; z++) {
@@ -208,19 +216,53 @@ int main() {
     // }
     // for (int x = 0; x < testRegionSize; x++) {
     //     for (int z = 0; z < testRegionSize; z++) {
-    //         voxels[get_zxy_index(x, 1, z)] = EmbeddedVoxels::create(2);
+    //         voxels[get_zxy_index(x, 2, z)] = EmbeddedVoxels::create(2);
     //     }
     // }
     // for (int x = 0; x < testRegionSize; x++) {
     //     for (int z = 0; z < testRegionSize; z++) {
-    //         voxels[get_zxy_index(x, 2, z)] = EmbeddedVoxels::create(1);
+    //         voxels[get_zxy_index(x, 4, z)] = EmbeddedVoxels::create(1);
     //     }
     // }
     // for (int x = 0; x < testRegionSize; x++) {
     //     for (int z = 0; z < testRegionSize; z++) {
-    //         voxels[get_zxy_index(x, 3, z)] = EmbeddedVoxels::create(4);
+    //         voxels[get_zxy_index(x, 6, z)] = EmbeddedVoxels::create(4);
     //     }
     // }
+
+
+    // house
+    // ground
+    u8 platform_size = 32;
+    for (int x = 0; x < platform_size; x++) {
+        for (int z = 0; z < platform_size; z++) {
+            voxels[get_zxy_index(x, 0, z)] = EmbeddedVoxels::create(BlockType::COBBLESTONE + 1);
+            voxels[get_zxy_index(x, 1, z)] = EmbeddedVoxels::create(BlockType::DIRT + 1);
+            voxels[get_zxy_index(x, 2, z)] = EmbeddedVoxels::create(BlockType::GRASS + 1);
+        }
+    }
+    u8 house_size = 8;
+    u8 house_height = 6;
+    Vec2<u8> house_center(
+        platform_size / 2 - house_size * 0.5,
+        platform_size / 2 - house_size * 0.5
+    );
+    for (int i = 0; i < house_size; i++) {
+        for (int y = 0; y < house_height; y++) {
+            voxels[get_zxy_index(house_center.x,                      3 + y, house_center.y + i)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+            voxels[get_zxy_index(house_center.x + i,                  3 + y, house_center.y + house_size - 1)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+            voxels[get_zxy_index(house_center.x + house_size - 1,     3 + y, house_center.y + house_size - 1 - i)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+            voxels[get_zxy_index(house_center.x + house_size - 1 - i, 3 + y, house_center.y)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+        }
+    }
+    for (int x = 0; x < house_size - 2; x++) {
+        for (int z = 0; z < house_size - 2; z++) {
+            voxels[get_zxy_index(house_center.x + 1 + x, 3, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+            voxels[get_zxy_index(house_center.x + 1 + x, 3 + house_height - 1, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+        }
+    }
+    voxels[get_zxy_index(house_center.x + 2, 4, house_center.y)] = 0;
+    voxels[get_zxy_index(house_center.x + 2, 5, house_center.y)] = 0;
 
     generate_voxel_mesh(voxels, meshData);
 
@@ -229,7 +271,6 @@ int main() {
 
 
 
-    shader = new Shader("voxel", "voxel");
     camera = new Camera(Vec3<f32>(0, 0, 0));
     camera->handleResolution(WINDOW_WIDTH, WINDOW_HEIGHT);
   
@@ -281,7 +322,9 @@ int main() {
         // 2, 6, 5, 5, 1, 2    // back face
     };
 
-    GLuint vao, vbo, ebo, ssbo;
+    GLuint vao, vbo, ebo;
+    GLuint voxel_ssbo;
+
     // Create VAO
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -300,14 +343,9 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(f32), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Create SSBO for instance positions
-    glGenBuffers(1, &ssbo);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, meshData.vertices->size() * sizeof(u64), meshData.vertices->data(), GL_STATIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
-
     // Unbind VAO
     glBindVertexArray(0);
+
 
 
 
@@ -337,10 +375,114 @@ int main() {
 
 
     // LOAD TEXTURES
-    load_texture("assets/textures/grass_block_side.png", texIdx++, texWidth, texHeight);
-    load_texture("assets/textures/dirt.png", texIdx++, texWidth, texHeight);
-    load_texture("assets/textures/cobblestone.png", texIdx++, texWidth, texHeight);
-    load_texture("assets/textures/oak_planks.png", texIdx++, texWidth, texHeight);
+    for (u16 i = 0; i < array_size(block_textures); i++) {
+        std::string path = "assets/textures/";
+        path += block_textures[i];
+        path += ".png";
+        load_texture(path.c_str(), texIdx++, texWidth, texHeight);
+    }
+
+
+    // Create SSBO for instance positions
+    glGenBuffers(1, &voxel_ssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, meshData.vertices->size() * sizeof(u64), meshData.vertices->data(), GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
+
+
+
+
+
+
+
+
+    // --------------------
+    // AO
+    // Shaders
+    Shader geometryShader("voxel/main.vs", "voxel/main.fs");
+    Shader ssaoShader("ambient_occlusion/ssao.vs", "ambient_occlusion/ssao.fs");
+    Shader blurShader("ambient_occlusion/ssao.vs", "ambient_occlusion/blur.fs");
+    Shader finalShader("ambient_occlusion/ssao.vs", "ambient_occlusion/final.fs");
+
+    // G-Buffer
+    GLuint gBuffer;
+    glGenFramebuffers(1, &gBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+
+    GLuint gPosition, gNormal;
+    glGenTextures(1, &gPosition);
+    glGenTextures(1, &gNormal);
+
+    // Position color buffer
+    glBindTexture(GL_TEXTURE_2D, gPosition);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
+
+    // Normal color buffer
+    glBindTexture(GL_TEXTURE_2D, gNormal);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
+
+    // Tell OpenGL which color attachments we'll use
+    GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, attachments);
+
+    // Depth buffer
+    GLuint rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cout << "G-Buffer not complete!" << std::endl;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // SSAO framebuffer
+    GLuint ssaoFBO, ssaoBlurFBO;
+    glGenFramebuffers(1, &ssaoFBO);
+    glGenFramebuffers(1, &ssaoBlurFBO);
+
+    GLuint ssaoColorBuffer, ssaoColorBufferBlur;
+    glGenTextures(1, &ssaoColorBuffer);
+    glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0);
+
+    glGenTextures(1, &ssaoColorBufferBlur);
+    glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBufferBlur, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Create SSAO kernel + noise
+    std::vector<Vec3<f32>> ssaoKernel;
+    std::vector<Vec3<f32>> ssaoNoise;
+    GLuint ssao_noise_texture = generateSSAOTexture(ssaoKernel, ssaoNoise);
+    // --------------------
+
+
+
+
+
+
+    GLuint quadVao = createQuad();
+
+
 
 
 
@@ -355,8 +497,6 @@ int main() {
         if (deltaTime >= (f32)1 / 60) {
             lastFrame = currentFrame;
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) forwardMove = 1.0f;
             else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) forwardMove = -1.0f;
             else forwardMove = 0.0f;
@@ -369,12 +509,16 @@ int main() {
 
             // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
 
-            Vec3<i64> cameraChunkPos = camera->position / CS;
-
             
 
-            int numCommands = meshData.vertices->size();
 
+            // --------------------------------------
+            // GEOMETRY PASS
+            // glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            Vec3<i64> cameraChunkPos = camera->position / CS;
+
+            int numCommands = meshData.vertices->size();
 
             // rendering
             f32 proj_mat[16];
@@ -383,26 +527,96 @@ int main() {
             f32 view_mat[16];
             camera->getViewMatrix().toGLMatrix(view_mat);
 
-            shader->use();
-            shader->setMat4("u_projection", proj_mat);
-            shader->setMat4("u_view", view_mat);
-            shader->setVec3("eye_position", camera->position);
+            geometryShader.use();
+            geometryShader.setMat4("u_projection", proj_mat);
+            geometryShader.setMat4("u_view", view_mat);
+            geometryShader.setVec3("eye_position", camera->position);
 
             Vec3<i64> intCamPosition = camera->position;
-            shader->setIVec3("eye_position_int", intCamPosition);
-
+            geometryShader.setIVec3("eye_position_int", intCamPosition);
 
             // bind textures
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
-            shader->setInt("texArray", 0);
+            geometryShader.setInt("texArray", 0);
 
-
+            // ao
+            geometryShader.setInt("gPosition", 1);
+            geometryShader.setInt("gNormal", 2);
+            geometryShader.setInt("texNoise", 3);
 
             // Bind VAO and draw
             glBindVertexArray(vao);
             glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, meshData.vertices->size());
             glBindVertexArray(0);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            // --------------------------------------
+
+
+
+
+
+            // // --------------------------------------
+            // // 2. SSAO Pass: generate SSAO texture
+            // glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+            // glClear(GL_COLOR_BUFFER_BIT);
+            // ssaoShader.use();
+            // for (unsigned int i = 0; i < 64; ++i)
+            //     ssaoShader.setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
+            // ssaoShader.setMat4("projection", proj_mat);
+
+            // glActiveTexture(GL_TEXTURE0);
+            // glBindTexture(GL_TEXTURE_2D, gPosition);
+            // glActiveTexture(GL_TEXTURE1);
+            // glBindTexture(GL_TEXTURE_2D, gNormal);
+            // glActiveTexture(GL_TEXTURE2);
+            // glBindTexture(GL_TEXTURE_2D, ssao_noise_texture);
+
+            // ssaoShader.setInt("gPosition", 0);
+            // ssaoShader.setInt("gNormal", 1);
+            // ssaoShader.setInt("texNoise", 2);
+
+            // glBindVertexArray(quadVao);
+            // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            // // --------------------------------------
+
+            // // --------------------------------------
+            // // 3. Blur Pass: blur SSAO texture
+            // glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+            // glClear(GL_COLOR_BUFFER_BIT);
+            // blurShader.use();
+
+            // glActiveTexture(GL_TEXTURE0);
+            // glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
+            // blurShader.setInt("ssaoInput", 0);
+
+            // glBindVertexArray(quadVao);
+            // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            // // --------------------------------------
+
+            // // --------------------------------------
+            // // 4. Lighting Pass: render final scene
+            // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // finalShader.use();
+
+            // glActiveTexture(GL_TEXTURE0);
+            // glBindTexture(GL_TEXTURE_2D, gPosition);
+            // glActiveTexture(GL_TEXTURE1);
+            // glBindTexture(GL_TEXTURE_2D, gNormal);
+            // glActiveTexture(GL_TEXTURE2);
+            // glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
+
+            // finalShader.setInt("gPosition", 0);
+            // finalShader.setInt("gNormal", 1);
+            // finalShader.setInt("ssao", 2);
+
+            // glBindVertexArray(quadVao);
+            // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            // // --------------------------------------
+
 
 
 

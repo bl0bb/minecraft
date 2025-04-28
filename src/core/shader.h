@@ -18,13 +18,13 @@ public:
 
   Shader(std::string vertex_name, std::string fragment_name): vertex_name(vertex_name), fragment_name(fragment_name) {
     std::string vShaderCode;
-    std::fstream vertexFile("assets/shaders/" + vertex_name + "/main.vs", std::ios::in);
+    std::fstream vertexFile("assets/shaders/" + vertex_name, std::ios::in);
     if (vertexFile.is_open()) {
       std::stringstream buffer;
       buffer << vertexFile.rdbuf();
       vShaderCode = buffer.str();
     } else {
-      std::cout << "COULD NOT OPEN SHADER FILE" << std::endl;
+      std::cout << "COULD NOT OPEN SHADER FILE: " + vertex_name << std::endl;
     }
 
     unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
@@ -35,13 +35,13 @@ public:
 
 
     std::string fShaderCode;
-    std::fstream fragmentFile("assets/shaders/" + fragment_name + "/main.fs", std::ios::in);
+    std::fstream fragmentFile("assets/shaders/" + fragment_name, std::ios::in);
     if (fragmentFile.is_open()) {
       std::stringstream buffer;
       buffer << fragmentFile.rdbuf();
       fShaderCode = buffer.str();
     } else {
-      std::cout << "COULD NOT OPEN SHADER FILE" << std::endl;
+      std::cout << "COULD NOT OPEN SHADER FILE: " + fragment_name << std::endl;
     }
 
     unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);

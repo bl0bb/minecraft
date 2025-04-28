@@ -40,7 +40,7 @@ static inline T lerp(T a, T b, T t) {
 // vec2
 template<typename T>
 struct Vec2 {
-    T x, y, z;
+    T x, y;
 
     // Constructors
     Vec2() : x(T(0)), y(T(0)) {}
