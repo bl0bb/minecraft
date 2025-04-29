@@ -115,7 +115,7 @@ GLFWwindow* init_window() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 2);
 
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Binary Greedy Meshing V2", FULLSCREEN ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong", FULLSCREEN ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     if (!window) {
         fprintf(stderr, "Unable to create GLFW window\n");
         glfwDestroyWindow(window);
@@ -244,9 +244,10 @@ int main() {
     u8 house_size = 8;
     u8 house_height = 6;
     Vec2<u8> house_center(
-        platform_size / 2 - house_size * 0.5,
-        platform_size / 2 - house_size * 0.5
+        platform_size / 2 - house_size / 2,
+        platform_size / 2 - house_size / 2
     );
+    // walls
     for (int i = 0; i < house_size; i++) {
         for (int y = 0; y < house_height; y++) {
             voxels[get_zxy_index(house_center.x,                      3 + y, house_center.y + i)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
@@ -255,14 +256,31 @@ int main() {
             voxels[get_zxy_index(house_center.x + house_size - 1 - i, 3 + y, house_center.y)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
         }
     }
+    // door
+    voxels[get_zxy_index(house_center.x + 2, 4, house_center.y)] = 0;
+    voxels[get_zxy_index(house_center.x + 2, 5, house_center.y)] = 0;
+    // floor and ceiling
     for (int x = 0; x < house_size - 2; x++) {
         for (int z = 0; z < house_size - 2; z++) {
             voxels[get_zxy_index(house_center.x + 1 + x, 3, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
             voxels[get_zxy_index(house_center.x + 1 + x, 3 + house_height - 1, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
         }
     }
-    voxels[get_zxy_index(house_center.x + 2, 4, house_center.y)] = 0;
-    voxels[get_zxy_index(house_center.x + 2, 5, house_center.y)] = 0;
+    // roof
+    for (int i = 0; i < house_size / 2 + 1; i++) {
+        for (int z = 0; z < house_size + 2; z++) {
+            voxels[get_zxy_index(
+                house_center.x - 1 + i,
+                3 + house_height - 1 + i,
+                house_center.y - 1 + z
+            )] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+            voxels[get_zxy_index(
+                house_center.x + house_size - i,
+                3 + house_height - 1 + i,
+                house_center.y - 1 + z
+            )] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+        }
+    }
 
     generate_voxel_mesh(voxels, meshData);
 
