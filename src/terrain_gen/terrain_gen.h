@@ -15,31 +15,16 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class Noise {
 public:
     FastNoise noise;
 
     Noise() {
-        noise.SetFrequency(0.01f);
-        noise.SetNoiseType(FastNoise::Simplex);
+        
+    }
 
-        // noise.SetFractalType(FastNoise::FBM);
-        // noise.SetFractalOctaves(5);
-        // noise.SetFractalLacunarity(2.0);
+    ~Noise() {
+        
     }
 
     void generateTerrain(EmbeddedVoxel* voxels, int offsetX, int offsetY, int offsetZ, int seed) {
@@ -61,18 +46,18 @@ public:
                     f32 world_noise = 0;
 
                     noise.SetFrequency(0.001f);
-                    noise.SetNoiseType(FastNoise::Simplex);
+                    noise.SetNoiseType(FastNoise::Perlin);
                     world_noise += ((noise.GetNoise(world_x, world_y, world_z) + 1.0f) / 2.0f) * 0.7f;
 
                     noise.SetFrequency(0.01f);
-                    noise.SetNoiseType(FastNoise::Simplex);
+                    noise.SetNoiseType(FastNoise::Perlin);
                     world_noise += ((noise.GetNoise(world_x, world_y, world_z) + 1.0f) / 2.0f) * 0.2f;
 
                     noise.SetFrequency(0.04f);
-                    noise.SetNoiseType(FastNoise::Simplex);
+                    noise.SetNoiseType(FastNoise::Perlin);
                     world_noise += ((noise.GetNoise(world_x, world_y, world_z) + 1.0f) / 2.0f) * 0.1f;
 
-                    world_noise /= pow(y_delta * 1.0f, 2.0f);
+                    world_noise /= pow(y_delta * 1.0f, 1.0f);
 
 
 
@@ -80,15 +65,16 @@ public:
                     // cliffs
                     f32 cliff_noise = 0;
 
-                    noise.SetFrequency(0.1f);
-                    noise.SetNoiseType(FastNoise::Simplex);
-                    f32 tmp_noise = (noise.GetNoise(world_x, world_y, world_z) + 1.0f) / 2.0f;
-                    if (tmp_noise >= 0.5f) {
-                        cliff_noise = 1.0f; // pow(tmp_noise, tmp_noise - 1.0f);
-                    } else {
-                        cliff_noise = 0.0f; // pow(tmp_noise, tmp_noise + 1.0f);
-                    }
-                    cliff_noise /= pow(y_delta * 1.0f, 2.0f);
+                    // noise.SetFrequency(0.01f);
+                    // noise.SetNoiseType(FastNoise::Perlin);
+                    // f32 tmp_noise = (noise.GetNoise(world_x, world_y, world_z) + 1.0f) / 2.0f;
+                    // if (tmp_noise >= 0.5f) {
+                    //     cliff_noise = 1.0f; // pow(tmp_noise, tmp_noise - 1.0f);
+                    // } else {
+                    //     cliff_noise = 0.0f; // pow(tmp_noise, tmp_noise + 1.0f);
+                    // }
+                    // cliff_noise /= pow(y_delta * 1.0f, 2.0f);
+                    cliff_noise = 1.0f;
 
 
 
