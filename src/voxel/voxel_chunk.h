@@ -1,13 +1,108 @@
 #ifndef VOXEL_CHUNK_H
 #define VOXEL_CHUNK_H
 
+#include <glad/glad.h>
+
+#include <cstring>
+
 #include "../core/types.h"
+#include "../core/shader.h"
+
 #include "voxel.h"
 
-struct VoxelChunk {
-    Vec2<u64> pos;
-    Voxel* voxels;
-    
+
+// CS = chunk size
+// CS_P = chunk size padded
+static constexpr u8 CS = 32;
+static constexpr u16 CS_2 = CS * CS;
+static constexpr u16 CS_3 = CS * CS * CS;
+static constexpr u8 CS_P = CS + 2;
+static constexpr u16 CS_P2 = CS_P * CS_P;
+static constexpr u16 CS_P3 = CS_P * CS_P * CS_P;
+
+
+// x = 0-4 (5) (32)
+// y = 5-9 (5) (32)
+// z = 10-14 (5) (32)
+// w = 15-19 (5) (32)
+// h = 20-24 (5) (32)
+// dir = 25-37 (3) (8)
+// type = 28-31 (4) (16)
+typedef u64 VoxelFace;
+inline const VoxelFace getQuad(u64 x, u64 y, u64 z, u64 w, u64 h, u64 dir, u64 type) {
+    return (type << 28) | (dir << 25) | (h << 20) | (w << 15) | (z << 10) | (y << 5) | x;
+}
+
+class VoxelChunk {
+public:
+    Vec3<u64> pos;
+    EmbeddedVoxel* voxels;
+    u32 voxel_count;
+
+    // voxel faces
+    GLuint vao, vbo, ebo;
+    GLuint voxel_ssbo;
+
+    VoxelChunk() {
+        voxels = new EmbeddedVoxel[CS_P3]{0};
+        std::memset(voxels, 0, CS_P3);
+    }
+
+    void init() {
+        // Define your cube vertices (positions only for simplicity)
+        float cubeVertices[] = {
+            0, 0, 0,
+            1, 0, 0,
+            1, 1, 0,
+            0, 1, 0,
+        };
+
+        // Define indices for the cube (using an IBO)
+        unsigned int cubeIndices[] = {
+            2, 1, 0, 0, 3, 2,
+        };
+
+        // Create VAO
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        // Create VBO for cube vertices
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+        // Create EBO for cube indices
+        glGenBuffers(1, &ebo);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
+
+        // Setup vertex attribute for positions
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(f32), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        // Unbind VAO
+        glBindVertexArray(0);
+
+        // Create SSBO for instance positions
+        glGenBuffers(1, &voxel_ssbo);
+    }
+
+    void updateMesh(VoxelFace* data) {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, CS_P3 * sizeof(VoxelFace), data, GL_STATIC_DRAW);
+    }
+
+    void render(Shader& shaderProgram) {
+        // Bind VAO and draw
+        glBindVertexArray(vao);
+
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
+
+        shaderProgram.setIVec3("chunk_pos", pos);
+
+        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, voxel_count);
+        glBindVertexArray(0);
+    }
 };
 
 #endif

@@ -1,12 +1,15 @@
 #ifndef VOXEL_WORLD_H
 #define VOXEL_WORLD_H
 
+#include <glad/glad.h>
+
 #include <vector>
 
 #include "voxel_chunk.h"
 
-struct VoxelWorld {
-    VoxelChunk* chunks;
+class VoxelWorld {
+public:
+    std::vector<VoxelChunk> chunks;
 };
 
 #endif

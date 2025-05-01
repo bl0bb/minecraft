@@ -14,6 +14,7 @@ src/voxel/voxel_mesher.cpp\
 src/voxel/voxel_world.cpp\
 src/voxel/voxel.cpp\
 src/core/maths.cpp\
+src/FastNoise/FastNoise.cpp\
 src/shading/ambient_occlusion.cpp
 DEP_FILES = dep/src/glad.c
 

@@ -33,23 +33,27 @@ constexpr const char* block_textures[] = {
     "grass_block_top",          //  0
     "grass_block_side",         //  1
     "dirt",                     //  2
-    "cobblestone",              //  3
-    "oak_planks",               //  4
-    "crafting_table_top",       //  5
-    "crafting_table_front",     //  6
-    "crafting_table_side",      //  7
-    "furnace_top",              //  8
-    "furnace_side",             //  9
-    "furnace_front",            // 10
+    "stone",                    //  3
+    "cobblestone",              //  4
+    "oak_planks",               //  5
+    "crafting_table_top",       //  6
+    "crafting_table_front",     //  7
+    "crafting_table_side",      //  8
+    "furnace_top",              //  9
+    "furnace_side",             // 10
+    "furnace_front",            // 11
+    "water",                    // 12
 };
 
 enum BlockType : u8 {
     GRASS           = 0,
     DIRT            = 1,
-    COBBLESTONE     = 2,
-    OAK_PLANKS      = 3,
-    CRAFTING_TABLE  = 4,
-    FURNACE         = 5,
+    STONE           = 2,
+    COBBLESTONE     = 3,
+    OAK_PLANKS      = 4,
+    CRAFTING_TABLE  = 5,
+    FURNACE         = 6,
+    WATER           = 7,
 };
 
 const BlockVoxelData block_voxel_datas[] = {
@@ -57,8 +61,10 @@ const BlockVoxelData block_voxel_datas[] = {
     BlockVoxelDatas::create(2, 2, 2, 2, 2, 2),
     BlockVoxelDatas::create(3, 3, 3, 3, 3, 3),
     BlockVoxelDatas::create(4, 4, 4, 4, 4, 4),
-    BlockVoxelDatas::create(5, 4, 7, 7, 6, 6),
-    BlockVoxelDatas::create(8, 8, 10, 10, 7, 7),
+    BlockVoxelDatas::create(5, 5, 5, 5, 5, 5),
+    BlockVoxelDatas::create(6, 5, 8, 8, 7, 7),
+    BlockVoxelDatas::create(9, 9, 11, 11, 8, 8),
+    BlockVoxelDatas::create(12, 12, 12, 12, 12, 12),
 };
 
 #endif

@@ -37,14 +37,14 @@ void printBinary(unsigned int num, u8 count) {
 
 
 
-void generate_voxel_mesh(const EmbeddedVoxel* voxels, MeshData& meshData) {
-    // 0 is just a random number
-    meshData.vertices = new std::vector<u64>(0);
-
+u32 generate_voxel_mesh(const EmbeddedVoxel* voxels, VoxelFace* vertices) {
     // solid voxel as binary for each x,y,z axis
     u64 axis_cols[3 * CS_P2] = {0};
     // the cull mask to perform greedy slicing, based on solids on previous axis_cols
     u64 col_face_masks[3 * CS_P2 * 2] = {0};
+
+    // index
+    u32 vertexIdx = 0;
 
     // build binary representation for every solid voxel y,x,z axis
     for (u8 y = 0; y < CS_P; y++) {
@@ -109,11 +109,13 @@ void generate_voxel_mesh(const EmbeddedVoxel* voxels, MeshData& meshData) {
                     }
 
                     // TODO: find faster / better way to find material??
-                    meshData.vertices->push_back(getQuad(x, y, z, 1, 1, dir, BlockVoxelDatas::get_face(block_voxel_datas[EmbeddedVoxels::get_type(voxels[get_zxy_index(x, y, z)]) - 1], dir)));
+                    vertices[vertexIdx++] = getQuad(x, y, z, 1, 1, dir, BlockVoxelDatas::get_face(block_voxel_datas[EmbeddedVoxels::get_type(voxels[get_zxy_index(x, y, z)]) - 1], dir));
                 }
             }
         }
     }
+
+    return vertexIdx;
 
     // for (u32 i = 0; i < meshData.vertices->size(); i++) {
     //     printf("Face %i: ", i);

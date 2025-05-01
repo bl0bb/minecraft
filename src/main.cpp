@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -16,12 +17,17 @@
 #include "voxel/voxel.h"
 #include "voxel/voxel_mesher.h"
 #include "voxel/voxel_renderer.h"
+#include "voxel/voxel_world.h"
 
 #include "core/array.h"
 #include "blocks.h"
 
 #include "shading/ambient_occlusion.h"
 #include "quad.h"
+
+#include "terrain_gen/terrain_gen.h"
+
+#include "text/text_renderer.h"
 
 // TODO: add quad support for rendering and for obj importing??
 
@@ -113,7 +119,7 @@ GLFWwindow* init_window() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 2);
+    glfwWindowHint(GLFW_SAMPLES, 1);
 
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong", FULLSCREEN ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     if (!window) {
@@ -138,9 +144,9 @@ GLFWwindow* init_window() {
     return window;
 }
 
-int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight) {
+int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight, i32& nrChannels) {
     // Load and create a texture
-    int width, height, nrChannels;
+    int width, height;
     u8* data = stbi_load(path, &width, &height, &nrChannels, 0);
 
     if (width != texWidth) {
@@ -152,7 +158,26 @@ int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight) {
         return 1;
     }
 
-    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, texIdx, texWidth, texHeight, 1, GL_RGB, GL_UNSIGNED_BYTE, data);
+    GLuint format;
+    switch (nrChannels) {
+        case 1:
+            format = GL_RED;
+            break;
+        case 2:
+            // TODO: this is useless?? lol??
+            format = GL_RG;
+            break;
+        case 3:
+            format = GL_RGB;
+            break;
+        case 4:
+            format = GL_RGBA;
+            break;
+        default:
+            break;
+    }
+
+    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, texIdx, texWidth, texHeight, 1, format, GL_UNSIGNED_BYTE, data);
 
     stbi_image_free(data);
 
@@ -189,13 +214,37 @@ int main() {
 
 
 
-    MeshData meshData;
-    meshData.vertices = new std::vector<u64>(10000);
 
-    EmbeddedVoxel* voxels = new EmbeddedVoxel[CS_P3]{0};
-    memset(voxels, 0, CS_P3);
+    Noise noise = Noise();
 
-    // sphere
+    // world size in chunks
+    u16 world_size = 8;
+    u16 world_height = 4;
+    u16 world_total_chunks = world_size * world_size * world_height;
+
+    VoxelWorld voxelWorld = VoxelWorld();
+    voxelWorld.chunks = std::vector<VoxelChunk>(world_total_chunks);
+    for (int x = 0; x < world_size; x++) {
+        for (int y = 0; y < world_height; y++) {
+            for (int z = 0; z < world_size; z++) {
+                VoxelChunk chunk = VoxelChunk();
+                chunk.init();
+                chunk.pos = Vec3<u64>(x, y, z);
+
+                noise.generateTerrain(chunk.voxels, x, y, z, 69);
+
+                VoxelFace* voxel_faces = new VoxelFace[CS_P3]{0};
+                chunk.voxel_count = generate_voxel_mesh(chunk.voxels, voxel_faces);
+                chunk.updateMesh(voxel_faces);
+
+                voxelWorld.chunks[z + (x * world_size) + (y * world_size * world_size)] = chunk;
+            }
+        }
+    }
+
+
+    /*
+    // // sphere
     // int r = CS_P / 2;
     // for (int x = -r; x < r; x++) {
     //     for (int y = -r; y < r; y++) {
@@ -207,7 +256,7 @@ int main() {
     //     }
     // }
 
-    // layers
+    // // layers
     // u8 testRegionSize = 4;
     // for (int x = 0; x < testRegionSize; x++) {
     //     for (int z = 0; z < testRegionSize; z++) {
@@ -231,70 +280,70 @@ int main() {
     // }
 
 
-    // house
-    // ground
-    u8 platform_size = 32;
-    for (int x = 0; x < platform_size; x++) {
-        for (int z = 0; z < platform_size; z++) {
-            voxels[get_zxy_index(x, 0, z)] = EmbeddedVoxels::create(BlockType::COBBLESTONE + 1);
-            voxels[get_zxy_index(x, 1, z)] = EmbeddedVoxels::create(BlockType::DIRT + 1);
-            voxels[get_zxy_index(x, 2, z)] = EmbeddedVoxels::create(BlockType::GRASS + 1);
-        }
-    }
-    u8 house_size = 8;
-    u8 house_height = 6;
-    Vec2<u8> house_center(
-        platform_size / 2 - house_size / 2,
-        platform_size / 2 - house_size / 2
-    );
-    // walls
-    for (int i = 0; i < house_size; i++) {
-        for (int y = 0; y < house_height; y++) {
-            voxels[get_zxy_index(house_center.x,                      3 + y, house_center.y + i)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-            voxels[get_zxy_index(house_center.x + i,                  3 + y, house_center.y + house_size - 1)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-            voxels[get_zxy_index(house_center.x + house_size - 1,     3 + y, house_center.y + house_size - 1 - i)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-            voxels[get_zxy_index(house_center.x + house_size - 1 - i, 3 + y, house_center.y)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-        }
-    }
-    // door
-    voxels[get_zxy_index(house_center.x + 2, 4, house_center.y)] = 0;
-    voxels[get_zxy_index(house_center.x + 2, 5, house_center.y)] = 0;
-    // floor and ceiling
-    for (int x = 0; x < house_size - 2; x++) {
-        for (int z = 0; z < house_size - 2; z++) {
-            voxels[get_zxy_index(house_center.x + 1 + x, 3, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-            voxels[get_zxy_index(house_center.x + 1 + x, 3 + house_height - 1, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-        }
-    }
-    // roof
-    for (int i = 0; i < house_size / 2 + 1; i++) {
-        for (int z = 0; z < house_size + 2; z++) {
-            voxels[get_zxy_index(
-                house_center.x - 1 + i,
-                3 + house_height - 1 + i,
-                house_center.y - 1 + z
-            )] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-            voxels[get_zxy_index(
-                house_center.x + house_size - i,
-                3 + house_height - 1 + i,
-                house_center.y - 1 + z
-            )] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-        }
-    }
-
-    generate_voxel_mesh(voxels, meshData);
-
+    // // house
+    // // ground
+    // u8 platform_size = 32;
+    // for (int x = 0; x < platform_size; x++) {
+    //     for (int z = 0; z < platform_size; z++) {
+    //         voxels[get_zxy_index(x, 0, z)] = EmbeddedVoxels::create(BlockType::COBBLESTONE + 1);
+    //         voxels[get_zxy_index(x, 1, z)] = EmbeddedVoxels::create(BlockType::DIRT + 1);
+    //         voxels[get_zxy_index(x, 2, z)] = EmbeddedVoxels::create(BlockType::GRASS + 1);
+    //     }
+    // }
+    // u8 house_size = 8;
+    // u8 house_height = 6;
+    // Vec2<u8> house_center(
+    //     platform_size / 2 - house_size / 2,
+    //     platform_size / 2 - house_size / 2
+    // );
+    // // walls
+    // for (int i = 0; i < house_size; i++) {
+    //     for (int y = 0; y < house_height; y++) {
+    //         voxels[get_zxy_index(house_center.x,                      3 + y, house_center.y + i)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+    //         voxels[get_zxy_index(house_center.x + i,                  3 + y, house_center.y + house_size - 1)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+    //         voxels[get_zxy_index(house_center.x + house_size - 1,     3 + y, house_center.y + house_size - 1 - i)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+    //         voxels[get_zxy_index(house_center.x + house_size - 1 - i, 3 + y, house_center.y)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+    //     }
+    // }
+    // // door
+    // voxels[get_zxy_index(house_center.x + 2, 4, house_center.y)] = 0;
+    // voxels[get_zxy_index(house_center.x + 2, 5, house_center.y)] = 0;
+    // // floor and ceiling
+    // for (int x = 0; x < house_size - 2; x++) {
+    //     for (int z = 0; z < house_size - 2; z++) {
+    //         voxels[get_zxy_index(house_center.x + 1 + x, 3, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+    //         voxels[get_zxy_index(house_center.x + 1 + x, 3 + house_height - 1, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+    //     }
+    // }
+    // // roof
+    // for (int i = 0; i < house_size / 2 + 1; i++) {
+    //     for (int z = 0; z < house_size + 2; z++) {
+    //         voxels[get_zxy_index(
+    //             house_center.x - 1 + i,
+    //             3 + house_height - 1 + i,
+    //             house_center.y - 1 + z
+    //         )] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+    //         voxels[get_zxy_index(
+    //             house_center.x + house_size - i,
+    //             3 + house_height - 1 + i,
+    //             house_center.y - 1 + z
+    //         )] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
+    //     }
+    // }
+    */
 
 
 
 
 
-    camera = new Camera(Vec3<f32>(0, 0, 0));
+
+
+    camera = new Camera(Vec3<f32>(40, 40, 40));
     camera->handleResolution(WINDOW_WIDTH, WINDOW_HEIGHT);
   
     float forwardMove = 0.0f;
     float rightMove = 0.0f;
-    float noclipSpeed = 10.0f;
+    float noclipSpeed = 50.0f;
   
     float deltaTime = 0.0f;
   
@@ -307,65 +356,18 @@ int main() {
 
 
 
+    
 
 
 
-    // rendering
-    // Define your cube vertices (positions only for simplicity)
-    float cubeVertices[] = {
-        0, 0, 0,
-        1, 0, 0,
-        1, 1, 0,
-        0, 1, 0,
-
-        // -0.5f, -0.5f, -0.5f,
-        // 0.5f, -0.5f, -0.5f,
-        // 0.5f,  0.5f, -0.5f,
-        // -0.5f,  0.5f, -0.5f,
-        // -0.5f, -0.5f,  0.5f,
-        // 0.5f, -0.5f,  0.5f,
-        // 0.5f,  0.5f,  0.5f,
-        // -0.5f,  0.5f,  0.5f
-    };
-
-    // Define indices for the cube (using an IBO)
-    unsigned int cubeIndices[] = {
-        2, 1, 0, 0, 3, 2,
-
-        // 2, 1, 0, 0, 3, 2,   // right face
-        // 4, 5, 6, 6, 7, 4,   // left face
-        // 1, 5, 4, 4, 0, 1,   // bottom face
-        // 3, 7, 6, 6, 2, 3,   // top face
-        // 4, 7, 3, 3, 0, 4,   // front face
-        // 2, 6, 5, 5, 1, 2    // back face
-    };
-
-    GLuint vao, vbo, ebo;
-    GLuint voxel_ssbo;
-
-    // Create VAO
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    // Create VBO for cube vertices
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-
-    // Create EBO for cube indices
-    glGenBuffers(1, &ebo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
-
-    // Setup vertex attribute for positions
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(f32), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Unbind VAO
-    glBindVertexArray(0);
 
 
 
+
+
+
+    // texture ssbo
+    GLuint texture_ssbo;
 
     // textures
     GLuint textureArray;
@@ -393,34 +395,40 @@ int main() {
 
 
     // LOAD TEXTURES
+    u32* block_textures_data = new u32[array_size(block_textures)]{0};
+
     for (u16 i = 0; i < array_size(block_textures); i++) {
         std::string path = "assets/textures/";
         path += block_textures[i];
         path += ".png";
-        load_texture(path.c_str(), texIdx++, texWidth, texHeight);
+        i32 nrChannels;
+        load_texture(path.c_str(), texIdx++, texWidth, texHeight, nrChannels);
+        block_textures_data[i] = nrChannels;
     }
 
 
-    // Create SSBO for instance positions
-    glGenBuffers(1, &voxel_ssbo);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, meshData.vertices->size() * sizeof(u64), meshData.vertices->data(), GL_STATIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
+    // Create SSBO for texture metadata
+    glGenBuffers(1, &texture_ssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, texture_ssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, array_size(block_textures) * sizeof(u32), block_textures_data, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, texture_ssbo);
 
 
 
 
 
 
+    Shader geometryShader("voxel/main.vert", "voxel/main.frag");
 
 
+    /*
     // --------------------
     // AO
     // Shaders
-    Shader geometryShader("voxel/main.vs", "voxel/main.fs");
-    Shader ssaoShader("ambient_occlusion/ssao.vs", "ambient_occlusion/ssao.fs");
-    Shader blurShader("ambient_occlusion/ssao.vs", "ambient_occlusion/blur.fs");
-    Shader finalShader("ambient_occlusion/ssao.vs", "ambient_occlusion/final.fs");
+    Shader geometryShader("voxel/main.vert", "voxel/main.frag");
+    Shader ssaoShader("ambient_occlusion/ssao.vert", "ambient_occlusion/ssao.frag");
+    Shader blurShader("ambient_occlusion/ssao.vert", "ambient_occlusion/blur.frag");
+    Shader finalShader("ambient_occlusion/ssao.vert", "ambient_occlusion/final.frag");
 
     // G-Buffer
     GLuint gBuffer;
@@ -492,17 +500,32 @@ int main() {
     std::vector<Vec3<f32>> ssaoNoise;
     GLuint ssao_noise_texture = generateSSAOTexture(ssaoKernel, ssaoNoise);
     // --------------------
+    */
+
+
+
+
+
+    // GLuint quadVao = createQuad();
 
 
 
 
 
 
-    GLuint quadVao = createQuad();
+    // TextRenderer textRenderer = TextRenderer(16, 8, 8, 16 * 8, 16 * 8);
+    TextRenderer textRenderer(16, 8, 8, 16 * 8, 16 * 8);
 
+    Shader textShader = Shader("text/main.vert", "text/main.frag");
 
+    for (int i = 0; i < 1; i++) {
+        int width, height, nrChannels;
+        u8* data = stbi_load("assets/fonts/ascii.png", &width, &height, &nrChannels, 0);
+        
+        textRenderer.loadFont(data);
 
-
+        stbi_image_free(data);
+    }
 
 
 
@@ -536,8 +559,6 @@ int main() {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             Vec3<i64> cameraChunkPos = camera->position / CS;
 
-            int numCommands = meshData.vertices->size();
-
             // rendering
             f32 proj_mat[16];
             camera->projection.toGLMatrix(proj_mat);
@@ -563,12 +584,11 @@ int main() {
             geometryShader.setInt("gNormal", 2);
             geometryShader.setInt("texNoise", 3);
 
-            // Bind VAO and draw
-            glBindVertexArray(vao);
-            glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, meshData.vertices->size());
-            glBindVertexArray(0);
+            for (int i = 0; i < world_total_chunks; i++) {
+                voxelWorld.chunks[i].render(geometryShader);
+            }
 
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            // glBindFramebuffer(GL_FRAMEBUFFER, 0);
             // --------------------------------------
 
 
@@ -635,6 +655,11 @@ int main() {
             // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
             // // --------------------------------------
 
+
+
+
+            // text
+            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 50, 50, 100, textShader.ID);
 
 
 

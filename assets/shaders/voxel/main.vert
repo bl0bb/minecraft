@@ -4,9 +4,9 @@ layout(location = 0) in vec3 aPos;
 
 out flat int texIndex; // Pass to fragment shader without interpolation
 out vec2 texUv; // Pass to fragment shader without interpolation
+out flat uint Axis;
 // ao
 out vec3 FragPos;
-out vec3 Normal;
 
 struct QuadData {
   uint data1;
@@ -22,13 +22,15 @@ uniform mat4 u_projection;
 
 uniform ivec3 eye_position_int;
 
+uniform ivec3 chunk_pos;
+
 const vec3 normalLookup[6] = {
   vec3( 0,  1,  0 ),
   vec3( 0, -1,  0 ),
   vec3( 1,  0,  0 ),
   vec3(-1,  0,  0 ),
   vec3( 0,  0,  1 ),
-  vec3( 0,  0, -1 )
+  vec3( 0,  0, -1 ),
 };
 
 
@@ -69,14 +71,14 @@ void main() {
     vertexPos.x = 1.0f - aPos.x;
     vertexPos.y = aPos.y;
     vertexPos.z = 0.0f; // 0.0f;
-  } else if (axis == 5) {
+  } else {
     // front (-Z)
     vertexPos.x = aPos.x;
     vertexPos.y = aPos.y;
     vertexPos.z = -1.0f; // 1.0f;
   }
 
-  gl_Position = u_projection * u_view * vec4(vertexPos + offset, 1.0);
+  gl_Position = u_projection * u_view * vec4(chunk_pos * 32 + vertexPos + offset, 1.0);
 
 
 
@@ -86,6 +88,6 @@ void main() {
   texUv = vec2(aPos.x, 1 - aPos.y);
 
 
-  Normal = normalLookup[axis];
+  Axis = axis;
   FragPos = vec3(gl_Position);
 }
