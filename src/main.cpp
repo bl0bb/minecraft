@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
+#include <chrono>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -218,26 +219,54 @@ int main() {
     Noise noise = Noise();
 
     // world size in chunks
-    u16 world_size = 1; // 8;
-    u16 world_height = 1; // 4;
+    u16 world_size = 8;
+    u16 world_height = 4;
     u16 world_total_chunks = world_size * world_size * world_height;
 
-    VoxelWorld voxelWorld = VoxelWorld();
-    voxelWorld.chunks = std::vector<VoxelChunk>(world_total_chunks);
-    for (int x = 0; x < world_size; x++) {
-        for (int y = 0; y < world_height; y++) {
+    VoxelWorld voxelWorld = VoxelWorld(Vec3<u64>(world_size, world_height, world_size));
+    voxelWorld.chunks = (VoxelChunk*)malloc(sizeof(VoxelChunk) * world_total_chunks);
+    for (int y = 0; y < world_height; y++) {
+        for (int x = 0; x < world_size; x++) {
             for (int z = 0; z < world_size; z++) {
                 VoxelChunk chunk = VoxelChunk();
                 chunk.init();
                 chunk.pos = Vec3<u64>(x, y, z);
 
+                auto start = std::chrono::high_resolution_clock::now();
+
                 noise.generateTerrain(chunk.voxels, x, y, z, 69);
+            
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double, std::milli> elapsed = end - start;
+                std::cout << "Terrain gen: " << elapsed.count() << " ms\n";
+
+
+                voxelWorld.chunks[voxelWorld.getChunkIndex(x, y, z)] = chunk;
+            }
+        }
+    }
+
+    for (int x = 0; x < world_size; x++) {
+        for (int y = 0; y < world_height; y++) {
+            for (int z = 0; z < world_size; z++) {
+                VoxelChunk* chunk = &voxelWorld.chunks[voxelWorld.getChunkIndex(x, y, z)];
 
                 VoxelFace* voxel_faces = new VoxelFace[CS_P3]{0};
-                chunk.voxel_count = generate_voxel_mesh(chunk.voxels, voxel_faces);
-                chunk.updateMesh(voxel_faces);
 
-                voxelWorld.chunks[z + (x * world_size) + (y * world_size * world_size)] = chunk;
+
+
+                auto start = std::chrono::high_resolution_clock::now();
+
+                chunk->voxel_count = generate_voxel_mesh(voxelWorld, *chunk, voxel_faces);
+            
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double, std::milli> elapsed = end - start;
+                std::cout << "Mesh gen: " << elapsed.count() << " ms\n";
+
+
+
+
+                chunk->updateMesh(voxel_faces);
             }
         }
     }
@@ -338,7 +367,7 @@ int main() {
 
 
 
-    camera = new Camera(Vec3<f32>(40, 40, 40));
+    camera = new Camera(Vec3<f32>(0, 0, 0));
     camera->handleResolution(WINDOW_WIDTH, WINDOW_HEIGHT);
   
     float forwardMove = 0.0f;
@@ -375,7 +404,7 @@ int main() {
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
 
     // Allocate storage
-    u16 numTextures = 32; // big number
+    u16 numTextures = 64; // big number
     u8 texWidth = 16;
     u8 texHeight = 16;
 

@@ -29,9 +29,27 @@ static constexpr u16 CS_P3 = CS_P * CS_P * CS_P;
 // dir = 25-37 (3) (8)
 // type = 28-31 (4) (16)
 typedef u64 VoxelFace;
-inline const VoxelFace getQuad(u64 x, u64 y, u64 z, u64 w, u64 h, u64 dir, u64 type) {
+constexpr inline VoxelFace getQuad(u64 x, u64 y, u64 z, u64 w, u64 h, u64 dir, u64 type) {
     return (type << 28) | (dir << 25) | (h << 20) | (w << 15) | (z << 10) | (y << 5) | x;
 }
+
+
+
+// helpers
+constexpr inline int get_zxy_index_p(int x, int y, int z) {
+    return z + (x * CS_P) + (y * CS_P2);
+}
+constexpr inline int get_zxy_index(int x, int y, int z) {
+    return z + (x * CS) + (y * CS_2);
+}
+
+constexpr inline int getAxisIndex(const int axis, const int a, const int b, const int c) {
+    if (axis == 0) return b + (a * CS_P) + (c * CS_P2);
+    else if (axis == 1) return b + (c * CS_P) + (a * CS_P2);
+    else return c + (a * CS_P) + (b * CS_P2);
+}
+
+
 
 class VoxelChunk {
 public:
@@ -44,8 +62,8 @@ public:
     GLuint voxel_ssbo;
 
     VoxelChunk() {
-        voxels = new EmbeddedVoxel[CS_P3]{0};
-        std::memset(voxels, 0, CS_P3);
+        voxels = new EmbeddedVoxel[CS_3]{0};
+        std::memset(voxels, 0, CS_3);
     }
 
     void init() {
@@ -87,12 +105,12 @@ public:
         glGenBuffers(1, &voxel_ssbo);
     }
 
-    void updateMesh(VoxelFace* data) {
+    void updateMesh(VoxelFace* data) const {
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, CS_P3 * sizeof(VoxelFace), data, GL_STATIC_DRAW);
     }
 
-    void render(Shader& shaderProgram) {
+    void render(Shader& shaderProgram) const {
         // Bind VAO and draw
         glBindVertexArray(vao);
 

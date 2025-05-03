@@ -116,7 +116,7 @@ public:
         //     }
         // }
 
-        voxels[get_zxy_index(0, 31, 0)] = BlockType::STONE + 1;
+        // voxels[get_zxy_index(0, 31, 0)] = BlockType::STONE + 1;
     }
 };
 

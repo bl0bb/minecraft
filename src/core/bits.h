@@ -6,7 +6,7 @@
 #include "types.h"
 
 // Returns the least significant bit in a non-zero bitboard.
-inline u64 lsb(u64 b) {
+constexpr inline u64 lsb(u64 b) {
 #if defined(__GNUC__)  // GCC, Clang, ICX
 
     return u64(__builtin_ctzll(b));
@@ -38,7 +38,7 @@ inline u64 lsb(u64 b) {
 }
     
 // Returns the most significant bit in a non-zero bitboard.
-inline u64 msb(u64 b) {
+constexpr inline u64 msb(u64 b) {
 #if defined(__GNUC__)  // GCC, Clang, ICX
 
     return u64(63 ^ __builtin_clzll(b));
@@ -70,13 +70,13 @@ inline u64 msb(u64 b) {
 #endif
 }
     
-inline u8 pop_lsb(u64& b) {
+constexpr inline u8 pop_lsb(u64& b) {
     const u64 s = lsb(b);
     b &= b - 1;
     return s;
 }
 
-inline u8 countTrailingOnes(u64 num) {
+constexpr inline u8 countTrailingOnes(u64 num) {
     return lsb(~num);
 }
 

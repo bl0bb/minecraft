@@ -9,9 +9,7 @@ ERROR_FLAGS = \
 # -pedantic
 
 CORE_FILES = \
-src/voxel/voxel_chunk.cpp\
 src/voxel/voxel_mesher.cpp\
-src/voxel/voxel_world.cpp\
 src/voxel/voxel.cpp\
 src/core/maths.cpp\
 src/FastNoise/FastNoise.cpp\
