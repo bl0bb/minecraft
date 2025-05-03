@@ -95,26 +95,29 @@ public:
             }
         }
 
-        // for (int x = 0; x < CS; x++) {
-        //     for (int z = 0; z < CS; z++) {
-        //         for (int y = CS - 1 - 1; y >= 0; y--) {
-        //             int this_i = get_zxy_index(x, y, z);
-        //             if (voxels[this_i] == 0) {
-        //                 continue;
-        //             }
-        //             int above_i = get_zxy_index(x, y + 1, z);
-        //             if (voxels[above_i] == 0) {
-        //                 voxels[this_i] = BlockType::GRASS + 1;
-        //                 for (int i = 0; i < 3; i++) {
-        //                     int below_i = get_zxy_index(x, y - 1 - i, z);
-        //                     if (voxels[below_i] != 0) {
-        //                         voxels[below_i] = BlockType::DIRT + 1;
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        for (int x = 0; x < CS; x++) {
+            for (int z = 0; z < CS; z++) {
+                for (int y = CS - 1; y >= 0; y--) {
+                    int this_i = get_zxy_index(x, y, z);
+                    if (voxels[this_i] == 0) {
+                        continue;
+                    }
+                    int above_i = get_zxy_index(x, y + 1, z);
+                    if (voxels[above_i] == 0) {
+                        voxels[this_i] = BlockType::GRASS + 1;
+                        for (int i = 0; i < 3; i++) {
+                            if (y - 1 - i < 0) {
+                                break;
+                            }
+                            int below_i = get_zxy_index(x, y - 1 - i, z);
+                            if (voxels[below_i] != 0) {
+                                voxels[below_i] = BlockType::DIRT + 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         // voxels[get_zxy_index(0, 31, 0)] = BlockType::STONE + 1;
     }
