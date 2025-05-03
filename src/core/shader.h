@@ -16,6 +16,10 @@ public:
   std::string vertex_name;
   std::string fragment_name;
 
+  Shader() {
+    
+  }
+
   Shader(std::string vertex_name, std::string fragment_name): vertex_name(vertex_name), fragment_name(fragment_name) {
     std::string vShaderCode;
     std::fstream vertexFile("assets/shaders/" + vertex_name, std::ios::in);

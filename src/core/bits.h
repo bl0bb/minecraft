@@ -76,4 +76,8 @@ inline u8 pop_lsb(u64& b) {
     return s;
 }
 
+inline u8 countTrailingOnes(u64 num) {
+    return lsb(~num);
+}
+
 #endif

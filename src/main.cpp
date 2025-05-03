@@ -218,8 +218,8 @@ int main() {
     Noise noise = Noise();
 
     // world size in chunks
-    u16 world_size = 8;
-    u16 world_height = 4;
+    u16 world_size = 1; // 8;
+    u16 world_height = 1; // 4;
     u16 world_total_chunks = world_size * world_size * world_height;
 
     VoxelWorld voxelWorld = VoxelWorld();
@@ -418,7 +418,8 @@ int main() {
 
 
 
-    Shader geometryShader("voxel/main.vert", "voxel/main.frag");
+    Shader geometryShader = Shader("voxel/main.vert", "voxel/main.frag");
+    Shader edgeShader = Shader("edge/edge.vert", "edge/edge.frag");
 
 
     /*
@@ -529,6 +530,7 @@ int main() {
 
 
 
+    u32 shaderType = 0;
 
 
 
@@ -548,6 +550,22 @@ int main() {
             auto wishdir = (camera->front * forwardMove) + (camera->right * rightMove);
             camera->position = camera->position + wishdir * noclipSpeed * deltaTime;
 
+            if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) shaderType = 0;
+            else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) shaderType = 1;
+            else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) shaderType = 2;
+            else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) shaderType = 3;
+            else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) shaderType = 4;
+            else if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) shaderType = 5;
+            else if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) shaderType = 6;
+            else if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) shaderType = 7;
+            else if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) shaderType = 8;
+            else if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) shaderType = 9;
+
+            if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            else if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+            
+
             // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
 
             
@@ -566,26 +584,39 @@ int main() {
             f32 view_mat[16];
             camera->getViewMatrix().toGLMatrix(view_mat);
 
-            geometryShader.use();
-            geometryShader.setMat4("u_projection", proj_mat);
-            geometryShader.setMat4("u_view", view_mat);
-            geometryShader.setVec3("eye_position", camera->position);
+            Shader* activeShader;
+            if (shaderType == 0 || true) {
+                activeShader = &geometryShader;
+            } else if (shaderType == 1) {
+                activeShader = &edgeShader;
+            }
+
+            activeShader->use();
+
+            activeShader->setMat4("u_projection", proj_mat);
+            activeShader->setMat4("u_view", view_mat);
+            activeShader->setVec3("eye_position", camera->position);
 
             Vec3<i64> intCamPosition = camera->position;
-            geometryShader.setIVec3("eye_position_int", intCamPosition);
+            activeShader->setIVec3("eye_position_int", intCamPosition);
 
-            // bind textures
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
-            geometryShader.setInt("texArray", 0);
+            if (shaderType == 0 || true) {
+                // bind textures
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
+                geometryShader.setInt("texArray", 0);
 
-            // ao
-            geometryShader.setInt("gPosition", 1);
-            geometryShader.setInt("gNormal", 2);
-            geometryShader.setInt("texNoise", 3);
+                // ao
+                geometryShader.setInt("gPosition", 1);
+                geometryShader.setInt("gNormal", 2);
+                geometryShader.setInt("texNoise", 3);
+            } else if (shaderType == 1) {
+                edgeShader.setFloat("texelWidth", 1.0f / WINDOW_WIDTH);
+                edgeShader.setFloat("texelHeight", 1.0f / WINDOW_HEIGHT);
+            }
 
             for (int i = 0; i < world_total_chunks; i++) {
-                voxelWorld.chunks[i].render(geometryShader);
+                voxelWorld.chunks[i].render(*activeShader);
             }
 
             // glBindFramebuffer(GL_FRAMEBUFFER, 0);

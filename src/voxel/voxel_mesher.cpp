@@ -42,6 +42,8 @@ u32 generate_voxel_mesh(const EmbeddedVoxel* voxels, VoxelFace* vertices) {
     u64 axis_cols[3 * CS_P2] = {0};
     // the cull mask to perform greedy slicing, based on solids on previous axis_cols
     u64 col_face_masks[3 * CS_P2 * 2] = {0};
+    // masks that represent surfaces to perform greedy meshing
+    u64 surface_face_masks[3 * CS_P2 * 2] = {0};
 
     // index
     u32 vertexIdx = 0;
@@ -67,53 +69,198 @@ u32 generate_voxel_mesh(const EmbeddedVoxel* voxels, VoxelFace* vertices) {
 
     // face culling
     for (u8 axis = 0; axis < 3; axis++) {
-        for (u16 i = 0; i < CS_P2; i++) {
-            u64 col = axis_cols[(CS_P2 * axis) + i];
-            // sample ascending axis, and set true when air meets solid
-            col_face_masks[(CS_P2 * (axis * 2 + 0)) + i] = col & ~(col >> 1);
-            // sample descending axis, and set true when air meets solid
-            col_face_masks[(CS_P2 * (axis * 2 + 1)) + i] = col & ~(col << 1);
-        }
-    }
-
-    // generate quads
-    for (u8 axis = 0; axis < 3; axis++) {
         for (u8 j = 0; j < 2; j++) {
             u8 dir = axis * 2 + j;
             for (u16 i = 0; i < CS_P2; i++) {
-                u8 dim_1 = i % CS_P;
-                u8 dim_2 = i / CS_P;
+                u64 col = axis_cols[(CS_P2 * axis) + i];
 
-                u64 face_mask = col_face_masks[(CS_P2 * dir) + i];
-                while (face_mask) {
-                    u8 tile = pop_lsb(face_mask);
-                    // // tile is first or tile is last?
-                    // if (tile == 0) {
-                    //     continue;
-                    // }
-                    u8 dim_3 = tile;
+                // sample ascending axis, and set true when air meets solid
+                // u64 mask = col & ~(col >> 1);
+                u64 mask = col;
+                if (j == 0) {
+                    mask &= ~(col >> 1);
+                } else {
+                    mask &= ~(col << 1);
+                }
 
-                    u8 x, y, z;
-                    if (axis == 0) {
-                        x = dim_1;
-                        z = dim_2;
-                        y = dim_3;
-                    } else if (axis == 1) {
-                        z = dim_1;
-                        y = dim_2;
-                        x = dim_3;
-                    } else {
-                        x = dim_1;
-                        y = dim_2;
-                        z = dim_3;
+                col_face_masks[(CS_P2 * dir) + i] = mask;
+            }
+        }
+    }
+
+
+
+
+
+
+    // binary greedy meshing
+
+    // greedy meshing setup
+    for (u8 axis = 0; axis < 3; axis++) {
+        for (u8 j = 0; j < 2; j++) {
+            u8 dir = axis * 2 + j;
+            for (u8 dim_2 = 0; dim_2 < CS_P; dim_2++) {
+                for (u8 dim_1 = 0; dim_1 < CS_P; dim_1++) {
+                    u32 index = (CS_P2 * dir) + (dim_2 * CS_P) + dim_1;
+                    u64 face_mask = col_face_masks[index];
+
+                    // // remove padding right
+                    // face_mask >>= 1;
+                    // // remove padding left
+                    // face_mask &= !(u64(1) << CS);
+
+                    while (face_mask) {
+                        u8 dim_3 = pop_lsb(face_mask);
+
+
+
+
+                        // x,z - y axis
+                        // x,y - z face
+
+                        // z,y - x axis
+                        // z,x - y face
+
+                        // x,y - z axis
+                        // y,z - x face
+
+
+
+
+
+                        surface_face_masks[dim_1 + (dim_2 * CS_P) + (CS_P2 * dir)] |= u64(1) << dim_3;
                     }
-
-                    // TODO: find faster / better way to find material??
-                    vertices[vertexIdx++] = getQuad(x, y, z, 1, 1, dir, BlockVoxelDatas::get_face(block_voxel_datas[EmbeddedVoxels::get_type(voxels[get_zxy_index(x, y, z)]) - 1], dir));
                 }
             }
         }
     }
+
+    // greedy meshing
+    for (u8 axis = 0; axis < 3; axis++) {
+        for (u8 j = 0; j < 2; j++) {
+            u8 dir = axis * 2 + j;
+            for (u8 dim_2 = 0; dim_2 < CS; dim_2++) {
+                for (u8 dim_1 = 0; dim_1 < CS; dim_1++) {
+                    // if (dim_1 == 0 || dim_1 == CS_P - 1 || dim_2 == 0 || dim_2 == CS_P - 1) {
+                    //     continue;
+                    // }
+
+                    u32 index = (CS_P2 * dir) + (dim_2 * CS_P) + dim_1;
+                    u64 face_mask = surface_face_masks[index];
+
+                    u8 dim_3 = 0;
+                    while (dim_3 < CS_P) {
+                        dim_3 += lsb(face_mask >> dim_3);
+                        // if (dim_3 == 0) {
+                        //     dim_3++;
+                        //     continue;
+                        // }
+
+                        if (dim_3 >= CS_P) {
+                            break;
+                            // continue;
+                        }
+
+                        u8 h = countTrailingOnes(face_mask >> dim_3);
+
+                        // 1 = 0b1, 2 = 0b11, 3 = 0b111, etc
+                        u64 h_as_mask = (u64(1) << u64(h)) - u64(1);
+                        // printf("%i %i %llu\n", h, dim_3, face_mask >> dim_3);
+
+                        u64 mask = h_as_mask << h;
+
+                        u64 w = 1;
+                        while (dim_1 + w < CS_P - 1) {
+                            u64 next_row_h = (surface_face_masks[index + w] >> dim_3) & h_as_mask;
+                            if (next_row_h != h_as_mask) {
+                                break;
+                            }
+
+                            surface_face_masks[index + w] &= !mask;
+
+                            w++;
+                        }
+
+                        u8 x, y, z;
+                        if (axis == 0) {
+                            x = dim_1;
+                            z = dim_2;
+                            y = dim_3;
+                        } else if (axis == 1) {
+                            z = dim_1;
+                            y = dim_2;
+                            x = dim_3;
+                        } else {
+                            x = dim_1;
+                            y = dim_2;
+                            z = dim_3;
+                        }
+
+                        // printf("(%i %i %i) (%i %i) (%i)\n", x, y, z, w, h, dir);
+
+                        vertices[vertexIdx++] = getQuad(x, y, z, w - 1, h - 1, dir, BlockVoxelDatas::get_face(block_voxel_datas[EmbeddedVoxels::get_type(voxels[get_zxy_index(x, y, z)]) - 1], dir));
+                        dim_3 += h;
+                    }
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+
+    // generate quads
+    // for (u8 axis = 0; axis < 3; axis++) {
+    //     for (u8 j = 0; j < 2; j++) {
+    //         u8 dir = axis * 2 + j;
+    //         for (u16 i = 0; i < CS_P2; i++) {
+    //             u8 dim_1 = i % CS_P;
+    //             u8 dim_2 = i / CS_P;
+
+    //             u64 face_mask = col_face_masks[(CS_P2 * dir) + i];
+    //             while (face_mask) {
+    //                 u8 tile = pop_lsb(face_mask);
+    //                 // // tile is first or tile is last?
+    //                 // if (tile == 0) {
+    //                 //     continue;
+    //                 // }
+    //                 u8 dim_3 = tile;
+
+    //                 u8 x, y, z;
+    //                 if (axis == 0) {
+    //                     x = dim_1;
+    //                     z = dim_2;
+    //                     y = dim_3;
+    //                 } else if (axis == 1) {
+    //                     z = dim_1;
+    //                     y = dim_2;
+    //                     x = dim_3;
+    //                 } else {
+    //                     x = dim_1;
+    //                     y = dim_2;
+    //                     z = dim_3;
+    //                 }
+
+    //                 // TODO: find faster / better way to find material??
+    //                 vertices[vertexIdx++] = getQuad(x, y, z, 1, 1, dir, BlockVoxelDatas::get_face(block_voxel_datas[EmbeddedVoxels::get_type(voxels[get_zxy_index(x, y, z)]) - 1], dir));
+    //             }
+    //         }
+    //     }
+    // }
+
+
+
+
+
+
+
+
+
+
+
 
     return vertexIdx;
 
