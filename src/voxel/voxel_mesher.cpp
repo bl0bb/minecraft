@@ -113,22 +113,62 @@ u32 generate_voxel_mesh(const EmbeddedVoxel* voxels, VoxelFace* vertices) {
                         u8 dim_3 = pop_lsb(face_mask);
 
 
+                        // surface_face_masks[dim_1 + (dim_2 * CS_P) + (CS_P2 * dir)] |= u64(1) << dim_3;
+
+
+
+
+
+                        // u8 x, y, z;
+                        // if (axis == 2) {
+                        //     // 0 2
+                        //     x = dim_1;
+                        //     z = dim_2;
+                        //     y = dim_3;
+                        // } else if (axis == 0) {
+                        //     // 1 0
+                        //     z = dim_1;
+                        //     y = dim_2;
+                        //     x = dim_3;
+                        // } else {
+                        //     // 2 1
+                        //     x = dim_1;
+                        //     y = dim_2;
+                        //     z = dim_3;
+                        // }
+
+
+
 
 
                         // x,z - y axis
-                        // x,y - z face
+                        // x,y - z axis y face
 
                         // z,y - x axis
-                        // z,x - y face
+                        // z,x - y axis x face
 
                         // x,y - z axis
-                        // y,z - x face
+                        // x,z - y axis z face
 
 
 
 
 
-                        surface_face_masks[dim_1 + (dim_2 * CS_P) + (CS_P2 * dir)] |= u64(1) << dim_3;
+                        /*
+                        if dir is 0
+                        each mask is going upward (y (dim_3))
+                        and each bit is determining if a face is present and facing upwards or downwards (y (dim_3))
+                        x (dim_1) and z (dim_2) is used for indexig the mask
+
+                        now to convert to a binary plane
+                        y faces are aligned the z axis
+                        indexed with x and y
+                        */
+
+
+
+
+                        surface_face_masks[dim_1 + (dim_3 * CS_P) + (CS_P2 * dir)] |= u64(1) << dim_2;
                     }
                 }
             }
@@ -139,44 +179,40 @@ u32 generate_voxel_mesh(const EmbeddedVoxel* voxels, VoxelFace* vertices) {
     for (u8 axis = 0; axis < 3; axis++) {
         for (u8 j = 0; j < 2; j++) {
             u8 dir = axis * 2 + j;
-            for (u8 dim_2 = 0; dim_2 < CS; dim_2++) {
-                for (u8 dim_1 = 0; dim_1 < CS; dim_1++) {
-                    // if (dim_1 == 0 || dim_1 == CS_P - 1 || dim_2 == 0 || dim_2 == CS_P - 1) {
-                    //     continue;
-                    // }
-
-                    u32 index = (CS_P2 * dir) + (dim_2 * CS_P) + dim_1;
+            for (u8 dim_2 = 0; dim_2 < CS_P; dim_2++) {
+                for (u8 dim_1 = 0; dim_1 < CS_P; dim_1++) {
+                    u32 index = dim_1 + (dim_2 * CS_P) + (CS_P2 * dir);
                     u64 face_mask = surface_face_masks[index];
+
+                    // if (axis == 0) { //  && dim_1 == 28 && dim_2 == 27
+                    //     printBinary(face_mask, 64);
+                    //     printf("\n");
+                    // }
 
                     u8 dim_3 = 0;
                     while (dim_3 < CS_P) {
                         dim_3 += lsb(face_mask >> dim_3);
-                        // if (dim_3 == 0) {
-                        //     dim_3++;
-                        //     continue;
-                        // }
-
                         if (dim_3 >= CS_P) {
-                            break;
                             // continue;
+                            break;
                         }
 
                         u8 h = countTrailingOnes(face_mask >> dim_3);
 
                         // 1 = 0b1, 2 = 0b11, 3 = 0b111, etc
                         u64 h_as_mask = (u64(1) << u64(h)) - u64(1);
-                        // printf("%i %i %llu\n", h, dim_3, face_mask >> dim_3);
+                        // printf("%i %i %llu %llu\n", h, dim_3, h_as_mask, face_mask >> dim_3);
 
-                        u64 mask = h_as_mask << h;
+                        u64 mask = h_as_mask << dim_3;
 
                         u64 w = 1;
-                        while (dim_1 + w < CS_P - 1) {
+                        while (dim_1 + w < CS_P) {
                             u64 next_row_h = (surface_face_masks[index + w] >> dim_3) & h_as_mask;
                             if (next_row_h != h_as_mask) {
                                 break;
                             }
 
-                            surface_face_masks[index + w] &= !mask;
+                            surface_face_masks[index + w] &= ~mask;
 
                             w++;
                         }
@@ -184,19 +220,19 @@ u32 generate_voxel_mesh(const EmbeddedVoxel* voxels, VoxelFace* vertices) {
                         u8 x, y, z;
                         if (axis == 0) {
                             x = dim_1;
-                            z = dim_2;
-                            y = dim_3;
-                        } else if (axis == 1) {
-                            z = dim_1;
-                            y = dim_2;
-                            x = dim_3;
-                        } else {
-                            x = dim_1;
                             y = dim_2;
                             z = dim_3;
+                        } else if (axis == 1) {
+                            z = dim_1;
+                            x = dim_2;
+                            y = dim_3;
+                        } else {
+                            x = dim_1;
+                            z = dim_2;
+                            y = dim_3;
                         }
 
-                        // printf("(%i %i %i) (%i %i) (%i)\n", x, y, z, w, h, dir);
+                        printf("(%i %i %i) (%i %i) (%i)\n", x, y, z, w, h, dir);
 
                         vertices[vertexIdx++] = getQuad(x, y, z, w - 1, h - 1, dir, BlockVoxelDatas::get_face(block_voxel_datas[EmbeddedVoxels::get_type(voxels[get_zxy_index(x, y, z)]) - 1], dir));
                         dim_3 += h;

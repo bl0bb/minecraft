@@ -56,6 +56,7 @@ void main() {
 
     vertexPos.x *= w;
     vertexPos.z *= h;
+    vertexPos.z += h - 1;
   } else if (axis == 1) {
     // bottom (-Y)
     vertexPos.x = aPos.x;
@@ -64,6 +65,7 @@ void main() {
 
     vertexPos.x *= w;
     vertexPos.z *= h;
+    vertexPos.z += h - 1;
   } else if (axis == 2) {
     // right (+X)
     vertexPos.x = 1.0f;

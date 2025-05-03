@@ -560,10 +560,6 @@ int main() {
             else if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) shaderType = 7;
             else if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) shaderType = 8;
             else if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) shaderType = 9;
-
-            if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            else if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            else if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
             
 
             // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
