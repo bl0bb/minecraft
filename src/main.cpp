@@ -178,7 +178,12 @@ int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight, i32& n
             break;
     }
 
-    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, texIdx, texWidth, texHeight, 1, format, GL_UNSIGNED_BYTE, data);
+    glTexSubImage3D(
+        GL_TEXTURE_2D_ARRAY, 0, // target, level
+        0, 0, texIdx, // x offset, y offset, z offset
+        texWidth, texHeight, 1, // width, height, depth
+        format, GL_UNSIGNED_BYTE, data // format, type, pixels
+    );
 
     stbi_image_free(data);
 
@@ -217,24 +222,26 @@ int main() {
 
 
     Noise noise = Noise();
+    noise.setSeed(24);
+    noise.updateNoise();
 
     // world size in chunks
-    u16 world_size = 8;
-    u16 world_height = 4;
+    u16 world_size = 32;
+    u16 world_height = 2;
     u16 world_total_chunks = world_size * world_size * world_height;
 
     VoxelWorld voxelWorld = VoxelWorld(Vec3<u64>(world_size, world_height, world_size));
     voxelWorld.chunks = (VoxelChunk*)malloc(sizeof(VoxelChunk) * world_total_chunks);
-    for (int y = 0; y < world_height; y++) {
-        for (int x = 0; x < world_size; x++) {
-            for (int z = 0; z < world_size; z++) {
+    for (i64 y = 0; y < world_height; y++) {
+        for (i64 x = 0; x < world_size; x++) {
+            for (i64 z = 0; z < world_size; z++) {
                 VoxelChunk chunk = VoxelChunk();
                 chunk.init();
                 chunk.pos = Vec3<u64>(x, y, z);
 
                 auto start = std::chrono::high_resolution_clock::now();
 
-                noise.generateTerrain(chunk.voxels, x, y, z, 69);
+                noise.GenerateFullTerrain(chunk.voxels, x, y, z);
             
                 auto end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> elapsed = end - start;
@@ -246,9 +253,9 @@ int main() {
         }
     }
 
-    for (int x = 0; x < world_size; x++) {
-        for (int y = 0; y < world_height; y++) {
-            for (int z = 0; z < world_size; z++) {
+    for (i64 x = 0; x < world_size; x++) {
+        for (i64 y = 0; y < world_height; y++) {
+            for (i64 z = 0; z < world_size; z++) {
                 VoxelChunk* chunk = &voxelWorld.chunks[voxelWorld.getChunkIndex(x, y, z)];
 
                 VoxelFace* voxel_faces = new VoxelFace[CS_P3]{0};
@@ -270,96 +277,6 @@ int main() {
             }
         }
     }
-
-
-    /*
-    // // sphere
-    // int r = CS_P / 2;
-    // for (int x = -r; x < r; x++) {
-    //     for (int y = -r; y < r; y++) {
-    //         for (int z = -r; z < r; z++) {
-    //             if (std::sqrt(x * x + y * y + z * z) < 15.0f) {
-    //                 voxels[get_zxy_index(x + r, y + r, z + r)] = EmbeddedVoxels::create(1);
-    //             }
-    //         }
-    //     }
-    // }
-
-    // // layers
-    // u8 testRegionSize = 4;
-    // for (int x = 0; x < testRegionSize; x++) {
-    //     for (int z = 0; z < testRegionSize; z++) {
-    //         voxels[get_zxy_index(x, 0, z)] = EmbeddedVoxels::create(3);
-    //     }
-    // }
-    // for (int x = 0; x < testRegionSize; x++) {
-    //     for (int z = 0; z < testRegionSize; z++) {
-    //         voxels[get_zxy_index(x, 2, z)] = EmbeddedVoxels::create(2);
-    //     }
-    // }
-    // for (int x = 0; x < testRegionSize; x++) {
-    //     for (int z = 0; z < testRegionSize; z++) {
-    //         voxels[get_zxy_index(x, 4, z)] = EmbeddedVoxels::create(1);
-    //     }
-    // }
-    // for (int x = 0; x < testRegionSize; x++) {
-    //     for (int z = 0; z < testRegionSize; z++) {
-    //         voxels[get_zxy_index(x, 6, z)] = EmbeddedVoxels::create(4);
-    //     }
-    // }
-
-
-    // // house
-    // // ground
-    // u8 platform_size = 32;
-    // for (int x = 0; x < platform_size; x++) {
-    //     for (int z = 0; z < platform_size; z++) {
-    //         voxels[get_zxy_index(x, 0, z)] = EmbeddedVoxels::create(BlockType::COBBLESTONE + 1);
-    //         voxels[get_zxy_index(x, 1, z)] = EmbeddedVoxels::create(BlockType::DIRT + 1);
-    //         voxels[get_zxy_index(x, 2, z)] = EmbeddedVoxels::create(BlockType::GRASS + 1);
-    //     }
-    // }
-    // u8 house_size = 8;
-    // u8 house_height = 6;
-    // Vec2<u8> house_center(
-    //     platform_size / 2 - house_size / 2,
-    //     platform_size / 2 - house_size / 2
-    // );
-    // // walls
-    // for (int i = 0; i < house_size; i++) {
-    //     for (int y = 0; y < house_height; y++) {
-    //         voxels[get_zxy_index(house_center.x,                      3 + y, house_center.y + i)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-    //         voxels[get_zxy_index(house_center.x + i,                  3 + y, house_center.y + house_size - 1)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-    //         voxels[get_zxy_index(house_center.x + house_size - 1,     3 + y, house_center.y + house_size - 1 - i)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-    //         voxels[get_zxy_index(house_center.x + house_size - 1 - i, 3 + y, house_center.y)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-    //     }
-    // }
-    // // door
-    // voxels[get_zxy_index(house_center.x + 2, 4, house_center.y)] = 0;
-    // voxels[get_zxy_index(house_center.x + 2, 5, house_center.y)] = 0;
-    // // floor and ceiling
-    // for (int x = 0; x < house_size - 2; x++) {
-    //     for (int z = 0; z < house_size - 2; z++) {
-    //         voxels[get_zxy_index(house_center.x + 1 + x, 3, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-    //         voxels[get_zxy_index(house_center.x + 1 + x, 3 + house_height - 1, house_center.y + 1 + z)] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-    //     }
-    // }
-    // // roof
-    // for (int i = 0; i < house_size / 2 + 1; i++) {
-    //     for (int z = 0; z < house_size + 2; z++) {
-    //         voxels[get_zxy_index(
-    //             house_center.x - 1 + i,
-    //             3 + house_height - 1 + i,
-    //             house_center.y - 1 + z
-    //         )] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-    //         voxels[get_zxy_index(
-    //             house_center.x + house_size - i,
-    //             3 + house_height - 1 + i,
-    //             house_center.y - 1 + z
-    //         )] = EmbeddedVoxels::create(BlockType::OAK_PLANKS + 1);
-    //     }
-    // }
-    */
 
 
 
@@ -404,13 +321,16 @@ int main() {
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
 
     // Allocate storage
-    u16 numTextures = 64; // big number
+    u16 numTextures = 50; // big number
     u8 texWidth = 16;
     u8 texHeight = 16;
 
-    u16 texIdx = 0;
+    // skip first
+    u16 texIdx = 1;
 
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGB8, texWidth, texHeight, numTextures);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, texWidth, texHeight, numTextures);
+
+    
 
     // set to default settings
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -426,7 +346,7 @@ int main() {
     // LOAD TEXTURES
     u32* block_textures_data = new u32[array_size(block_textures)]{0};
 
-    for (u16 i = 0; i < array_size(block_textures); i++) {
+    for (u16 i = 1; i < array_size(block_textures); i++) {
         std::string path = "assets/textures/";
         path += block_textures[i];
         path += ".png";

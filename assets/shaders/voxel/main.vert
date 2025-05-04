@@ -108,7 +108,13 @@ void main() {
 
 
 
-  texIndex = int((data1 >> 28) & 15);
+  // texture index occupies both data1 and data2
+  // texIndex = int((data1 >> 28) & 15);
+  texIndex = int(
+    ((data2 & 63) << 4) |
+    ((data1 >> 28) & 15)
+  );
+
   texUv = vec2(aPos.x * w, (1 - aPos.y) * h);
 
 

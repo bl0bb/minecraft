@@ -4,6 +4,8 @@
 #include "../core/maths.h"
 #include "../core/types.h"
 
+#include "../blocks.h"
+
 
 
 
@@ -70,12 +72,11 @@ constexpr u16 EMBEDDED_VOXEL_TEXTURE_MASK = 0b1111111111;
 typedef u16 EmbeddedVoxel;
 
 namespace EmbeddedVoxels {
-    inline EmbeddedVoxel create(u16 type) {
-        return
-            (type & EMBEDDED_VOXEL_TEXTURE_MASK) << EMBEDDED_VOXEL_TEXTURE_SHIFT;
+    inline EmbeddedVoxel create(BlockType type) {
+        return (type & EMBEDDED_VOXEL_TEXTURE_MASK) << EMBEDDED_VOXEL_TEXTURE_SHIFT;
     }
 
-    inline u16 get_type(EmbeddedVoxel voxel) {
+    inline BlockType get_type(EmbeddedVoxel voxel) {
         return (voxel >> EMBEDDED_VOXEL_TEXTURE_SHIFT) & EMBEDDED_VOXEL_TEXTURE_MASK;
     }
 }
