@@ -1,10 +1,10 @@
 #ifndef VOXEL_H
 #define VOXEL_H
 
-#include "../core/maths.h"
-#include "../core/types.h"
+#include "../../core/maths.h"
+#include "../../core/types.h"
 
-#include "../blocks.h"
+#include "../../blocks.h"
 
 
 
@@ -63,23 +63,18 @@ namespace Voxels {
 
 
 // embedded voxel
-// texture = 0-9 (10) (1024)
 
-constexpr u8 EMBEDDED_VOXEL_TEXTURE_SHIFT = 0;
+struct EmbeddedVoxel {
+    BlockType type;
 
-constexpr u16 EMBEDDED_VOXEL_TEXTURE_MASK = 0b1111111111;
+    EmbeddedVoxel() : type(BlockTypes::AIR) {
 
-typedef u16 EmbeddedVoxel;
-
-namespace EmbeddedVoxels {
-    inline EmbeddedVoxel create(BlockType type) {
-        return (type & EMBEDDED_VOXEL_TEXTURE_MASK) << EMBEDDED_VOXEL_TEXTURE_SHIFT;
     }
 
-    inline BlockType get_type(EmbeddedVoxel voxel) {
-        return (voxel >> EMBEDDED_VOXEL_TEXTURE_SHIFT) & EMBEDDED_VOXEL_TEXTURE_MASK;
+    EmbeddedVoxel(BlockType _type) : type(_type) {
+
     }
-}
+};
 
 
 

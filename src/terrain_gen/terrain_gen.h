@@ -4,8 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include "../FastNoise/FastNoise.h"
-#include "../voxel/voxel_mesher.h"
-#include "../voxel/voxel.h"
+#include "../voxel/logic/voxel.h"
 #include "../blocks.h"
 
 
@@ -41,9 +40,9 @@ public:
 
     static BiomeType GetBiome(float temperature, float humidity) {
         if (temperature > 0.5f) {
-            return humidity > 0.5f ? FOREST : DESERT;
+            return humidity > 0.5f ? BiomeType::FOREST : BiomeType::DESERT;
         } else {
-            return humidity > 0.5f ? PLAINS : TUNDRA;
+            return humidity > 0.5f ? BiomeType::PLAINS : BiomeType::TUNDRA;
         }
     }
 
@@ -74,12 +73,14 @@ public:
         peaksValleys.SetFrequency(0.05f);
         peaksValleys.SetNoiseType(FastNoise::Cellular);
         peaksValleys.SetCellularReturnType(FastNoise::Distance);
+        peaksValleys.SetFractalOctaves(0);
 
         // Temperature: Used for biome classification
         temperature.SetNoiseType(FastNoise::Simplex);
         temperature.SetFrequency(0.001f);
-        temperature.SetFractalType(FastNoise::FBM);
-        temperature.SetFractalOctaves(3);
+        // temperature.SetFractalType(FastNoise::FBM);
+        // temperature.SetFractalOctaves(3);
+        temperature.SetFractalOctaves(0);
 
         // Humidity: Also for biome classification
         humidity.SetNoiseType(FastNoise::Simplex);
@@ -94,18 +95,16 @@ public:
 
         // Decoration
         // Plants: Mid-scale variation
-        plants.SetFrequency(0.002f);
+        plants.SetFrequency(0.02f);
         plants.SetNoiseType(FastNoise::Perlin);
-        // plants.SetFractalType(FastNoise::Billow);
-        // plants.SetFractalOctaves(4);
-        plants.SetFractalOctaves(0);
+        plants.SetFractalType(FastNoise::Billow);
+        plants.SetFractalOctaves(4);
 
         // Trees: Mid-scale variation
-        trees.SetFrequency(0.002f);
+        trees.SetFrequency(0.1f);
         trees.SetNoiseType(FastNoise::Perlin);
-        // trees.SetFractalType(FastNoise::Billow);
-        // trees.SetFractalOctaves(4);
-        trees.SetFractalOctaves(0);
+        trees.SetFractalType(FastNoise::Billow);
+        trees.SetFractalOctaves(4);
     }
 
     void setSeed(int seed) {
@@ -133,8 +132,8 @@ public:
                 f32 eros = erosion.GetNoise(world_x, world_z);
                 f32 peaks = peaksValleys.GetNoise(world_x, world_z);
                 f32 heightValue = (cont * 0.5f + eros * 0.3f + peaks * 0.2f);
-                heightValue = (heightValue + 1.0f) * 0.5f; // Normalize to 0..1
-                heightMap[z + x * CS] = (heightValue * CS) - (chunk_y * CS);
+                heightValue = (heightValue + 1.0f) / 2.0f; // Normalize to 0..1
+                heightMap[z + x * CS] = (heightValue * CS * 2) - (chunk_y * CS); // (heightValue * CS) - (chunk_y * CS);
             }
         }
 
@@ -150,24 +149,28 @@ public:
                     continue;
                 }
 
+                surfaceY = std::min(surfaceY, CS - 1);
+
                 for (u8 y = 0; y < CS; y++) {
                     BlockType type;
 
-                    if (y > surfaceY) {
-                        if (y <= CS * 0.5) {
+                    i64 world_y = y + (chunk_y * CS);
+
+                    if (world_y > surfaceY) {
+                        if (world_y <= CS * 2 * 0.4) {
                             type = BlockTypes::WATER;
                         } else {
                             type = BlockTypes::AIR;
                         }
-                    } else if (y == surfaceY) {
+                    } else if (world_y == surfaceY) {
                         type = BlockTypes::DIRT;  // Placeholder; will be overwritten in surface layer
-                    } else if (y > surfaceY - 3) {
+                    } else if (world_y > surfaceY - 3) {
                         type = BlockTypes::DIRT;
                     } else {
                         type = BlockTypes::STONE;
                     }
 
-                    terrain[get_zxy_index(x, y, z)] = EmbeddedVoxels::create(type);
+                    terrain[get_zxy_index(x, y, z)] = EmbeddedVoxel(type);
                 }
             }
         }
@@ -186,19 +189,21 @@ public:
                     continue;
                 }
 
-                float temp = temperature.GetNoise(world_x, world_z);
-                float hum = humidity.GetNoise(world_x, world_z);
+                surfaceY = std::min(surfaceY, CS - 1);
+
+                float temp = (temperature.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
+                float hum = (humidity.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
                 BiomeType biome = GetBiome(temp, hum);
 
                 BlockType type;
                 switch (biome) {
-                    case PLAINS: type = BlockTypes::GRASS; break;
-                    case DESERT: type = BlockTypes::SAND; break;
-                    case TUNDRA: type = BlockTypes::SNOW; break;
-                    case FOREST: type = BlockTypes::GRASS; break;
+                    case BiomeType::PLAINS: type = BlockTypes::GRASS; break;
+                    case BiomeType::DESERT: type = BlockTypes::SAND; break;
+                    case BiomeType::TUNDRA: type = BlockTypes::SNOW; break;
+                    case BiomeType::FOREST: type = BlockTypes::GRASS; break;
                 }
 
-                terrain[get_zxy_index(x, std::min(surfaceY, int(CS - 1)), z)] = EmbeddedVoxels::create(type);
+                terrain[get_zxy_index(x, surfaceY, z)] = EmbeddedVoxel(type);
             }
         }
     }
@@ -212,28 +217,30 @@ public:
                     continue;
                 }
 
+                y = std::min(y, CS - 1);
+
                 i64 world_x = (chunk_x * CS) + x;
                 i64 world_z = (chunk_z * CS) + z;
 
                 EmbeddedVoxel voxel = terrain[get_zxy_index(x, y, z)];
-                BlockType type = EmbeddedVoxels::get_type(voxel);
+                BlockType type = voxel.type;
 
-                float temp = temperature.GetNoise(world_x, world_z);
-                float hum = humidity.GetNoise(world_x, world_z);
+                float temp = (temperature.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
+                float hum = (humidity.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
                 BiomeType biome = GetBiome(temp, hum);
 
                 // Random placement (e.g., based on hash or noise)
                 // float deco = std::fmod(std::abs(std::sin(world_x * 0.1f + world_z * 0.1f)), 1.0f);
-                float plant_val = plants.GetNoise(world_x, world_z);
-                float tree_val = trees.GetNoise(world_x, world_z);
+                float plant_val = (plants.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
+                float tree_val = (trees.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
 
-                if (type == BlockTypes::GRASS && (biome == BiomeType::FOREST || biome == BiomeType::PLAINS || true) && tree_val > 0.5f) {
+                if (type == BlockTypes::GRASS && biome == BiomeType::FOREST && tree_val > 0.8f) {
                     // Add a small tree
-                    if (y + 5 < CS && x > 5 && z < 5) {
-                        terrain[get_zxy_index(x, y + 1, z)] = EmbeddedVoxels::create(BlockTypes::OAK_LOG);
-                        terrain[get_zxy_index(x, y + 2, z)] = EmbeddedVoxels::create(BlockTypes::OAK_LOG);
-                        terrain[get_zxy_index(x, y + 3, z)] = EmbeddedVoxels::create(BlockTypes::OAK_LOG);
-                        terrain[get_zxy_index(x, y + 4, z)] = EmbeddedVoxels::create(BlockTypes::OAK_LOG);
+                    if (y + 5 < CS && (z >= 2 && z + 2 < CS) && (z >= 2 && z + 2 < CS)) {
+                        terrain[get_zxy_index(x, y + 1, z)] = EmbeddedVoxel(BlockTypes::OAK_LOG);
+                        terrain[get_zxy_index(x, y + 2, z)] = EmbeddedVoxel(BlockTypes::OAK_LOG);
+                        terrain[get_zxy_index(x, y + 3, z)] = EmbeddedVoxel(BlockTypes::OAK_LOG);
+                        terrain[get_zxy_index(x, y + 4, z)] = EmbeddedVoxel(BlockTypes::OAK_LOG);
 
                         for (i8 cy = 0; cy < 2; cy++) {
                             for (i8 cx = -2; cx < 3; cx++) {
@@ -241,7 +248,7 @@ public:
                                     if (cx == 0 && cz == 0) {
                                         continue;
                                     }
-                                    terrain[get_zxy_index(x + cx, y + 1 + cy, z + cz)] = EmbeddedVoxels::create(BlockTypes::OAK_LEAVES);
+                                    terrain[get_zxy_index(x + cx, y + 1 + cy, z + cz)] = EmbeddedVoxel(BlockTypes::OAK_LEAVES);
                                 }
                             }
                         }
@@ -251,20 +258,20 @@ public:
                                     if (cx == 0 && cz == 0) {
                                         continue;
                                     }
-                                    terrain[get_zxy_index(x + cx, y + 3 + cy, z + cz)] = EmbeddedVoxels::create(BlockTypes::OAK_LEAVES);
+                                    terrain[get_zxy_index(x + cx, y + 3 + cy, z + cz)] = EmbeddedVoxel(BlockTypes::OAK_LEAVES);
                                 }
                             }
                         }
-                        terrain[get_zxy_index(x, y + 3 + 2, z)] = EmbeddedVoxels::create(BlockTypes::OAK_LEAVES);
+                        terrain[get_zxy_index(x, y + 3 + 2, z)] = EmbeddedVoxel(BlockTypes::OAK_LEAVES);
 
-                        terrain[get_zxy_index(x + -1, y + 3 + 1, z + -1)] = EmbeddedVoxels::create(BlockTypes::AIR);
-                        terrain[get_zxy_index(x + -1, y + 3 + 1, z +  1)] = EmbeddedVoxels::create(BlockTypes::AIR);
-                        terrain[get_zxy_index(x +  1, y + 3 + 1, z + -1)] = EmbeddedVoxels::create(BlockTypes::AIR);
-                        terrain[get_zxy_index(x +  1, y + 3 + 1, z +  1)] = EmbeddedVoxels::create(BlockTypes::AIR);
+                        terrain[get_zxy_index(x + -1, y + 3 + 1, z + -1)] = EmbeddedVoxel(BlockTypes::AIR);
+                        terrain[get_zxy_index(x + -1, y + 3 + 1, z +  1)] = EmbeddedVoxel(BlockTypes::AIR);
+                        terrain[get_zxy_index(x +  1, y + 3 + 1, z + -1)] = EmbeddedVoxel(BlockTypes::AIR);
+                        terrain[get_zxy_index(x +  1, y + 3 + 1, z +  1)] = EmbeddedVoxel(BlockTypes::AIR);
                     }
                 } else if (type == BlockTypes::GRASS && plant_val > 0.95f) {
-                    if (y < CS) {
-                        terrain[get_zxy_index(x, y + 1, z)] = EmbeddedVoxels::create(BlockTypes::POPPY);
+                    if (y + 1 < CS) {
+                        terrain[get_zxy_index(x, y + 1, z)] = EmbeddedVoxel(BlockTypes::POPPY);
                     }
                 }
             }

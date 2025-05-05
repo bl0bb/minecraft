@@ -45,7 +45,7 @@ constexpr inline void dim_to_pos(u8& x, u8& y, u8& z, u8 dim_1, u8 dim_2, u8 dim
 }
 
 
-u32 generate_voxel_mesh(const VoxelWorld& voxelWorld, const VoxelChunk& chunk, VoxelFace* vertices) {
+u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chunk, VoxelFace* vertices) {
     // solid voxel as binary for each x,y,z axis
     u64 axis_cols[3 * CS_P2] = {0};
 
@@ -74,7 +74,7 @@ u32 generate_voxel_mesh(const VoxelWorld& voxelWorld, const VoxelChunk& chunk, V
                 u8 az = z + 1;
 
                 // TODO: check if voxel is solid (not see through)
-                if (chunk.voxels[get_zxy_index(x, y, z)]) {
+                if (chunk.voxels[get_zxy_index(x, y, z)].type) {
                     // x,z - y axis
                     axis_cols[ax + (az * CS_P)] |= (u64)1 << ay;
                     // z,y - x axis
@@ -111,7 +111,7 @@ u32 generate_voxel_mesh(const VoxelWorld& voxelWorld, const VoxelChunk& chunk, V
                     u64 world_z = z - 1 + chunk.pos.z * CS;
 
                     // TODO: check if voxel is solid (not see through)
-                    if (voxelWorld.getVoxel(world_x, world_y, world_z)) {
+                    if (voxelWorld.getVoxel(world_x, world_y, world_z).type) {
                         // x,z - y axis
                         axis_cols[x + (z * CS_P)] |= (u64)1 << y;
                         // z,y - x axis
@@ -216,7 +216,7 @@ u32 generate_voxel_mesh(const VoxelWorld& voxelWorld, const VoxelChunk& chunk, V
                             z = dim_3;
                             y = dim_2;
                         }
-                        surface_face_masks[EmbeddedVoxels::get_type(chunk.voxels[get_zxy_index(x, y, z)])][dim_1 + (dim_3 * CS) + (CS_2 * dir)] |= u64(1) << dim_2;
+                        surface_face_masks[chunk.voxels[get_zxy_index(x, y, z)].type][dim_1 + (dim_3 * CS) + (CS_2 * dir)] |= u64(1) << dim_2;
                     }
                 }
             }
@@ -278,7 +278,7 @@ u32 generate_voxel_mesh(const VoxelWorld& voxelWorld, const VoxelChunk& chunk, V
 
                             // printf("(%i %i %i) (%i %i) (%i)\n", x, y, z, w, h, dir);
 
-                            vertices[vertexIdx++] = getQuad(x, y, z, w - 1, h - 1, dir, BlockVoxelDatas::get_face(block_voxel_datas[EmbeddedVoxels::get_type(chunk.voxels[get_zxy_index(x, y, z)])], dir));
+                            vertices[vertexIdx++] = getQuad(x, y, z, w - 1, h - 1, dir, block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type].get_face(dir));
                             dim_3 += h;
                         }
                     }
