@@ -54,12 +54,6 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
 
     // masks that represent surfaces to perform greedy meshing
     std::unordered_map<u64, u64[3 * CS_P2 * 2]> surface_face_masks;
-    // // TODO: brruhhhh
-    // for (u8 type = 0; type < 10; type++) {
-    //     for (u8 i = 0; i < 3 * CS_P2 * 2; i++) {
-    //         surface_face_masks[type][i] = 0;
-    //     }
-    // }
 
     // index
     u32 vertexIdx = 0;
