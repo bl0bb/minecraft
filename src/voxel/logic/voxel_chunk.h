@@ -37,16 +37,27 @@ constexpr inline int getAxisIndex(const int axis, const int a, const int b, cons
 }
 
 
-
-class VoxelChunk {
+template<typename VoxelType>
+class BaseVoxelChunk {
 public:
-    Vec3<u64> pos;
-    EmbeddedVoxel* voxels;
+    using voxel_type = VoxelType;
 
-    VoxelChunk() {
-        voxels = new EmbeddedVoxel[CS_3];
+    VoxelType* voxels;
+
+    BaseVoxelChunk() {
+        voxels = new VoxelType[CS_3];
         std::memset(voxels, 0, CS_3);
     }
+
+    ~BaseVoxelChunk() {
+        // C++ LOOOOVES TO CALL THIS WHEN I DONT WANT TO SO DONT DO ANYTHING
+        // free(voxels);
+    }
+};
+
+class VoxelChunk : public BaseVoxelChunk<EmbeddedVoxel> {
+public:
+    Vec3<i64> pos;
 };
 
 #endif

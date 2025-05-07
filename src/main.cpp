@@ -222,6 +222,7 @@ int main() {
 
 
 
+
     Noise noise = Noise();
     noise.setSeed(646);
     noise.updateNoise();
@@ -242,7 +243,7 @@ int main() {
             for (i64 z = 0; z < world_size; z++) {
                 VoxelChunk chunk = VoxelChunk();
                 chunk.pos = Vec3<u64>(x, y, z);
-
+                
                 auto start = std::chrono::high_resolution_clock::now();
                 noise.GenerateFullTerrain(chunk.voxels, x, y, z);
                 auto end = std::chrono::high_resolution_clock::now();
@@ -250,8 +251,6 @@ int main() {
                 std::cout << "Terrain gen: " << elapsed.count() << " ms\n";
 
                 voxelGameWorld.chunks[voxelGameWorld.getChunkIndex(x, y, z)] = chunk;
-
-
 
                 VoxelChunkRenderer chunkRenderer = VoxelChunkRenderer();
                 chunkRenderer.init();

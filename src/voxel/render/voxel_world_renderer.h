@@ -6,8 +6,6 @@
 
 class VoxelWorldRenderer : public VoxelWorld<VoxelChunkRenderer> {
 public:
-    using VoxelWorld<VoxelChunkRenderer>::VoxelWorld;
-
     void render(Shader& shaderProgram) {
         for (i64 x = 0; x < size.x; x++) {
             for (i64 y = 0; y < size.y; y++) {

@@ -63,7 +63,6 @@ namespace Voxels {
 
 
 // embedded voxel
-
 struct EmbeddedVoxel {
     BlockType type;
 

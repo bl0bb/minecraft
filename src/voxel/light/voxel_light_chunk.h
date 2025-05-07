@@ -9,20 +9,9 @@
 #include "../logic/voxel_chunk.h"
 #include "../logic/voxel.h"
 
-class VoxelLightChunk {
+class VoxelLightChunk : public BaseVoxelChunk<RGBA4> {
 public:
     VoxelChunk* chunk;
-
-    RGBA4* voxels;
-
-    VoxelLightChunk() {
-        voxels = new RGBA4[CS_3];
-        std::memset(voxels, 0, CS_3);
-    }
-
-    ~VoxelLightChunk() {
-        free(voxels);
-    }
 };
 
 #endif
