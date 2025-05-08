@@ -9,9 +9,9 @@
 #include "../logic/voxel_chunk.h"
 #include "../logic/voxel.h"
 
-class VoxelLightChunk : public BaseVoxelChunk<RGBA4> {
+class VoxelLightChunk : public BaseVoxelChunk<RGBI4> {
 public:
-    VoxelChunk* chunk;
+    
 };
 
 #endif

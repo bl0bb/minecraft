@@ -82,6 +82,9 @@ struct BlockVoxelData {
     bool liquid;
     bool can_emit_light;
     bool animated;
+
+    getLightFunc* get_light;
+
     BlockTexture texture_top;
     BlockTexture texture_bottom;
     BlockTexture texture_right;
@@ -94,17 +97,23 @@ struct BlockVoxelData {
         bool _liquid,
         bool _can_emit_light,
         bool _animated,
+
+        getLightFunc _get_light,
+
         BlockTexture _texture_top,
         BlockTexture _texture_bottom,
         BlockTexture _texture_right,
         BlockTexture _texture_left,
         BlockTexture _texture_back,
-        BlockTexture _texture_front,
+        BlockTexture _texture_front
         ) :
     transparent(_transparent),
     liquid(_liquid),
     can_emit_light(_can_emit_light),
     animated(_animated),
+
+    get_light(_get_light),
+
     texture_top(_texture_top),
     texture_bottom(_texture_bottom),
     texture_right(_texture_right),
@@ -131,25 +140,25 @@ struct BlockVoxelData {
     }
 };
 
-RGBI4 lightTest(const VoxelGameWorld& world, Vec3<i64> pos) {
+RGBI4 getLightTest() {
     return Colors::createRGBI4(15, 0, 0, 15);
 }
 
 const BlockVoxelData block_voxel_datas[] = {
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::NONE,                  BlockTextures::NONE,           BlockTextures::NONE,                   BlockTextures::NONE,                   BlockTextures::NONE,                    BlockTextures::NONE,                    nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::GRASS_BLOCK_TOP,       BlockTextures::DIRT,           BlockTextures::GRASS_BLOCK_SIDE,       BlockTextures::GRASS_BLOCK_SIDE,       BlockTextures::GRASS_BLOCK_SIDE,        BlockTextures::GRASS_BLOCK_SIDE,        nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::SAND,                  BlockTextures::SAND,           BlockTextures::SAND,                   BlockTextures::SAND,                   BlockTextures::SAND,                    BlockTextures::SAND,                    nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::DIRT,                  BlockTextures::DIRT,           BlockTextures::DIRT,                   BlockTextures::DIRT,                   BlockTextures::DIRT,                    BlockTextures::DIRT,                    nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::SNOW,                  BlockTextures::SNOW,           BlockTextures::SNOW,                   BlockTextures::SNOW,                   BlockTextures::SNOW,                    BlockTextures::SNOW,                    nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::STONE,                 BlockTextures::STONE,          BlockTextures::STONE,                  BlockTextures::STONE,                  BlockTextures::STONE,                   BlockTextures::STONE,                   nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::COBBLESTONE,           BlockTextures::COBBLESTONE,    BlockTextures::COBBLESTONE,            BlockTextures::COBBLESTONE,            BlockTextures::COBBLESTONE,             BlockTextures::COBBLESTONE,             nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::OAK_LOG_TOP,           BlockTextures::OAK_LOG_TOP,    BlockTextures::OAK_LOG,                BlockTextures::OAK_LOG,                BlockTextures::OAK_LOG,                 BlockTextures::OAK_LOG,                 nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::OAK_LEAVES,            BlockTextures::OAK_LEAVES,     BlockTextures::OAK_LEAVES,             BlockTextures::OAK_LEAVES,             BlockTextures::OAK_LEAVES,              BlockTextures::OAK_LEAVES,              nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::OAK_PLANKS,            BlockTextures::OAK_PLANKS,     BlockTextures::OAK_PLANKS,             BlockTextures::OAK_PLANKS,             BlockTextures::OAK_PLANKS,              BlockTextures::OAK_PLANKS,              nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::CRAFTING_TABLE_TOP,    BlockTextures::OAK_PLANKS,     BlockTextures::CRAFTING_TABLE_SIDE,    BlockTextures::CRAFTING_TABLE_SIDE,    BlockTextures::CRAFTING_TABLE_FRONT,    BlockTextures::CRAFTING_TABLE_FRONT,    nullptr),
-    BlockVoxelData(false,    false,    true,     false,    BlockTextures::FURNACE_TOP,           BlockTextures::FURNACE_TOP,    BlockTextures::FURNACE_SIDE,           BlockTextures::FURNACE_SIDE,           BlockTextures::FURNACE_FRONT,           BlockTextures::FURNACE_FRONT,           ),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::WATER,                 BlockTextures::WATER,          BlockTextures::WATER,                  BlockTextures::WATER,                  BlockTextures::WATER,                   BlockTextures::WATER,                   nullptr),
-    BlockVoxelData(false,    false,    false,    false,    BlockTextures::POPPY,                 BlockTextures::POPPY,          BlockTextures::POPPY,                  BlockTextures::POPPY,                  BlockTextures::POPPY,                   BlockTextures::POPPY,                   nullptr),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::NONE,                  BlockTextures::NONE,           BlockTextures::NONE,                   BlockTextures::NONE,                   BlockTextures::NONE,                    BlockTextures::NONE),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::GRASS_BLOCK_TOP,       BlockTextures::DIRT,           BlockTextures::GRASS_BLOCK_SIDE,       BlockTextures::GRASS_BLOCK_SIDE,       BlockTextures::GRASS_BLOCK_SIDE,        BlockTextures::GRASS_BLOCK_SIDE),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::SAND,                  BlockTextures::SAND,           BlockTextures::SAND,                   BlockTextures::SAND,                   BlockTextures::SAND,                    BlockTextures::SAND),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::DIRT,                  BlockTextures::DIRT,           BlockTextures::DIRT,                   BlockTextures::DIRT,                   BlockTextures::DIRT,                    BlockTextures::DIRT),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::SNOW,                  BlockTextures::SNOW,           BlockTextures::SNOW,                   BlockTextures::SNOW,                   BlockTextures::SNOW,                    BlockTextures::SNOW),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::STONE,                 BlockTextures::STONE,          BlockTextures::STONE,                  BlockTextures::STONE,                  BlockTextures::STONE,                   BlockTextures::STONE),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::COBBLESTONE,           BlockTextures::COBBLESTONE,    BlockTextures::COBBLESTONE,            BlockTextures::COBBLESTONE,            BlockTextures::COBBLESTONE,             BlockTextures::COBBLESTONE),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::OAK_LOG_TOP,           BlockTextures::OAK_LOG_TOP,    BlockTextures::OAK_LOG,                BlockTextures::OAK_LOG,                BlockTextures::OAK_LOG,                 BlockTextures::OAK_LOG),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::OAK_LEAVES,            BlockTextures::OAK_LEAVES,     BlockTextures::OAK_LEAVES,             BlockTextures::OAK_LEAVES,             BlockTextures::OAK_LEAVES,              BlockTextures::OAK_LEAVES),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::OAK_PLANKS,            BlockTextures::OAK_PLANKS,     BlockTextures::OAK_PLANKS,             BlockTextures::OAK_PLANKS,             BlockTextures::OAK_PLANKS,              BlockTextures::OAK_PLANKS),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::CRAFTING_TABLE_TOP,    BlockTextures::OAK_PLANKS,     BlockTextures::CRAFTING_TABLE_SIDE,    BlockTextures::CRAFTING_TABLE_SIDE,    BlockTextures::CRAFTING_TABLE_FRONT,    BlockTextures::CRAFTING_TABLE_FRONT),
+    BlockVoxelData(false,    false,    true,     false,    getLightTest,    BlockTextures::FURNACE_TOP,           BlockTextures::FURNACE_TOP,    BlockTextures::FURNACE_SIDE,           BlockTextures::FURNACE_SIDE,           BlockTextures::FURNACE_FRONT,           BlockTextures::FURNACE_FRONT),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::WATER,                 BlockTextures::WATER,          BlockTextures::WATER,                  BlockTextures::WATER,                  BlockTextures::WATER,                   BlockTextures::WATER),
+    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::POPPY,                 BlockTextures::POPPY,          BlockTextures::POPPY,                  BlockTextures::POPPY,                  BlockTextures::POPPY,                   BlockTextures::POPPY),
 };
 
 #endif

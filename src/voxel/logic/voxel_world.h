@@ -33,8 +33,8 @@ public:
 
 namespace VoxelWorlds {
 
-template<typename VoxelWorldType>
-typename VoxelWorldType::chunk_type::voxel_type getVoxel(const VoxelWorldType& world, u64 x, u64 y, u64 z) {
+template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type>
+bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxel_ptr) {
     // TODO: add transform to voxel_world
 
     u64 chunk_pos_x = x / CS;
@@ -42,16 +42,18 @@ typename VoxelWorldType::chunk_type::voxel_type getVoxel(const VoxelWorldType& w
     u64 chunk_pos_z = z / CS;
 
     if (chunk_pos_x < 0 || chunk_pos_y < 0 || chunk_pos_z < 0) {
-        return 0;
+        return false;
     }
     
     if (chunk_pos_x >= world.size.x || chunk_pos_y >= world.size.y || chunk_pos_z >= world.size.z) {
-        return 0;
+        return false;
     }
 
     u64 chunk_index = world.getChunkIndex(chunk_pos_x, chunk_pos_y, chunk_pos_z);
 
-    return world.chunks[chunk_index].voxels[get_zxy_index(x % CS, y % CS, z % CS)];
+    *voxel_ptr = &world.chunks[chunk_index].voxels[get_zxy_index(x % CS, y % CS, z % CS)];
+
+    return true;
 }
 
 }
