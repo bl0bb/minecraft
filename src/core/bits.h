@@ -1,8 +1,6 @@
 #ifndef BITS_H
 #define BITS_H
 
-#include <intrin.h>
-
 #include "types.h"
 
 // Returns the least significant bit in a non-zero bitboard.
