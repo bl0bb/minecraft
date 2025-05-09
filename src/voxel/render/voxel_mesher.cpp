@@ -101,12 +101,15 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
                         y = dim_2;
                     }
 
-                    u64 world_x = x - 1 + chunk.pos.x * CS;
-                    u64 world_y = y - 1 + chunk.pos.y * CS;
-                    u64 world_z = z - 1 + chunk.pos.z * CS;
+                    i64 world_x = x - 1 + chunk.pos.x * CS;
+                    i64 world_y = y - 1 + chunk.pos.y * CS;
+                    i64 world_z = z - 1 + chunk.pos.z * CS;
 
+                    
                     // TODO: check if voxel is solid (not see through)
-                    if (VoxelWorlds::getVoxel<VoxelGameWorld>(voxelWorld, world_x, world_y, world_z).type) {
+                    EmbeddedVoxel* voxel;
+                    bool has_voxel = VoxelWorlds::getVoxel(voxelWorld, world_x, world_y, world_z, &voxel);
+                    if (has_voxel == true && voxel->type) {
                         // x,z - y axis
                         axis_cols[x + (z * CS_P)] |= (u64)1 << y;
                         // z,y - x axis

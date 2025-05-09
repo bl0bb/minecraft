@@ -179,7 +179,7 @@ class ChunkLight {
                 lightQueue.push({newPos, 0});
             }
 
-            if (sunlight && pos.y > VoxelWorlds::heightAt(voxelLightWorld.heightmap, pos.x, pos.z)) {
+            if (sunlight && pos.y > VoxelWorlds::heightAtWorld(voxelLightWorld, pos.x, pos.z)) {
                 RGBIS4* light;
                 if (VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
                     *light = Colors::COLOR4_MAX;

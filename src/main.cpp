@@ -231,9 +231,12 @@ int main() {
     u16 world_size = 2;
     u16 world_height = 2;
     u16 world_total_chunks = world_size * world_size * world_height;
+    Vec3<u64> world_chunk_size = {world_size, world_height, world_size};
+    Vec3<i64> world_chunk_center = world_chunk_size / 2;
 
     VoxelGameWorld voxelGameWorld = VoxelGameWorld(Vec3<u64>(world_size, world_height, world_size));
     voxelGameWorld.chunks = (VoxelChunk*)malloc(sizeof(VoxelChunk) * world_total_chunks);
+    voxelGameWorld.size = world_chunk_size;
 
     VoxelWorldRenderer voxelWorldRenderer = VoxelWorldRenderer(Vec3<u64>(world_size, world_height, world_size));
     voxelWorldRenderer.chunks = (VoxelChunkRenderer*)malloc(sizeof(VoxelChunkRenderer) * world_total_chunks);
@@ -242,7 +245,7 @@ int main() {
         for (i64 x = 0; x < world_size; x++) {
             for (i64 z = 0; z < world_size; z++) {
                 VoxelChunk chunk = VoxelChunk();
-                chunk.pos = Vec3<u64>(x, y, z);
+                chunk.pos = Vec3<i64>(x, y, z) - world_chunk_center;
                 
                 auto start = std::chrono::high_resolution_clock::now();
                 noise.GenerateFullTerrain(chunk.voxels, x, y, z);

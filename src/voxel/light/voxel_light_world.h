@@ -7,7 +7,7 @@
 
 class VoxelLightWorld : public VoxelWorld<VoxelLightChunk> {
 public:
-
+    u8* heightmap;
 };
 
 #endif

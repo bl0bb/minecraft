@@ -75,7 +75,7 @@ enum BlockTypeEnum : BlockType {
 };
 }
 
-typedef RGBI4 getLightFunc();
+typedef RGBI4 (*getLightFunc)();
 
 struct BlockVoxelData {
     bool transparent;
@@ -83,7 +83,7 @@ struct BlockVoxelData {
     bool can_emit_light;
     bool animated;
 
-    getLightFunc* get_light;
+    getLightFunc get_light;
 
     BlockTexture texture_top;
     BlockTexture texture_bottom;
@@ -140,7 +140,7 @@ struct BlockVoxelData {
     }
 };
 
-RGBI4 getLightTest() {
+constexpr RGBI4 getLightTest() {
     return Colors::createRGBI4(15, 0, 0, 15);
 }
 
