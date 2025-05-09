@@ -56,6 +56,31 @@ bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxe
     return true;
 }
 
+template<typename VoxelChunkType, typename VoxelType = VoxelChunkType::voxel_type>
+void calculateHeightmap(const VoxelChunkType& chunk, u8* heightmap) {
+    bool found_block;
+    for (u8 x = 0; x < CS; x++) {
+        for (u8 z = 0; z < CS; z++) {
+            found_block = false;
+            heightmap[x + (z * CS)] = CS;
+            for (u8 y = CS - 1; y >= 0; y--) {
+                if (block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type].transparent == true) {
+                    heightmap[x + (z * CS)] = y;
+                    break;
+                }
+            }
+            if (!found_block) {
+                heightmap[x + (z * CS)] = 0;
+            }
+        }
+    }
+}
+
+template<typename VoxelChunkType>
+u8 heightAt(const u8* heightmap, u8 x, u8 z) {
+    return heightmap[x + (z * CS)];
+}
+
 }
 
 

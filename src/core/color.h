@@ -9,6 +9,13 @@
 // 12-15 (4) (16) intensity
 typedef u16 RGBI4;
 
+// 0-3 (4) (16) r
+// 4-7 (4) (16) g
+// 8-11 (4) (16) b
+// 12-15 (4) (16) intensity
+// 16-19 (4) (16) sun intensity
+typedef u32 RGBIS4;
+
 // 0-7 (8) (255) r
 // 8-15 (8) (255) g
 // 16-23 (8) (255) b
@@ -16,8 +23,15 @@ typedef u16 RGBI4;
 typedef u32 RGBI8;
 
 namespace Colors {
+    constexpr u8 COLOR4_MAX = 15;
+    constexpr u8 COLOR8_MAX = 255;
+
     inline RGBI4 createRGBI4(u8 r, u8 g, u8 b, u8 i) {
         return (r << 12) | (g << 8) | (b << 4) | i;
+    }
+
+    inline RGBI4 createRGBIS4(u8 r, u8 g, u8 b, u8 i, u8 s) {
+        return (r << 16) | (g << 12) | (b << 8) | (i << 4) | s;
     }
 
     inline RGBI8 createRGBI8(u8 r, u8 g, u8 b, u8 i) {
@@ -29,11 +43,18 @@ namespace Colors {
         return channel ? channel - 1 : channel;
     }
 
+    inline RGBI4 reduceOne(RGBI4 color) {
+        return (reduceChannel(color >> 12 & 0xF) << 12) |
+               (reduceChannel(color >> 8 & 0xF) << 8) |
+               (reduceChannel(color >> 4 & 0xF) << 4) |
+               reduceChannel(color & 0xF);
+    }
+
     inline RGBI8 reduceOne(RGBI8 color) {
-        return (reduceChannel(color >> 12 & 0b1111) << 12) |
-               (reduceChannel(color >> 8 & 0b1111) << 8) |
-               (reduceChannel(color >> 4 & 0b1111) << 4) |
-               reduceChannel(color & 0b1111);
+        return (reduceChannel(color >> 24 & 0xFF) << 24) |
+               (reduceChannel(color >> 16 & 0xFF) << 16) |
+               (reduceChannel(color >> 8 & 0xFF) << 8) |
+               reduceChannel(color & 0xFF);
     }
 };
 

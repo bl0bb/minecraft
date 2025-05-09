@@ -69,6 +69,19 @@
         "xutility": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "deque": "cpp"
+        "deque": "cpp",
+        "__bit_reference": "cpp",
+        "__node_handle": "cpp",
+        "bitset": "cpp",
+        "__hash_table": "cpp",
+        "__locale": "cpp",
+        "__split_buffer": "cpp",
+        "__verbose_abort": "cpp",
+        "cwctype": "cpp",
+        "execution": "cpp",
+        "mutex": "cpp",
+        "print": "cpp",
+        "string_view": "cpp",
+        "variant": "cpp"
     }
 }

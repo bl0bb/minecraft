@@ -9,16 +9,28 @@
 #include "../voxel/light/voxel_light_world.h"
 
 // Directions
+// Start with DOWN because it makes sunlight propagate faster
 const Vec3<i8> directions[6] = {
+    { 0, -1,  0},
+    { 0,  1,  0},
     { 1,  0,  0},
     {-1,  0,  0},
-    { 0,  1,  0},
-    { 0, -1,  0},
     { 0,  0,  1},
     { 0,  0, -1},
+
+    // { 1,  0,  0},
+    // {-1,  0,  0},
+    // { 0,  1,  0},
+    // { 0, -1,  0},
+    // { 0,  0,  1},
+    // { 0,  0, -1},
 };
 
-typedef std::queue<std::tuple<Vec3<i64>, RGBI4>> LightQueue;
+template<typename LightType>
+using LightQueue = std::queue<std::tuple<Vec3<i64>, LightType>>;
+
+typedef LightQueue<RGBI4> BlockLightQueue;
+typedef LightQueue<RGBIS4> AllLightQueue;
 
 class ChunkLight {
     enum LightPropagationType : u8 {
@@ -26,76 +38,154 @@ class ChunkLight {
         SUN_LIGHT,
     };
 
-    static void propagate(const VoxelGameWorld& voxelWorld, const VoxelLightWorld& voxelLightWorld, LightQueue& lightQueue) {
-        // BFS Light Propagation
+    static void add_propagate(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, u32 mask, u32 offset, LightPropagationType type) {
         while (!lightQueue.empty()) {
-            auto [x, y, z, lightColor] = lightQueue.front();
-            lightQueue.pop();
-    
-            for (const auto& dir : directions) {
-                i64 nx = x + dir.x;
-                i64 ny = y + dir.y;
-                i64 nz = z + dir.z;
-    
-                VoxelGameWorld::chunk_type::voxel_type* worldVoxel;
-                if (!VoxelWorlds::getVoxel(voxelWorld, x, y, z, &worldVoxel)) {
-                    continue;
-                }
-    
-                RGBI4 newLightColor = Colors::reduceOne(lightColor);
-    
-                // Only update if this is stronger than current light
-                VoxelLightWorld::chunk_type::voxel_type* lightVoxel;
-                if (VoxelWorlds::getVoxel(voxelLightWorld, nx, ny, nz, &lightVoxel) < newLightColor) {
-                    *lightVoxel = newLightColor;
-                    lightQueue.push({nx, ny, nz, newLightColor});
-                }
-            }
-        }
-    }
-
-    static void calculate_light(const VoxelGameWorld& voxelWorld, ) {
-        LightQueue lightQueue;
-
-        // check each block for light sources
-        for (u8 x = 0; x < CS; x++) {
-            for (u8 y = 0; y < CS; y++) {
-                for (u8 z = 0; z < CS; z++) {
-                    BlockVoxelData thisBlock = block_voxel_datas[thisChunk.voxels[get_zxy_index(x, y, z)].type];
-                    if (thisBlock.can_emit_light) {
-                        lightQueue.push({x, y, z, thisBlock.get_light()});
-                    }
-                }
-            }
-        }
-    }
-
-    static void add_propagate(const VoxelGameWorld& voxelWorld, LightQueue& lightQueue, u16 mask, u32 offset, LightPropagationType type) {
-        while (!lightQueue.empty()) {
-            auto [pos, lightColor] = lightQueue.front();
+            auto [pos, _] = lightQueue.front();
             lightQueue.pop();
 
-            RGBI4 light = world_get_light(voxelWorld, pos);
-            u8 val = (light & mask) >> offset;
+            RGBI4* light;
+            if (!VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
+                continue;
+            }
+            u8 val = (*light & mask) >> offset;
 
             // propagate in reverse of enum Direction order so DOWN is first
             // this will improve sunlight propagation speed
-            for ()
+            for (u8 i = 0; i < 6; i++) {
+                Vec3<i64> newPos = pos + directions[i];
+
+                RGBI4* newLight;
+                if (!VoxelWorlds::getVoxel(voxelLightWorld, newPos.x, newPos.y, newPos.z, &newLight)) {
+                    continue;
+                }
+
+                EmbeddedVoxel* voxel;
+                if (!VoxelWorlds::getVoxel(voxelWorld, newPos.x, newPos.y, newPos.z, &voxel)) {
+                    continue;
+                }
+
+                BlockVoxelData newBlock = block_voxel_datas[voxel->type];
+
+                bool sunlight_down = type == SUN_LIGHT && i == 0;
+
+                if ((newLight != 0 || newBlock.transparent) && ((sunlight_down && *newLight < *light) || (*newLight + 1 < val))) {
+                    // sunlight does not get dimmer as it propagates down
+                    i8 delta = sunlight_down ? 0 : -1;
+
+                    *newLight = (*newLight & ~mask) | ((((*light & mask) >> offset) + delta) << offset);
+                    lightQueue.push({newPos, 0});
+                }
+            }
         }
     }
 
-    static void add_channel(const VoxelGameWorld& voxelWorld, Vec3<i64>& pos, u8 value, u16 mask, u32 offset, LightPropagationType type) {
-        LightQueue lightQueue;
-        world_set_light(voxelWorld, pos, (world_get_light(world, pos) & ~mask) | (((u32)value) << offset));
-        lightQueue.push({pos});
-        add_propagate(world, lightQueue, mask, offset, type);
+    static void remove_propagate(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, AllLightQueue& propQueue, u32 mask, u32 offset, LightPropagationType type) {
+        while (!lightQueue.empty()) {
+            auto [pos, value] = lightQueue.front();
+            lightQueue.pop();
+
+            for (u8 i = 0; i < 6; i++) {
+                Vec3<i64> newPos = pos + directions[i];
+
+                RGBI4* newLight;
+                if (!VoxelWorlds::getVoxel(voxelLightWorld, newPos.x, newPos.y, newPos.z, &newLight)) {
+                    continue;
+                }
+                u8 newValue = (*newLight & mask) >> offset;
+
+                bool sunlight_down = type == SUN_LIGHT && i == 0;
+
+                if ((*newLight & mask) != 0 && (newValue < value || sunlight_down)) {
+                    // sunlight does not get dimmer as it propagates down
+                    i8 delta = sunlight_down ? 0 : -1;
+
+                    *newLight = *newLight & ~mask;
+                    lightQueue.push({newPos, newValue});
+                } else if (newValue >= value) {
+                    propQueue.push({newPos, 0});
+                }
+            }
+        }
     }
 
-    static void add_light(const VoxelGameWorld& voxelWorld, Vec3<i64>& pos, RGBI4 light) {
+    static void add_channel(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, u8 value, u32 mask, u32 offset, LightPropagationType type) {
+        AllLightQueue lightQueue;
+
+        RGBI4* light;
+        if (!VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
+            return;
+        }
+        *light = (*light & ~mask) | (((u32)value) << offset);
+
+        lightQueue.push({pos, 0});
+        add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, type);
+    }
+
+    static void remove_channel(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, u32 mask, u32 offset, LightPropagationType type) {
+        AllLightQueue lightQueue;
+        AllLightQueue propQueue;
+
+        RGBI4* light;
+        if (!VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
+            return;
+        }
+        RGBI4 oldLight = *light;
+        *light = (oldLight & ~mask);
+
+        lightQueue.push({pos, (oldLight & mask) >> offset});
+        remove_propagate(voxelWorld, voxelLightWorld, lightQueue, propQueue, mask, offset, type);
+        add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, type);
+    }
+
+    static void add_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBI4 light) {
         for (u8 i = 0; i < 4; i++) {
             u8 offset = i * 4;
-            u16 mask = 0xF << offset;
-            add_channel(world, pos, (light & mask) >> offset, mask, offset, DEFAULT_LIGHT)
+            u32 mask = 0xF << offset;
+            add_channel(voxelWorld, voxelLightWorld, pos, (light & mask) >> offset, mask, offset, DEFAULT_LIGHT);
+        }
+    }
+
+    static void remove_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBI4 light) {
+        for (u8 i = 0; i < 4; i++) {
+            u8 offset = i * 4;
+            u32 mask = 0xF << offset;
+            remove_channel(voxelWorld, voxelLightWorld, pos, mask, offset, DEFAULT_LIGHT);
+        }
+    }
+
+    static void update_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos) {
+        AllLightQueue lightQueue;
+
+        // 0..4 for each channel
+        // 0 = R
+        // 1 = G
+        // 2 = B
+        // 3 = I
+        // 4 = SUN
+        for (u8 i = 0; i < 5; i++) {
+            u8 offset = i * 4;
+            u32 mask = 0xF << offset;
+
+            bool sunlight = i == 4;
+            
+            for (u8 d = 0; d < 6; d++) {
+                Vec3<i64> newPos = pos + directions[d];
+
+                EmbeddedVoxel* voxel;
+                if (!VoxelWorlds::getVoxel(voxelWorld, newPos.x, newPos.y, newPos.z, &voxel)) {
+                    continue;
+                }
+
+                lightQueue.push({newPos, 0});
+            }
+
+            if (sunlight && pos.y > VoxelWorlds::heightAt(voxelLightWorld.heightmap, pos.x, pos.z)) {
+                RGBIS4* light;
+                if (VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
+                    *light = Colors::COLOR4_MAX;
+                    lightQueue.push({pos, 0});
+                }
+            }
         }
     }
 };

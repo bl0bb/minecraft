@@ -145,7 +145,7 @@ RGBI4 getLightTest() {
 }
 
 const BlockVoxelData block_voxel_datas[] = {
-    BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::NONE,                  BlockTextures::NONE,           BlockTextures::NONE,                   BlockTextures::NONE,                   BlockTextures::NONE,                    BlockTextures::NONE),
+    BlockVoxelData(true,     false,    false,    false,    nullptr,         BlockTextures::NONE,                  BlockTextures::NONE,           BlockTextures::NONE,                   BlockTextures::NONE,                   BlockTextures::NONE,                    BlockTextures::NONE),
     BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::GRASS_BLOCK_TOP,       BlockTextures::DIRT,           BlockTextures::GRASS_BLOCK_SIDE,       BlockTextures::GRASS_BLOCK_SIDE,       BlockTextures::GRASS_BLOCK_SIDE,        BlockTextures::GRASS_BLOCK_SIDE),
     BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::SAND,                  BlockTextures::SAND,           BlockTextures::SAND,                   BlockTextures::SAND,                   BlockTextures::SAND,                    BlockTextures::SAND),
     BlockVoxelData(false,    false,    false,    false,    nullptr,         BlockTextures::DIRT,                  BlockTextures::DIRT,           BlockTextures::DIRT,                   BlockTextures::DIRT,                   BlockTextures::DIRT,                    BlockTextures::DIRT),
