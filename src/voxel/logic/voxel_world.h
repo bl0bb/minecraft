@@ -76,8 +76,12 @@ void calculateHeightmap(const VoxelChunkType& chunk, u8* heightmap) {
     }
 }
 
-template<typename VoxelChunkType>
 u8 heightAt(const u8* heightmap, u8 x, u8 z) {
+    return heightmap[x + (z * CS)];
+}
+
+template<typename VoxelWorldType>
+u8 heightAt(const VoxelWorldType& world, u8 x, u8 z) {
     return heightmap[x + (z * CS)];
 }
 
