@@ -125,13 +125,13 @@ struct BlockVoxelData {
 
     BlockTexture get_face(u8 dir) const {
         if (dir == 0) {
-            return texture_top;
-        } else if (dir == 1) {
-            return texture_bottom;
-        } else if (dir == 2) {
             return texture_right;
-        } else if (dir == 3) {
+        } else if (dir == 1) {
             return texture_left;
+        } else if (dir == 2) {
+            return texture_top;
+        } else if (dir == 3) {
+            return texture_bottom;
         } else if (dir == 4) {
             return texture_back;
         } else {

@@ -18,21 +18,21 @@ in vec3 FragPos;
 out vec4 FragColor;
 
 const vec3 normalLookup[6] = {
-  vec3( 0,  1,  0 ),
-  vec3( 0, -1,  0 ),
   vec3( 1,  0,  0 ),
   vec3(-1,  0,  0 ),
+  vec3( 0,  1,  0 ),
+  vec3( 0, -1,  0 ),
   vec3( 0,  0,  1 ),
   vec3( 0,  0, -1 ),
 };
 
 const float lightLookup[6] = {
+  0.9,
+  0.6,
   1.0,
   0.4,
-  0.9,
   0.6,
   0.9,
-  0.6,
 };
 
 void main() {

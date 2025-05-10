@@ -74,10 +74,10 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
 
                 // TODO: check if voxel is solid (not see through)
                 if (chunk.voxels[get_zxy_index(x, y, z)].type) {
-                    // x,z - y axis
-                    axis_cols[ax + (az * CS_P)] |= (u64)1 << ay;
                     // z,y - x axis
-                    axis_cols[az + (ay * CS_P) + CS_P2] |= (u64)1 << ax;
+                    axis_cols[az + (ay * CS_P)] |= (u64)1 << ax;
+                    // x,z - y axis
+                    axis_cols[ax + (az * CS_P) + CS_P2] |= (u64)1 << ay;
                     // x,y - z axis
                     axis_cols[ax + (ay * CS_P) + CS_P2 * 2] |= (u64)1 << az;
                 }
@@ -92,13 +92,13 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
                 for (u8 dim_3 = 0; dim_3 < CS_P; dim_3 += CS_P - 1) {
                     u8 x, y, z;
                     if (axis == 0) {
-                        x = dim_1;
-                        y = dim_3;
-                        z = dim_2;
-                    } else if (axis == 1) {
                         z = dim_1;
                         x = dim_3;
                         y = dim_2;
+                    } else if (axis == 1) {
+                        x = dim_1;
+                        y = dim_3;
+                        z = dim_2;
                     } else {
                         x = dim_1;
                         z = dim_3;
@@ -114,10 +114,10 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
                     EmbeddedVoxel* voxel;
                     bool has_voxel = VoxelWorlds::getVoxel(voxelWorld, world_x, world_y, world_z, &voxel);
                     if (has_voxel == true && voxel->type) {
-                        // x,z - y axis
-                        axis_cols[x + (z * CS_P)] |= (u64)1 << y;
                         // z,y - x axis
-                        axis_cols[z + (y * CS_P) + CS_P2] |= (u64)1 << x;
+                        axis_cols[z + (y * CS_P)] |= (u64)1 << x;
+                        // x,z - y axis
+                        axis_cols[x + (z * CS_P) + CS_P2] |= (u64)1 << y;
                         // x,y - z axis
                         axis_cols[x + (y * CS_P) + CS_P2 * 2] |= (u64)1 << z;
                     }
@@ -175,11 +175,11 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
                     while (face_mask) {
                         u8 dim_3 = pop_lsb(face_mask);
 
-                        // x,z - y axis
-                        // x,y - z axis y face
-
                         // z,y - x axis
                         // z,x - y axis x face
+
+                        // x,z - y axis
+                        // x,y - z axis y face
 
                         // x,y - z axis
                         // x,z - y axis z face
@@ -206,13 +206,13 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
 
                         u8 x, y, z;
                         if (axis == 0) {
-                            x = dim_1;
-                            y = dim_3;
-                            z = dim_2;
-                        } else if (axis == 1) {
                             z = dim_1;
                             x = dim_3;
                             y = dim_2;
+                        } else if (axis == 1) {
+                            x = dim_1;
+                            y = dim_3;
+                            z = dim_2;
                         } else {
                             x = dim_1;
                             z = dim_3;
@@ -265,13 +265,13 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
 
                             u8 x, y, z;
                             if (axis == 0) {
-                                x = dim_1;
-                                y = dim_2;
-                                z = dim_3;
-                            } else if (axis == 1) {
                                 z = dim_1;
                                 x = dim_2;
                                 y = dim_3;
+                            } else if (axis == 1) {
+                                x = dim_1;
+                                y = dim_2;
+                                z = dim_3;
                             } else {
                                 x = dim_1;
                                 z = dim_2;

@@ -25,10 +25,10 @@ uniform ivec3 eye_position_int;
 uniform ivec3 chunk_pos;
 
 const vec3 normalLookup[6] = {
-  vec3( 0,  1,  0 ),
-  vec3( 0, -1,  0 ),
   vec3( 1,  0,  0 ),
   vec3(-1,  0,  0 ),
+  vec3( 0,  1,  0 ),
+  vec3( 0, -1,  0 ),
   vec3( 0,  0,  1 ),
   vec3( 0,  0, -1 ),
 };
@@ -48,7 +48,7 @@ void main() {
 
   vec3 vertexPos;
 
-  if (axis == 0) {
+  if (axis == 2) {
     // top (+Y)
     vertexPos.x = aPos.x;
     vertexPos.y = 1.0f;
@@ -57,7 +57,7 @@ void main() {
     vertexPos.x *= w;
     vertexPos.z *= h;
     vertexPos.z += h - 1;
-  } else if (axis == 1) {
+  } else if (axis == 3) {
     // bottom (-Y)
     vertexPos.x = aPos.x;
     vertexPos.y = 0.0f;
@@ -66,7 +66,7 @@ void main() {
     vertexPos.x *= w;
     vertexPos.z *= h;
     vertexPos.z += h - 1;
-  } else if (axis == 2) {
+  } else if (axis == 0) {
     // right (+X)
     vertexPos.x = 1.0f;
     vertexPos.y = aPos.y;
@@ -75,7 +75,7 @@ void main() {
     vertexPos.z *= w;
     vertexPos.z += w - 1;
     vertexPos.y *= h;
-  } else if (axis == 3) {
+  } else if (axis == 1) {
     // left (-X)
     vertexPos.x = 0.0f;
     vertexPos.y = aPos.y;
