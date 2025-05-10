@@ -27,6 +27,13 @@ public:
     u64 getChunkIndex(u64 x, u64 y, u64 z) const {
         return z + (x * size.z) + (y * size.x * size.z);
     }
+
+    u64 chunkPosToChunkIndex(u64 x, u64 y, u64 z) const {
+        i64 chunk_pos_x = (i64(size.x) / 2) + x;
+        i64 chunk_pos_y = (i64(size.y) / 2) + y;
+        i64 chunk_pos_z = (i64(size.z) / 2) + z;
+        return chunk_pos_z + (chunk_pos_x * size.z) + (chunk_pos_y * size.x * size.z);
+    }
 };
 
 

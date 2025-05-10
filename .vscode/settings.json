@@ -82,6 +82,8 @@
         "mutex": "cpp",
         "print": "cpp",
         "string_view": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "map": "cpp",
+        "xtree": "cpp"
     }
 }

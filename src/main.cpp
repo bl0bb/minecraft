@@ -15,8 +15,12 @@
 #include "core/camera.h"
 #include "core/shader.h"
 
+#include "light/light.h"
+
 #include "voxel/logic/voxel.h"
 #include "voxel/logic/voxel_game_world.h"
+
+#include "voxel/light/voxel_light_world.h"
 
 #include "voxel/render/voxel_chunk_renderer.h"
 #include "voxel/render/voxel_world_renderer.h"
@@ -30,6 +34,8 @@
 #include "terrain_gen/terrain_gen.h"
 
 #include "text/text_renderer.h"
+
+#include "file_parsers/nbt_parser.h"
 
 // TODO: add quad support for rendering and for obj importing??
 
@@ -223,50 +229,111 @@ int main() {
 
 
 
-    Noise noise = Noise();
-    noise.setSeed(646);
-    noise.updateNoise();
-
     // world size in chunks
-    u16 world_size = 2;
-    u16 world_height = 2;
-    u16 world_total_chunks = world_size * world_size * world_height;
-    Vec3<u64> world_chunk_size = {world_size, world_height, world_size};
-    Vec3<i64> world_chunk_center = world_chunk_size / 2;
+    Vec3<u64> world_size = {2, 2, 2};
+    u16 world_total_chunks = world_size.volume();
+    Vec3<i64> world_chunk_center = world_size / 2;
 
-    VoxelGameWorld voxelGameWorld = VoxelGameWorld(Vec3<u64>(world_size, world_height, world_size));
+    VoxelGameWorld voxelGameWorld = VoxelGameWorld(world_size);
     voxelGameWorld.chunks = (VoxelChunk*)malloc(sizeof(VoxelChunk) * world_total_chunks);
-    voxelGameWorld.size = world_chunk_size;
+    voxelGameWorld.size = world_size;
 
-    VoxelWorldRenderer voxelWorldRenderer = VoxelWorldRenderer(Vec3<u64>(world_size, world_height, world_size));
+    VoxelLightWorld voxelLightWorld = VoxelLightWorld(world_size);
+    voxelLightWorld.chunks = (VoxelLightChunk*)malloc(sizeof(VoxelLightChunk) * world_total_chunks);
+    voxelLightWorld.size = world_size;
+
+    VoxelWorldRenderer voxelWorldRenderer = VoxelWorldRenderer(world_size);
     voxelWorldRenderer.chunks = (VoxelChunkRenderer*)malloc(sizeof(VoxelChunkRenderer) * world_total_chunks);
     
-    for (i64 y = 0; y < world_height; y++) {
-        for (i64 x = 0; x < world_size; x++) {
-            for (i64 z = 0; z < world_size; z++) {
+    // setup
+    for (i64 y = 0; y < world_size.y; y++) {
+        for (i64 x = 0; x < world_size.x; x++) {
+            for (i64 z = 0; z < world_size.z; z++) {
+                // game
                 VoxelChunk chunk = VoxelChunk();
                 chunk.pos = Vec3<i64>(x, y, z) - world_chunk_center;
-                
-                auto start = std::chrono::high_resolution_clock::now();
-                noise.GenerateFullTerrain(chunk.voxels, x, y, z);
-                auto end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double, std::milli> elapsed = end - start;
-                std::cout << "Terrain gen: " << elapsed.count() << " ms\n";
-
                 voxelGameWorld.chunks[voxelGameWorld.getChunkIndex(x, y, z)] = chunk;
 
+                // render
                 VoxelChunkRenderer chunkRenderer = VoxelChunkRenderer();
                 chunkRenderer.init();
                 chunkRenderer.chunk = &voxelGameWorld.chunks[voxelGameWorld.getChunkIndex(x, y, z)];
 
                 voxelWorldRenderer.chunks[voxelGameWorld.getChunkIndex(x, y, z)] = chunkRenderer;
+
+                // light
+                voxelLightWorld.chunks[voxelLightWorld.getChunkIndex(x, y, z)] = VoxelLightChunk();
             }
         }
     }
 
-    for (i64 x = 0; x < world_size; x++) {
-        for (i64 y = 0; y < world_height; y++) {
-            for (i64 z = 0; z < world_size; z++) {
+    // terrain generation
+    // Noise noise = Noise();
+    // noise.setSeed(646);
+    // noise.updateNoise();
+    // for (i64 y = 0; y < world_size.y; y++) {
+    //     for (i64 x = 0; x < world_size.x; x++) {
+    //         for (i64 z = 0; z < world_size.z; z++) {
+    //             // game
+    //             VoxelChunk& chunk = voxelGameWorld.chunks[voxelGameWorld.getChunkIndex(x, y, z)];
+
+    //             auto start = std::chrono::high_resolution_clock::now();
+    //             noise.GenerateFullTerrain(chunk.voxels, x, y, z);
+    //             auto end = std::chrono::high_resolution_clock::now();
+    //             std::chrono::duration<double, std::milli> elapsed = end - start;
+    //             std::cout << "Terrain gen: " << elapsed.count() << " ms\n";
+    //         }
+    //     }
+    // }
+
+
+
+    // flat grass
+    for (i64 cx = -i64(world_size.x) / 2; cx < i64(world_size.x) / 2; cx++) {
+        for (i64 cz = -i64(world_size.z) / 2; cz < i64(world_size.z) / 2; cz++) {
+            // game
+            VoxelChunk& chunk = voxelGameWorld.chunks[voxelGameWorld.chunkPosToChunkIndex(cx, 0, cz)];
+
+            for (u8 x = 0; x < CS; x++) {
+                for (u8 z = 0; z < CS; z++) {
+                    chunk.voxels[get_zxy_index(x, 4, z)] = EmbeddedVoxel(BlockTypes::GRASS);
+                    for (u8 y = 1; y < 4; y++) {
+                        chunk.voxels[get_zxy_index(x, y, z)] = EmbeddedVoxel(BlockTypes::DIRT);
+                    }
+                    chunk.voxels[get_zxy_index(x, 0, z)] = EmbeddedVoxel(BlockTypes::STONE);
+                }
+            }
+        }
+    }
+
+    // house
+    // load house nbt
+    // std::ifstream file("assets/structures/plains_big_house_1.nbt", std::ios::binary);
+    // if (!file) {
+    //     std::cerr << "Failed to open file.\n";
+    //     return 1;
+    // }
+
+    // std::vector<char> fileVec;
+    // if (isGzipped(file)) {
+    //     printf("sigma\n");
+    //     fileVec = decompressGzipFile(file);
+    // } else {
+    //     fileVec = streamToString(file);
+    // }
+
+    // NBTReader nbtReader(fileVec);
+    // nbtReader.parse();
+
+
+
+
+
+    // mesh / light
+    for (i64 x = 0; x < world_size.x; x++) {
+        for (i64 y = 0; y < world_size.y; y++) {
+            for (i64 z = 0; z < world_size.z; z++) {
+                // render
                 VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[voxelWorldRenderer.getChunkIndex(x, y, z)];
 
                 auto start = std::chrono::high_resolution_clock::now();
@@ -276,6 +343,9 @@ int main() {
                 auto end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> elapsed = end - start;
                 std::cout << "Mesh gen: " << elapsed.count() << " ms\n";
+
+                // light
+                VoxelLightChunk& lightChunk = voxelLightWorld.chunks[voxelLightWorld.getChunkIndex(x, y, z)];
             }
         }
     }

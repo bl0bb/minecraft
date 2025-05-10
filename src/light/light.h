@@ -4,7 +4,7 @@
 #include <queue>
 
 #include "../core/maths.h"
-#include "../../core/color.h"
+#include "../core/color.h"
 #include "../voxel/logic/voxel_game_world.h"
 #include "../voxel/light/voxel_light_world.h"
 
@@ -29,10 +29,10 @@ const Vec3<i8> directions[6] = {
 template<typename LightType>
 using LightQueue = std::queue<std::tuple<Vec3<i64>, LightType>>;
 
-typedef LightQueue<RGBI4> BlockLightQueue;
+typedef LightQueue<RGBIS4> BlockLightQueue;
 typedef LightQueue<RGBIS4> AllLightQueue;
 
-class ChunkLight {
+namespace ChunkLight {
     enum LightPropagationType : u8 {
         DEFAULT_LIGHT,
         SUN_LIGHT,
@@ -43,7 +43,7 @@ class ChunkLight {
             auto [pos, _] = lightQueue.front();
             lightQueue.pop();
 
-            RGBI4* light;
+            RGBIS4* light;
             if (!VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
                 continue;
             }
@@ -54,7 +54,7 @@ class ChunkLight {
             for (u8 i = 0; i < 6; i++) {
                 Vec3<i64> newPos = pos + directions[i];
 
-                RGBI4* newLight;
+                RGBIS4* newLight;
                 if (!VoxelWorlds::getVoxel(voxelLightWorld, newPos.x, newPos.y, newPos.z, &newLight)) {
                     continue;
                 }
@@ -87,7 +87,7 @@ class ChunkLight {
             for (u8 i = 0; i < 6; i++) {
                 Vec3<i64> newPos = pos + directions[i];
 
-                RGBI4* newLight;
+                RGBIS4* newLight;
                 if (!VoxelWorlds::getVoxel(voxelLightWorld, newPos.x, newPos.y, newPos.z, &newLight)) {
                     continue;
                 }
@@ -111,7 +111,7 @@ class ChunkLight {
     static void add_channel(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, u8 value, u32 mask, u32 offset, LightPropagationType type) {
         AllLightQueue lightQueue;
 
-        RGBI4* light;
+        RGBIS4* light;
         if (!VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
             return;
         }
@@ -125,11 +125,11 @@ class ChunkLight {
         AllLightQueue lightQueue;
         AllLightQueue propQueue;
 
-        RGBI4* light;
+        RGBIS4* light;
         if (!VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
             return;
         }
-        RGBI4 oldLight = *light;
+        RGBIS4 oldLight = *light;
         *light = (oldLight & ~mask);
 
         lightQueue.push({pos, (oldLight & mask) >> offset});
@@ -137,7 +137,7 @@ class ChunkLight {
         add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, type);
     }
 
-    static void add_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBI4 light) {
+    static void add_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
         for (u8 i = 0; i < 4; i++) {
             u8 offset = i * 4;
             u32 mask = 0xF << offset;
@@ -145,7 +145,7 @@ class ChunkLight {
         }
     }
 
-    static void remove_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBI4 light) {
+    static void remove_block_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
         for (u8 i = 0; i < 4; i++) {
             u8 offset = i * 4;
             u32 mask = 0xF << offset;

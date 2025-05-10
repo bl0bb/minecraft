@@ -9,7 +9,6 @@ ERROR_FLAGS = \
 # -pedantic
 
 CORE_FILES = \
-src/voxel/render/voxel_mesher.cpp\
 src/voxel/logic/voxel.cpp\
 src/core/maths.cpp\
 src/FastNoise/FastNoise.cpp\
@@ -21,7 +20,7 @@ FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp
 
 
 # windows
-LIBS = -Idep/include -Ldep/lib -lglfw3dll
+LIBS = -Idep/include -Ldep/lib -lglfw3dll -lz
 
 # macos (linux?)
 # LIBS = -Idep/include -Ldep/lib
