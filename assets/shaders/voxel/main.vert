@@ -41,7 +41,7 @@ void main() {
   uint data2 = data.data2;
   vec3 offset = vec3(data1 & 31, (data1 >> 5) & 31, (data1 >> 10) & 31);
 
-  uint axis = (data1 >> 25) & 7;
+  uint axis = (data1 >> 15) & 7;
   uint isNegative = axis & 1;
 
   vec3 vertexPos;
@@ -85,11 +85,11 @@ void main() {
 
 
   // texture index occupies both data1 and data2
-  // texIndex = int((data1 >> 28) & 15);
-  texIndex = int(
-    ((data2 & 63) << 4) |
-    ((data1 >> 28) & 15)
-  );
+  texIndex = int((data1 >> 18) & 15);
+  // texIndex = int(
+  //   ((data2 & 63) << 4) |
+  //   ((data1 >> 28) & 15)
+  // );
 
   texUv = vec2(aPos.x, (1 - aPos.y));
 
