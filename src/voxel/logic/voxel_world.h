@@ -59,8 +59,19 @@ bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxe
     u64 chunk_index = world.getChunkIndex(chunk_pos_x, chunk_pos_y, chunk_pos_z);
 
     *voxel_ptr = &world.chunks[chunk_index].voxels[get_zxy_index(((x % CS) + CS) % CS, ((y % CS) + CS) % CS, ((z % CS) + CS) % CS)];
-    // *voxel_ptr = &world.chunks[chunk_index].voxels[get_zxy_index(x % CS, y % CS, z % CS)];
 
+    return true;
+}
+
+template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type>
+bool placeVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType voxelToPlace) {
+    VoxelType* voxel;
+    if (!getVoxel(world, x, y, z, &voxel)) {
+        return false;
+    }
+
+    *voxel = voxelToPlace;
+    
     return true;
 }
 

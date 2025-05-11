@@ -96,10 +96,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
         glfwSetWindowShouldClose(window, true);
     } else if (key == GLFW_KEY_X && action == GLFW_RELEASE) {
-        GLint lastPolyMode[2];
-        glGetIntegerv(GL_POLYGON_MODE, lastPolyMode);
-        if (lastPolyMode[0] == GL_FILL) {
+        GLint lastPolyMode;
+        glGetIntegerv(GL_POLYGON_MODE, &lastPolyMode);
+        if (lastPolyMode == GL_FILL) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        } else if (lastPolyMode == GL_LINE) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
         } else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
@@ -309,6 +311,13 @@ int main() {
             }
         }
     }
+
+    // block, slab and stair
+    VoxelWorlds::placeVoxel(voxelGameWorld, 0, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+
+    VoxelWorlds::placeVoxel(voxelGameWorld, 2, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+
+    VoxelWorlds::placeVoxel(voxelGameWorld, 4, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
 
     // house
     // load house nbt

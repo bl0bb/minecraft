@@ -26,31 +26,31 @@ namespace Colors {
     constexpr u8 COLOR4_MAX = 15;
     constexpr u8 COLOR8_MAX = 255;
 
-    inline RGBI4 createRGBI4(u8 r, u8 g, u8 b, u8 i) {
+    constexpr inline RGBI4 createRGBI4(u8 r, u8 g, u8 b, u8 i) {
         return (r << 12) | (g << 8) | (b << 4) | i;
     }
 
-    inline RGBI4 createRGBIS4(u8 r, u8 g, u8 b, u8 i, u8 s) {
+    constexpr inline RGBI4 createRGBIS4(u8 r, u8 g, u8 b, u8 i, u8 s) {
         return (r << 16) | (g << 12) | (b << 8) | (i << 4) | s;
     }
 
-    inline RGBI8 createRGBI8(u8 r, u8 g, u8 b, u8 i) {
+    constexpr inline RGBI8 createRGBI8(u8 r, u8 g, u8 b, u8 i) {
         return (r << 24) | (g << 16) | (b << 8) | i;
     }
 
     template<typename T>
-    inline T reduceChannel(T channel) {
+    constexpr inline T reduceChannel(T channel) {
         return channel ? channel - 1 : channel;
     }
 
-    inline RGBI4 reduceOne(RGBI4 color) {
+    constexpr inline RGBI4 reduceOne(RGBI4 color) {
         return (reduceChannel(color >> 12 & 0xF) << 12) |
                (reduceChannel(color >> 8 & 0xF) << 8) |
                (reduceChannel(color >> 4 & 0xF) << 4) |
                reduceChannel(color & 0xF);
     }
 
-    inline RGBI8 reduceOne(RGBI8 color) {
+    constexpr inline RGBI8 reduceOne(RGBI8 color) {
         return (reduceChannel(color >> 24 & 0xFF) << 24) |
                (reduceChannel(color >> 16 & 0xFF) << 16) |
                (reduceChannel(color >> 8 & 0xFF) << 8) |

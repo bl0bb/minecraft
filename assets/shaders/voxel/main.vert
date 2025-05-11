@@ -41,57 +41,58 @@ void main() {
   uint data2 = data.data2;
   vec3 offset = vec3(data1 & 31, (data1 >> 5) & 31, (data1 >> 10) & 31);
 
-  uint axis = (data1 >> 15) & 7;
+  vec2 face_offset = vec2((data1 >> 15) & 15, (data1 >> 19) & 15) / 16.0f;
+  vec2 face_size = (vec2((data1 >> 27) & 15, ((data2 & 7) << 1) | ((data1 >> 31) & 1)) + 1) / 16.0f;
+  float depth = ((data1 >> 23) & 15) / 16.0f;
+
+  uint axis = (data2 >> 3) & 7;
   uint isNegative = axis & 1;
+
+  vec2 fixedPos = face_offset + (face_size * vec2(aPos));
 
   vec3 vertexPos;
 
   if (axis == 0) {
     // right (+X)
-    vertexPos.x = 1.0f;
-    vertexPos.y = aPos.y;
-    vertexPos.z = aPos.x - 1.0f; // 1.0f - aPos.x;
+    vertexPos.x = 1.0f - depth;
+    vertexPos.y = fixedPos.y;
+    vertexPos.z = fixedPos.x - 1.0f; // 1.0f - fixedPos.x;
   } else if (axis == 1) {
     // left (-X)
-    vertexPos.x = 0.0f;
-    vertexPos.y = aPos.y;
-    vertexPos.z = -aPos.x; // aPos.x;
+    vertexPos.x = depth;
+    vertexPos.y = fixedPos.y;
+    vertexPos.z = -fixedPos.x; // fixedPos.x;
   } else if (axis == 2) {
     // top (+Y)
-    vertexPos.x = aPos.x;
-    vertexPos.y = 1.0f;
-    vertexPos.z = aPos.y - 1.0f; // 1.0f - aPos.y;
+    vertexPos.x = fixedPos.x;
+    vertexPos.y = 1.0f - depth;
+    vertexPos.z = fixedPos.y - 1.0f; // 1.0f - fixedPos.y;
   } else if (axis == 3) {
     // bottom (-Y)
-    vertexPos.x = aPos.x;
-    vertexPos.y = 0.0f;
-    vertexPos.z = -aPos.y; // aPos.y;
+    vertexPos.x = fixedPos.x;
+    vertexPos.y = depth;
+    vertexPos.z = -fixedPos.y; // fixedPos.y;
   } else if (axis == 4) {
     // back (+Z)
-    vertexPos.x = 1.0f - aPos.x;
-    vertexPos.y = aPos.y;
-    vertexPos.z = 0.0f; // 0.0f;
+    vertexPos.x = 1.0f - fixedPos.x;
+    vertexPos.y = fixedPos.y;
+    vertexPos.z = -depth; // 0.0f;
   } else {
     // front (-Z)
-    vertexPos.x = aPos.x;
-    vertexPos.y = aPos.y;
-    vertexPos.z = -1.0f; // 1.0f;
+    vertexPos.x = fixedPos.x;
+    vertexPos.y = fixedPos.y;
+    vertexPos.z = -1.0f + depth; // 1.0f;
   }
 
-  gl_Position = u_projection * u_view * vec4(chunk_pos * 32 + vertexPos + offset, 1.0);
+  gl_Position = u_projection * u_view * vec4(chunk_pos * 32 + offset + vertexPos, 1.0);
 
 
 
 
 
-  // texture index occupies both data1 and data2
-  texIndex = int((data1 >> 18) & 15);
-  // texIndex = int(
-  //   ((data2 & 63) << 4) |
-  //   ((data1 >> 28) & 15)
-  // );
+  texIndex = int((data2 >> 6) & 15);
 
-  texUv = vec2(aPos.x, (1 - aPos.y));
+  texUv = vec2(aPos.x * face_size.x, (1 - aPos.y * face_size.y));
 
 
   Axis = axis;

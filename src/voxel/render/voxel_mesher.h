@@ -8,6 +8,7 @@
 #include "../../core/bits.h"
 
 #include "../../blocks.h"
+#include "../../block_meshes.h"
 
 
 #include "../logic/voxel.h"
@@ -50,8 +51,8 @@ constexpr inline void dim_to_pos(u8& x, u8& y, u8& z, u8 dim_1, u8 dim_2, u8 dim
 
 
 u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chunk, VoxelFace* vertices) {
-    // solid voxel as binary for each x,y,z axis
-    u64 axis_cols[3 * CS_P2] = {0};
+    // solid voxel as binary for each x,y,z axis, positive and negative
+    u64 axis_cols[3 * CS_P2 * 2] = {0};
 
     // the cull mask to perform greedy slicing, based on solids on previous axis_cols
     u64 col_face_masks[3 * CS_P2 * 2] = {0};
@@ -74,12 +75,27 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
 
                 // TODO: check if voxel is solid (not see through)
                 if (chunk.voxels[get_zxy_index(x, y, z)].type) {
+                    // // z,y - x axis
+                    // axis_cols[az + (ay * CS_P)] |= (u64)1 << ax;
+                    // // x,z - y axis
+                    // axis_cols[ax + (az * CS_P) + CS_P2] |= (u64)1 << ay;
+                    // // x,y - z axis
+                    // axis_cols[ax + (ay * CS_P) + CS_P2 * 2] |= (u64)1 << az;
+
                     // z,y - x axis
-                    axis_cols[az + (ay * CS_P)] |= (u64)1 << ax;
+                    axis_cols[az + (ay * CS_P) + CS_P2 * 0] |= (u64)1 << ax;
+                    // negative
+                    axis_cols[az + (ay * CS_P) + CS_P2 * 1] |= (u64)1 << ax;
+
                     // x,z - y axis
-                    axis_cols[ax + (az * CS_P) + CS_P2] |= (u64)1 << ay;
+                    axis_cols[ax + (az * CS_P) + CS_P2 * 2] |= (u64)1 << ay;
+                    // negative
+                    axis_cols[ax + (az * CS_P) + CS_P2 * 3] |= (u64)1 << ay;
+
                     // x,y - z axis
-                    axis_cols[ax + (ay * CS_P) + CS_P2 * 2] |= (u64)1 << az;
+                    axis_cols[ax + (ay * CS_P) + CS_P2 * 4] |= (u64)1 << az;
+                    // negative
+                    axis_cols[ax + (ay * CS_P) + CS_P2 * 5] |= (u64)1 << az;
                 }
             }
         }
@@ -113,13 +129,28 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
                     // TODO: check if voxel is solid (not see through)
                     EmbeddedVoxel* voxel;
                     bool has_voxel = VoxelWorlds::getVoxel(voxelWorld, world_x, world_y, world_z, &voxel);
-                    if (has_voxel == true && voxel->type) {
+                    if (has_voxel == true && voxel->type != BlockTypes::AIR) {
+                        // // z,y - x axis
+                        // axis_cols[z + (y * CS_P)] |= (u64)1 << x;
+                        // // x,z - y axis
+                        // axis_cols[x + (z * CS_P) + CS_P2] |= (u64)1 << y;
+                        // // x,y - z axis
+                        // axis_cols[x + (y * CS_P) + CS_P2 * 2] |= (u64)1 << z;
+
                         // z,y - x axis
-                        axis_cols[z + (y * CS_P)] |= (u64)1 << x;
+                        axis_cols[z + (y * CS_P) + CS_P2 * 0] |= (u64)1 << x;
+                        // negative
+                        axis_cols[z + (y * CS_P) + CS_P2 * 1] |= (u64)1 << x;
+
                         // x,z - y axis
-                        axis_cols[x + (z * CS_P) + CS_P2] |= (u64)1 << y;
+                        axis_cols[x + (z * CS_P) + CS_P2 * 2] |= (u64)1 << y;
+                        // negative
+                        axis_cols[x + (z * CS_P) + CS_P2 * 3] |= (u64)1 << y;
+
                         // x,y - z axis
-                        axis_cols[x + (y * CS_P) + CS_P2 * 2] |= (u64)1 << z;
+                        axis_cols[x + (y * CS_P) + CS_P2 * 4] |= (u64)1 << z;
+                        // negative
+                        axis_cols[x + (y * CS_P) + CS_P2 * 5] |= (u64)1 << z;
                     }
                 }
             }
@@ -135,7 +166,7 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
         for (u8 j = 0; j < 2; j++) {
             u8 dir = axis * 2 + j;
             for (u16 i = 0; i < CS_P2; i++) {
-                u64 col = axis_cols[(CS_P2 * axis) + i];
+                u64 col = axis_cols[(CS_P2 * dir) + i];
 
                 // sample axis, and set true when air meets solid
                 u64 mask = col;
@@ -187,8 +218,18 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
                             y = dim_2;
                             z = dim_3;
                         }
-                        
-                        vertices[vertexIdx++] = getQuad(x, y, z, dir, block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type].get_face(dir));
+
+                        BlockVoxelData blockData = block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type];
+                        BlockTexture blockTexture = blockData.get_face(dir);
+                        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType];
+
+                        for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
+                            BlockFace face = blockMesh.faces[dir][i];
+                            vertices[vertexIdx++] = getQuad(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), dir, blockTexture);
+                        }
+
+
+                        // vertices[vertexIdx++] = getQuad(x, y, z, dir, block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type].get_face(dir));
                     }
                 }
             }
