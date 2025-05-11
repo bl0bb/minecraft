@@ -14,3 +14,14 @@ u16 texture_front,
 
 blockdata // a block in a chunk
 u16 type // block type
+
+
+
+
+
+
+
+
+
+
+// rendering chunk with not only blocks, but with stairs and slabs

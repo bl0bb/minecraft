@@ -25,7 +25,7 @@ public:
     f32 pitch = PITCH;
     f32 mouseSensitivity = SENSITIVITY;
     f32 fov = FOV;
-    f32 nearD = 1.0f;
+    f32 nearD = 0.1f;
     f32 farD = 10000.0f;
     f32 ratio;
 

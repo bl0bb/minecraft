@@ -27,6 +27,7 @@
 
 #include "core/array.h"
 #include "blocks.h"
+#include "block_meshes.h"
 
 #include "shading/ambient_occlusion.h"
 #include "quad.h"
@@ -223,6 +224,9 @@ int main() {
 
 
 
+
+    // load block meshes
+    loadBlocksMeshes();
 
 
 
@@ -583,7 +587,7 @@ int main() {
             else if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) shaderType = 9;
             
 
-            printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
+            // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
 
             
 

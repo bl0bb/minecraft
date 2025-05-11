@@ -155,10 +155,8 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
 
 
 
-    // binary greedy meshing
-
-    // greedy meshing setup
-    // setup planes
+    // meshing
+    // generate quads
     for (u8 axis = 0; axis < 3; axis++) {
         for (u8 j = 0; j < 2; j++) {
             u8 dir = axis * 2 + j;
@@ -175,114 +173,22 @@ u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chun
                     while (face_mask) {
                         u8 dim_3 = pop_lsb(face_mask);
 
-                        // z,y - x axis
-                        // z,x - y axis x face
-
-                        // x,z - y axis
-                        // x,y - z axis y face
-
-                        // x,y - z axis
-                        // x,z - y axis z face
-
-
-
-
-
-                        /*
-                        if dir is 0
-                        each mask is going upward (y (dim_3))
-                        and each bit is determining if a face is present and facing upwards or downwards (y (dim_3))
-                        x (dim_1) and z (dim_2) is used for indexig the mask
-
-                        now to convert to a binary plane
-                        y faces are aligned the z axis
-                        indexed with x and y
-                        */
-
-
-
-
-                        
-
                         u8 x, y, z;
                         if (axis == 0) {
                             z = dim_1;
-                            x = dim_3;
                             y = dim_2;
+                            x = dim_3;
                         } else if (axis == 1) {
                             x = dim_1;
-                            y = dim_3;
                             z = dim_2;
+                            y = dim_3;
                         } else {
                             x = dim_1;
-                            z = dim_3;
                             y = dim_2;
+                            z = dim_3;
                         }
-                        surface_face_masks[chunk.voxels[get_zxy_index(x, y, z)].type][dim_1 + (dim_3 * CS) + (CS_2 * dir)] |= u64(1) << dim_2;
-                    }
-                }
-            }
-        }
-    }
-
-    // greedy meshing
-    for (auto& [block_type, block_face_masks] : surface_face_masks) {
-        for (u8 axis = 0; axis < 3; axis++) {
-            for (u8 j = 0; j < 2; j++) {
-                u8 dir = axis * 2 + j;
-                for (u8 dim_2 = 0; dim_2 < CS; dim_2++) {
-                    for (u8 dim_1 = 0; dim_1 < CS; dim_1++) {
-                        u32 index = dim_1 + (dim_2 * CS) + (CS_2 * dir);
-                        u64 face_mask = block_face_masks[index];
-
-                        u8 dim_3 = 0;
-                        while (dim_3 < CS) {
-                            dim_3 += lsb(face_mask >> dim_3);
-                            if (dim_3 >= CS) {
-                                break;
-                                // continue;
-                            }
-
-                            u8 h = countTrailingOnes(face_mask >> dim_3);
-
-                            // 1 = 0b1, 2 = 0b11, 3 = 0b111, etc
-                            u64 h_as_mask = (u64(1) << u64(h)) - u64(1);
-                            // printf("%i %i %llu %llu\n", h, dim_3, h_as_mask, face_mask >> dim_3);
-
-                            u64 mask = h_as_mask << dim_3;
-
-                            u64 w = 1;
-                            while (dim_1 + w < CS) {
-                                u64 next_row_h = (block_face_masks[index + w] >> dim_3) & h_as_mask;
-                                if (next_row_h != h_as_mask) {
-                                    break;
-                                }
-
-                                block_face_masks[index + w] &= ~mask;
-
-                                w++;
-                            }
-
-                            u8 x, y, z;
-                            if (axis == 0) {
-                                z = dim_1;
-                                x = dim_2;
-                                y = dim_3;
-                            } else if (axis == 1) {
-                                x = dim_1;
-                                y = dim_2;
-                                z = dim_3;
-                            } else {
-                                x = dim_1;
-                                z = dim_2;
-                                y = dim_3;
-                            }
-
-                            // printf("(%i %i %i) (%i %i) (%i)\n", x, y, z, w, h, dir);
-
-                            vertices[vertexIdx++] = getQuad(x, y, z, w - 1, h - 1, dir, block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type].get_face(dir));
-                            dim_3 += h;
-                        }
+                        
+                        vertices[vertexIdx++] = getQuad(x, y, z, dir, block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type].get_face(dir));
                     }
                 }
             }

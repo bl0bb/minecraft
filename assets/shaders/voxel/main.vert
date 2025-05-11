@@ -40,66 +40,42 @@ void main() {
   uint data1 = data.data1;
   uint data2 = data.data2;
   vec3 offset = vec3(data1 & 31, (data1 >> 5) & 31, (data1 >> 10) & 31);
-  uint w = ((data1 >> 15) & 31) + 1;
-  uint h = ((data1 >> 20) & 31) + 1;
 
   uint axis = (data1 >> 25) & 7;
   uint isNegative = axis & 1;
 
   vec3 vertexPos;
 
-  if (axis == 2) {
-    // top (+Y)
-    vertexPos.x = aPos.x;
-    vertexPos.y = 1.0f;
-    vertexPos.z = aPos.y - 1.0f; // 1.0f - aPos.y;
-
-    vertexPos.x *= w;
-    vertexPos.z *= h;
-    vertexPos.z += h - 1;
-  } else if (axis == 3) {
-    // bottom (-Y)
-    vertexPos.x = aPos.x;
-    vertexPos.y = 0.0f;
-    vertexPos.z = -aPos.y; // aPos.y;
-
-    vertexPos.x *= w;
-    vertexPos.z *= h;
-    vertexPos.z += h - 1;
-  } else if (axis == 0) {
+  if (axis == 0) {
     // right (+X)
     vertexPos.x = 1.0f;
     vertexPos.y = aPos.y;
     vertexPos.z = aPos.x - 1.0f; // 1.0f - aPos.x;
-
-    vertexPos.z *= w;
-    vertexPos.z += w - 1;
-    vertexPos.y *= h;
   } else if (axis == 1) {
     // left (-X)
     vertexPos.x = 0.0f;
     vertexPos.y = aPos.y;
     vertexPos.z = -aPos.x; // aPos.x;
-
-    vertexPos.z *= w;
-    vertexPos.z += w - 1;
-    vertexPos.y *= h;
+  } else if (axis == 2) {
+    // top (+Y)
+    vertexPos.x = aPos.x;
+    vertexPos.y = 1.0f;
+    vertexPos.z = aPos.y - 1.0f; // 1.0f - aPos.y;
+  } else if (axis == 3) {
+    // bottom (-Y)
+    vertexPos.x = aPos.x;
+    vertexPos.y = 0.0f;
+    vertexPos.z = -aPos.y; // aPos.y;
   } else if (axis == 4) {
     // back (+Z)
     vertexPos.x = 1.0f - aPos.x;
     vertexPos.y = aPos.y;
     vertexPos.z = 0.0f; // 0.0f;
-
-    vertexPos.x *= w;
-    vertexPos.y *= h;
   } else {
     // front (-Z)
     vertexPos.x = aPos.x;
     vertexPos.y = aPos.y;
     vertexPos.z = -1.0f; // 1.0f;
-
-    vertexPos.x *= w;
-    vertexPos.y *= h;
   }
 
   gl_Position = u_projection * u_view * vec4(chunk_pos * 32 + vertexPos + offset, 1.0);
@@ -115,7 +91,7 @@ void main() {
     ((data1 >> 28) & 15)
   );
 
-  texUv = vec2(aPos.x * w, (1 - aPos.y) * h);
+  texUv = vec2(aPos.x, (1 - aPos.y));
 
 
   Axis = axis;
