@@ -13,7 +13,7 @@ src/voxel/logic/voxel.cpp\
 src/core/maths.cpp\
 src/FastNoise/FastNoise.cpp\
 src/shading/ambient_occlusion.cpp
-DEP_FILES = dep/src/glad.c
+# DEP_FILES = dep/src/glad.c
 
 FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp
 
@@ -23,8 +23,9 @@ FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp
 LIBS = -Idep/include -Ldep/lib -lglfw3dll -lz
 
 # macos (linux?)
-# LIBS = -Idep/include -Ldep/lib
-
+# LIBS = -Idep/include -Ldep/lib -lz
+# LIBS = -I/usr/local/include -lglfw -lz
+# LIBS = -I/usr/local/include $(pkg-config --libs glfw3) $(pkg-config --static --libs glfw3) -lz
 
 
 all:
