@@ -10,6 +10,7 @@
 #include <zlib.h>
 
 #include "../core/types.h"
+#include "../nbt/nbt.h"
 
 
 
@@ -89,195 +90,159 @@ std::vector<char> streamToString(std::istream &in) {
 
 
 
-
-
-enum NBT_Tag {
-    TAG_End = 0,
-    TAG_Byte = 1,
-    TAG_Short = 2,
-    TAG_Int = 3,
-    TAG_Long = 4,
-    TAG_Float = 5,
-    TAG_Double = 6,
-    TAG_Byte_Array = 7,
-    TAG_String = 8,
-    TAG_List = 9,
-    TAG_Compound = 10
-};
-
 class NBTReader {
 public:
     explicit NBTReader(const std::vector<char>& data)
         : buffer(data), pos(0) {}
 
-    void parse() {
-        while (true) {
-            bool foundTag = readTag(true);
-            if (!foundTag) {
-                break;
-            }
-        }
+    NBT* parse() {
+        return readTag(true);
     }
 
 private:
     const std::vector<char>& buffer;
     size_t pos;
 
-    u8 readByte() {
+    uint8_t readByte() {
         checkBounds(1);
-        return static_cast<u8>(buffer[pos++]);
+        return static_cast<uint8_t>(buffer[pos++]);
     }
 
-    i16 readShort() {
+    int16_t readShort() {
         checkBounds(2);
-        i16 value = (buffer[pos] << 8) | (buffer[pos + 1] & 0xFF);
+        int16_t value = (buffer[pos] << 8) | (buffer[pos + 1] & 0xFF);
         pos += 2;
         return value;
     }
 
-    i32 readInt() {
+    int32_t readInt() {
         checkBounds(4);
-        i32 value = (buffer[pos] << 24) | ((buffer[pos + 1] & 0xFF) << 16) |
+        int32_t value = (buffer[pos] << 24) | ((buffer[pos + 1] & 0xFF) << 16) |
                         ((buffer[pos + 2] & 0xFF) << 8) | (buffer[pos + 3] & 0xFF);
         pos += 4;
         return value;
     }
 
-    i64 readLong() {
+    int64_t readLong() {
         checkBounds(8);
-        i64 value = 0;
+        int64_t value = 0;
         for (int i = 0; i < 8; ++i) {
             value <<= 8;
-            value |= static_cast<u8>(buffer[pos++]);
+            value |= static_cast<uint8_t>(buffer[pos++]);
         }
         return value;
     }
 
-    f32 readFloat() {
-        u32 i = readInt();
-        f32 f;
+    float readFloat() {
+        uint32_t i = readInt();
+        float f;
         std::memcpy(&f, &i, sizeof(f));
         return f;
     }
 
-    f64 readDouble() {
-        u64 i = readLong();
-        f64 d;
+    double readDouble() {
+        uint64_t i = readLong();
+        double d;
         std::memcpy(&d, &i, sizeof(d));
         return d;
     }
 
     std::string readString() {
-        i16 len = readShort();
+        int16_t len = readShort();
         checkBounds(len);
         std::string str(buffer.begin() + pos, buffer.begin() + pos + len);
         pos += len;
         return str;
     }
 
-    std::vector<char> readByteArray() {
-        i32 len = readInt();
-        printf("array len: %i\n", len);
-        checkBounds(len);
-        std::vector<char> byteArray(buffer.begin() + pos, buffer.begin() + pos + len);
-        pos += len;
-        return byteArray;
-    }
-
-    void readList() {
-        u8 tagType = readByte();
-        i32 size = readInt();
-        std::cout << "List of type " << static_cast<int>(tagType) << " with " << size << " elements:\n";
-
-        for (int i = 0; i < size; i++) {
-            performTagOperation(tagType);
-        }
-    }
-
-    bool readTag(bool withName) {
-        if (pos >= buffer.size()) {
-            printf("END OF FILE\n");
-            return false;
-        }
-
-        u8 tagType = readByte();
-        if (tagType == TAG_End) {
-            // this should NEVER happen
-            printf("TAG END\n");
-            return false;
-        }
+    NBT* readTag(bool withName) {
+        uint8_t tagType = readByte();
+        if (tagType == TAG_End)
+            return nullptr;
 
         std::string name;
-        if (withName) {
+        if (withName)
             name = readString();
-            std::cout << "Tag Name: " << name << "\n";
-        }
 
-        performTagOperation(tagType);
-
-        return true;
-    }
-
-    void performTagOperation(u8 tagType) {
         switch (tagType) {
             case TAG_Byte:
-                std::cout << "Byte: " << static_cast<int>(readByte()) << "\n";
-                break;
+                return new NBT(TAG_Byte, name, static_cast<int8_t>(readByte()));
             case TAG_Short:
-                std::cout << "Short: " << readShort() << "\n";
-                break;
+                return new NBT(TAG_Short, name, readShort());
             case TAG_Int:
-                std::cout << "Int: " << readInt() << "\n";
-                break;
+                return new NBT(TAG_Int, name, readInt());
             case TAG_Long:
-                std::cout << "Long: " << readLong() << "\n";
-                break;
+                return new NBT(TAG_Long, name, readLong());
             case TAG_Float:
-                std::cout << "Float: " << readFloat() << "\n";
-                break;
+                return new NBT(TAG_Float, name, readFloat());
             case TAG_Double:
-                std::cout << "Double: " << readDouble() << "\n";
-                break;
+                return new NBT(TAG_Double, name, readDouble());
             case TAG_String:
-                std::cout << "String: " << readString() << "\n";
-                break;
-            case TAG_Byte_Array:
-                std::cout << "Byte Array" << "\n";
-                {
-                    std::vector<char> byteArray = readByteArray();
-                    std::cout << "Byte Array (length " << byteArray.size() << "): ";
-                    for (char byte : byteArray) {
-                        std::cout << static_cast<int>(byte) << " ";
-                    }
-                    std::cout << "\n";
+                return new NBT(TAG_String, name, readString());
+            case TAG_Byte_Array: {
+                int32_t len = readInt();
+                checkBounds(len);
+                std::vector<int8_t> arr(len);
+                for (int i = 0; i < len; ++i)
+                    arr[i] = static_cast<int8_t>(readByte());
+                return new NBT(TAG_Byte_Array, name, arr);
+            }
+            case TAG_List: {
+                uint8_t elemType = readByte();
+                int32_t length = readInt();
+                std::vector<NBT*> list;
+                for (int i = 0; i < length; ++i) {
+                    auto item = readTagOfType(elemType);
+                    list.push_back(item);
                 }
-                break;
-            case TAG_List:
-                std::cout << "List" << "\n";
-                readList();
-                break;
-            case TAG_Compound:
-                std::cout << "Start Compound\n";
+                return new NBT(TAG_List, name, list);
+            }
+            case TAG_Compound: {
+                std::map<std::string, NBT*> compound;
                 while (true) {
                     size_t savePos = pos;
                     if (buffer[savePos] == TAG_End) {
-                        // one empty byte marking end of compound
                         pos++;
-                        std::cout << "End Compound\n";
                         break;
                     }
-                    readTag(true);
+                    auto child = readTag(true);
+                    if (child)
+                        compound[child->name] = child;
                 }
-                break;
+                return new NBT(TAG_Compound, name, compound);
+            }
             default:
-                printf("Unsupported tag type: %i\n", tagType);
-                // throw std::runtime_error("Unsupported tag type");
+                throw std::runtime_error("Unsupported tag type: " + std::to_string(tagType));
+        }
+    }
+
+
+    NBT* readTagOfType(uint8_t tagType) {
+        std::string dummyName;
+        switch (tagType) {
+            case TAG_Byte:
+                return new NBT(TAG_Byte, dummyName, static_cast<int8_t>(readByte()));
+            case TAG_Short:
+                return new NBT(TAG_Short, dummyName, readShort());
+            case TAG_Int:
+                return new NBT(TAG_Int, dummyName, readInt());
+            case TAG_Long:
+                return new NBT(TAG_Long, dummyName, readLong());
+            case TAG_Float:
+                return new NBT(TAG_Float, dummyName, readFloat());
+            case TAG_Double:
+                return new NBT(TAG_Double, dummyName, readDouble());
+            case TAG_String:
+                return new NBT(TAG_String, dummyName, readString());
+            case TAG_Compound:
+                return readTag(false);
+            default:
+                throw std::runtime_error("Unsupported list element type: " + std::to_string(tagType));
         }
     }
 
     void checkBounds(size_t size) {
         if (pos + size > buffer.size()) {
-            printf("%i %i %i\n", pos, size, buffer.size());
             throw std::out_of_range("Unexpected end of buffer");
         }
     }

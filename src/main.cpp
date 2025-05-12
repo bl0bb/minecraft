@@ -319,24 +319,71 @@ int main() {
 
     VoxelWorlds::placeVoxel(voxelGameWorld, 4, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
 
-    // house
-    // load house nbt
-    // std::ifstream file("assets/structures/plains_big_house_1.nbt", std::ios::binary);
-    // if (!file) {
-    //     std::cerr << "Failed to open file.\n";
-    //     return 1;
-    // }
 
-    // std::vector<char> fileVec;
-    // if (isGzipped(file)) {
-    //     printf("sigma\n");
-    //     fileVec = decompressGzipFile(file);
-    // } else {
-    //     fileVec = streamToString(file);
-    // }
 
-    // NBTReader nbtReader(fileVec);
-    // nbtReader.parse();
+
+
+    {
+        // house
+        // load house nbt
+        std::ifstream file("assets/structures/plains_big_house_1.nbt", std::ios::binary);
+        if (!file) {
+            std::cerr << "Failed to open file.\n";
+            return 1;
+        }
+
+        std::vector<char> fileVec;
+        if (isGzipped(file)) {
+            printf("sigma\n");
+            fileVec = decompressGzipFile(file);
+        } else {
+            fileVec = streamToString(file);
+        }
+
+        NBTReader nbtReader(fileVec);
+        NBT* houseNbt = nbtReader.parse();
+
+        if (!houseNbt || houseNbt->tagType != TAG_Compound) {
+            std::cerr << "Invalid or missing root compound tag.\n";
+            return 1;
+        }
+
+        auto blocksTag = houseNbt->getCompoundTag("blocks");
+        auto paletteTag = houseNbt->getCompoundTag("palette");
+
+        if (!blocksTag) {
+            std::cerr << "Missing 'blocks' tag.\n";
+            return 1;
+        }
+
+        if (!paletteTag) {
+            std::cerr << "Missing 'palette' tag.\n";
+            return 1;
+        }
+
+        const auto& blocks = std::get<std::vector<NBT*>>(houseNbt->getCompoundTag("blocks")->value);
+        const auto& palette = std::get<std::vector<NBT*>>(houseNbt->getCompoundTag("palette")->value);
+
+        for (const auto& block : blocks) {
+            auto compound = std::get<std::map<std::string, NBT*>>(block->value);
+
+            // Get block position
+            const auto& pos = std::get<std::vector<i32>>(compound["pos"]->value);
+            int stateIndex = std::get<i32>(compound["state"]->value);
+
+            if (stateIndex >= 0 && stateIndex < palette.size()) {
+                auto stateTag = palette[stateIndex];
+                const auto& stateCompound = std::get<std::map<std::string, NBT*>>(stateTag->value);
+                std::string name = std::get<std::string>(stateCompound.at("Name")->value);
+
+                std::cout << "Block: " << name
+                        << " at (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")\n";
+            }
+        }
+    }
+    
+
+    
 
 
 
