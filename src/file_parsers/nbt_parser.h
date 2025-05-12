@@ -161,9 +161,12 @@ private:
             return nullptr;
 
         std::string name;
-        if (withName)
-            name = readString();
+        if (withName) name = readString();
 
+        return performTagLogic(tagType, name);
+    }
+
+    NBT* performTagLogic(u8 tagType, std::string& name) {
         switch (tagType) {
             case TAG_Byte:
                 return new NBT(TAG_Byte, name, static_cast<int8_t>(readByte()));
@@ -190,9 +193,13 @@ private:
             case TAG_List: {
                 uint8_t elemType = readByte();
                 int32_t length = readInt();
+
+                std::cout << "List of type " << static_cast<int>(elemType) << " with " << length << " elements:\n";
+
                 std::vector<NBT*> list;
-                for (int i = 0; i < length; ++i) {
-                    auto item = readTagOfType(elemType);
+                for (int i = 0; i < length; i++) {
+                    std::string name = "";
+                    auto item = performTagLogic(elemType, name);
                     list.push_back(item);
                 }
                 return new NBT(TAG_List, name, list);
@@ -213,31 +220,6 @@ private:
             }
             default:
                 throw std::runtime_error("Unsupported tag type: " + std::to_string(tagType));
-        }
-    }
-
-
-    NBT* readTagOfType(uint8_t tagType) {
-        std::string dummyName;
-        switch (tagType) {
-            case TAG_Byte:
-                return new NBT(TAG_Byte, dummyName, static_cast<int8_t>(readByte()));
-            case TAG_Short:
-                return new NBT(TAG_Short, dummyName, readShort());
-            case TAG_Int:
-                return new NBT(TAG_Int, dummyName, readInt());
-            case TAG_Long:
-                return new NBT(TAG_Long, dummyName, readLong());
-            case TAG_Float:
-                return new NBT(TAG_Float, dummyName, readFloat());
-            case TAG_Double:
-                return new NBT(TAG_Double, dummyName, readDouble());
-            case TAG_String:
-                return new NBT(TAG_String, dummyName, readString());
-            case TAG_Compound:
-                return readTag(false);
-            default:
-                throw std::runtime_error("Unsupported list element type: " + std::to_string(tagType));
         }
     }
 

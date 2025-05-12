@@ -13,7 +13,7 @@ src/voxel/logic/voxel.cpp\
 src/core/maths.cpp\
 src/FastNoise/FastNoise.cpp\
 src/shading/ambient_occlusion.cpp
-# DEP_FILES = dep/src/glad.c
+DEP_FILES = dep/src/glad.c
 
 FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp
 

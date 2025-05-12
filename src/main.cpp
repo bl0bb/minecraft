@@ -4,6 +4,8 @@
 #include <string.h>
 #include <cmath>
 #include <chrono>
+#include <vector>
+#include <map>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -37,6 +39,7 @@
 #include "text/text_renderer.h"
 
 #include "file_parsers/nbt_parser.h"
+#include "nbt/nbt.h"
 
 // TODO: add quad support for rendering and for obj importing??
 
@@ -313,11 +316,11 @@ int main() {
     }
 
     // block, slab and stair
-    VoxelWorlds::placeVoxel(voxelGameWorld, 0, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+    VoxelWorlds::placeVoxel(voxelGameWorld, 10, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
-    VoxelWorlds::placeVoxel(voxelGameWorld, 2, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+    VoxelWorlds::placeVoxel(voxelGameWorld, 12, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
 
-    VoxelWorlds::placeVoxel(voxelGameWorld, 4, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelGameWorld, 14, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
 
 
 
@@ -343,32 +346,37 @@ int main() {
         NBTReader nbtReader(fileVec);
         NBT* houseNbt = nbtReader.parse();
 
+        const auto& stuff = std::get<std::map<std::string, NBT*>>(houseNbt->value);
+        for (const auto& pair : stuff) {
+            std::cout << pair.first << " => " << pair.second << '\n';
+        }
+
         if (!houseNbt || houseNbt->tagType != TAG_Compound) {
             std::cerr << "Invalid or missing root compound tag.\n";
             return 1;
         }
 
         auto blocksTag = houseNbt->getCompoundTag("blocks");
-        auto paletteTag = houseNbt->getCompoundTag("palette");
 
         if (!blocksTag) {
             std::cerr << "Missing 'blocks' tag.\n";
             return 1;
         }
 
+        auto paletteTag = houseNbt->getCompoundTag("palette");
         if (!paletteTag) {
             std::cerr << "Missing 'palette' tag.\n";
             return 1;
         }
 
-        const auto& blocks = std::get<std::vector<NBT*>>(houseNbt->getCompoundTag("blocks")->value);
-        const auto& palette = std::get<std::vector<NBT*>>(houseNbt->getCompoundTag("palette")->value);
+        const auto& blocks = std::get<std::vector<NBT*>>(blocksTag->value);
+        const auto& palette = std::get<std::vector<NBT*>>(paletteTag->value);
 
         for (const auto& block : blocks) {
             auto compound = std::get<std::map<std::string, NBT*>>(block->value);
 
             // Get block position
-            const auto& pos = std::get<std::vector<i32>>(compound["pos"]->value);
+            const auto& pos = std::get<std::vector<NBT*>>(compound["pos"]->value);
             int stateIndex = std::get<i32>(compound["state"]->value);
 
             if (stateIndex >= 0 && stateIndex < palette.size()) {
@@ -376,8 +384,28 @@ int main() {
                 const auto& stateCompound = std::get<std::map<std::string, NBT*>>(stateTag->value);
                 std::string name = std::get<std::string>(stateCompound.at("Name")->value);
 
-                std::cout << "Block: " << name
-                        << " at (" << pos[0] << ", " << pos[1] << ", " << pos[2] << ")\n";
+                if (name == "minecraft:air" || name == "minecraft:jigsaw" || name == "minecraft:oak_door" || name == "minecraft:wall_torch" || name == "minecraft:glass_pane" || name == "minecraft:white_bed" || name == "minecraft:chest") {
+                    continue;
+                }
+
+                BlockType blockType;
+                if (name == "minecraft:dirt") {
+                    blockType = BlockTypes::DIRT;
+                } else if (name == "minecraft:cobblestone") {
+                    blockType = BlockTypes::COBBLESTONE;
+                } else if (name == "minecraft:oak_log") {
+                    blockType = BlockTypes::OAK_LOG;
+                } else if (name == "minecraft:oak_planks") {
+                    blockType = BlockTypes::OAK_PLANKS;
+                } else if (name == "minecraft:dirt_path") {
+                    blockType = BlockTypes::DIRT;
+                } else if (name == "minecraft:oak_door") {
+                    blockType = BlockTypes::OAK_PLANKS;
+                } else if (name == "minecraft:cobblestone_stairs") {
+                    blockType = BlockTypes::COBBLESTONE_STAIRS;
+                }
+
+                VoxelWorlds::placeVoxel(voxelGameWorld, std::get<i32>(pos[0]->value), std::get<i32>(pos[1]->value) + 5, std::get<i32>(pos[2]->value), EmbeddedVoxel(blockType));
             }
         }
     }
