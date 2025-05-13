@@ -7,21 +7,10 @@
 #include "../../blocks.h"
 
 // blockstate voxel
-struct BlockStateVoxel;
-using BlockStateValue = std::variant<
-    i8,
-    i16,
-    i32,
-    i64,
-    f32,
-    f64,
-    std::string,
-    std::vector<i8>
->;
 struct BlockStateVoxel {
-    BlockStateValue state;
+    BlockStateStruct* state;
 
-    BlockStateVoxel() {
+    BlockStateVoxel(BlockStateStruct* _state) : state(_state) {
 
     }
 };

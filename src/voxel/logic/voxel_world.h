@@ -86,7 +86,7 @@ constexpr void calculateHeightmap(const VoxelChunkType& chunk, u8* heightmap) {
             found_block = false;
             heightmap[x + (z * CS)] = CS;
             for (u8 y = CS - 1; y >= 0; y--) {
-                if (block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type].transparent == true) {
+                if (BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type].transparent == true) {
                     heightmap[x + (z * CS)] = y;
                     break;
                 }

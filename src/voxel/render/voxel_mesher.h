@@ -218,7 +218,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelChunk& chu
                             z = dim_3;
                         }
 
-                        BlockVoxelData blockData = block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type];
+                        BlockVoxelData blockData = BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type];
                         BlockTexture blockTexture = blockData.get_face(dir);
                         BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType];
 
@@ -228,7 +228,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelChunk& chu
                         }
 
 
-                        // vertices[vertexIdx++] = getQuad(x, y, z, dir, block_voxel_datas[chunk.voxels[get_zxy_index(x, y, z)].type].get_face(dir));
+                        // vertices[vertexIdx++] = getQuad(x, y, z, dir, BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type].get_face(dir));
                     }
                 }
             }

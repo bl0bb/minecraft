@@ -64,7 +64,7 @@ namespace ChunkLight {
                     continue;
                 }
 
-                BlockVoxelData newBlock = block_voxel_datas[voxel->type];
+                BlockVoxelData newBlock = BLOCK_VOXEL_DATA[voxel->type];
 
                 bool sunlight_down = type == SUN_LIGHT && i == 0;
 

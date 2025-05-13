@@ -194,7 +194,7 @@ private:
                 uint8_t elemType = readByte();
                 int32_t length = readInt();
 
-                std::cout << "List of type " << static_cast<int>(elemType) << " with " << length << " elements:\n";
+                // std::cout << "List of type " << static_cast<int>(elemType) << " with " << length << " elements:\n";
 
                 std::vector<NBT*> list;
                 for (int i = 0; i < length; i++) {

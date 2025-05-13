@@ -309,9 +309,7 @@ int main() {
 
     // block, slab and stair
     VoxelWorlds::placeVoxel(voxelBlockWorld, 10, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
-
     VoxelWorlds::placeVoxel(voxelBlockWorld, 12, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
-
     VoxelWorlds::placeVoxel(voxelBlockWorld, 14, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
 
 
@@ -397,7 +395,25 @@ int main() {
                     blockType = BlockTypes::COBBLESTONE_STAIRS;
                 }
 
-                VoxelWorlds::placeVoxel(voxelBlockWorld, std::get<i32>(pos[0]->value), std::get<i32>(pos[1]->value) + 5, std::get<i32>(pos[2]->value), EmbeddedVoxel(blockType));
+                BlockVoxelData blockTemplate = BLOCK_VOXEL_DATA[blockType];
+
+                BlockStateStruct* newState;
+                if (blockTemplate.stateType == BlockStateTypes::BLOCK) {
+                    newState = new BlockBlockState();
+                } else if (blockTemplate.stateType == BlockStateTypes::SLAB) {
+                    newState = new SlabBlockState();
+                    static_cast<SlabBlockState*>(newState)->placement = 0;
+                } else if (blockTemplate.stateType == BlockStateTypes::STAIR) {
+                    newState = new StairBlockState();
+                    static_cast<StairBlockState*>(newState)->direction = 0;
+                }
+
+                i32 x = std::get<i32>(pos[0]->value);
+                i32 y = std::get<i32>(pos[1]->value);
+                i32 z = std::get<i32>(pos[2]->value);
+
+                VoxelWorlds::placeVoxel(voxelBlockWorld, x, y, z, EmbeddedVoxel(blockType));
+                VoxelWorlds::placeVoxel(voxelBlockStateWorld, x, y, z, BlockStateVoxel(newState));
             }
         }
     }
