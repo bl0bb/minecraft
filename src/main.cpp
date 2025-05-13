@@ -19,9 +19,8 @@
 
 #include "light/light.h"
 
-#include "voxel/logic/voxel.h"
-#include "voxel/logic/voxel_game_world.h"
-
+#include "voxel/block/voxel_block_world.h"
+#include "voxel/blockstate/voxel_blockstate_world.h"
 #include "voxel/light/voxel_light_world.h"
 
 #include "voxel/render/voxel_chunk_renderer.h"
@@ -240,19 +239,12 @@ int main() {
 
     // world size in chunks
     Vec3<u64> world_size = {2, 2, 2};
-    u16 world_total_chunks = world_size.volume();
     Vec3<i64> world_chunk_center = world_size / 2;
 
-    VoxelGameWorld voxelGameWorld = VoxelGameWorld(world_size);
-    voxelGameWorld.chunks = (VoxelChunk*)malloc(sizeof(VoxelChunk) * world_total_chunks);
-    voxelGameWorld.size = world_size;
-
+    VoxelBlockWorld voxelBlockWorld = VoxelBlockWorld(world_size);
+    VoxelBlockStateWorld voxelBlockStateWorld = VoxelBlockStateWorld(world_size);
     VoxelLightWorld voxelLightWorld = VoxelLightWorld(world_size);
-    voxelLightWorld.chunks = (VoxelLightChunk*)malloc(sizeof(VoxelLightChunk) * world_total_chunks);
-    voxelLightWorld.size = world_size;
-
     VoxelWorldRenderer voxelWorldRenderer = VoxelWorldRenderer(world_size);
-    voxelWorldRenderer.chunks = (VoxelChunkRenderer*)malloc(sizeof(VoxelChunkRenderer) * world_total_chunks);
     
     // setup
     for (i64 y = 0; y < world_size.y; y++) {
@@ -261,14 +253,14 @@ int main() {
                 // game
                 VoxelChunk chunk = VoxelChunk();
                 chunk.pos = Vec3<i64>(x, y, z) - world_chunk_center;
-                voxelGameWorld.chunks[voxelGameWorld.getChunkIndex(x, y, z)] = chunk;
+                voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)] = chunk;
 
                 // render
                 VoxelChunkRenderer chunkRenderer = VoxelChunkRenderer();
                 chunkRenderer.init();
-                chunkRenderer.chunk = &voxelGameWorld.chunks[voxelGameWorld.getChunkIndex(x, y, z)];
+                chunkRenderer.chunk = &voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)];
 
-                voxelWorldRenderer.chunks[voxelGameWorld.getChunkIndex(x, y, z)] = chunkRenderer;
+                voxelWorldRenderer.chunks[voxelBlockWorld.getChunkIndex(x, y, z)] = chunkRenderer;
 
                 // light
                 voxelLightWorld.chunks[voxelLightWorld.getChunkIndex(x, y, z)] = VoxelLightChunk();
@@ -284,7 +276,7 @@ int main() {
     //     for (i64 x = 0; x < world_size.x; x++) {
     //         for (i64 z = 0; z < world_size.z; z++) {
     //             // game
-    //             VoxelChunk& chunk = voxelGameWorld.chunks[voxelGameWorld.getChunkIndex(x, y, z)];
+    //             VoxelChunk& chunk = voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)];
 
     //             auto start = std::chrono::high_resolution_clock::now();
     //             noise.GenerateFullTerrain(chunk.voxels, x, y, z);
@@ -301,7 +293,7 @@ int main() {
     for (i64 cx = -i64(world_size.x) / 2; cx < i64(world_size.x) / 2; cx++) {
         for (i64 cz = -i64(world_size.z) / 2; cz < i64(world_size.z) / 2; cz++) {
             // game
-            VoxelChunk& chunk = voxelGameWorld.chunks[voxelGameWorld.chunkPosToChunkIndex(cx, 0, cz)];
+            VoxelChunk& chunk = voxelBlockWorld.chunks[voxelBlockWorld.chunkPosToChunkIndex(cx, 0, cz)];
 
             for (u8 x = 0; x < CS; x++) {
                 for (u8 z = 0; z < CS; z++) {
@@ -316,11 +308,11 @@ int main() {
     }
 
     // block, slab and stair
-    VoxelWorlds::placeVoxel(voxelGameWorld, 10, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 10, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
-    VoxelWorlds::placeVoxel(voxelGameWorld, 12, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 12, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
 
-    VoxelWorlds::placeVoxel(voxelGameWorld, 14, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 14, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
 
 
 
@@ -405,7 +397,7 @@ int main() {
                     blockType = BlockTypes::COBBLESTONE_STAIRS;
                 }
 
-                VoxelWorlds::placeVoxel(voxelGameWorld, std::get<i32>(pos[0]->value), std::get<i32>(pos[1]->value) + 5, std::get<i32>(pos[2]->value), EmbeddedVoxel(blockType));
+                VoxelWorlds::placeVoxel(voxelBlockWorld, std::get<i32>(pos[0]->value), std::get<i32>(pos[1]->value) + 5, std::get<i32>(pos[2]->value), EmbeddedVoxel(blockType));
             }
         }
     }
@@ -426,7 +418,7 @@ int main() {
 
                 auto start = std::chrono::high_resolution_clock::now();
 
-                chunk.generateMesh(voxelGameWorld);
+                chunk.generateMesh(voxelBlockWorld);
             
                 auto end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> elapsed = end - start;

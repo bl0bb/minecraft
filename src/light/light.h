@@ -5,7 +5,7 @@
 
 #include "../core/maths.h"
 #include "../core/color.h"
-#include "../voxel/logic/voxel_game_world.h"
+#include "../voxel/block/voxel_block_world.h"
 #include "../voxel/light/voxel_light_world.h"
 
 // Directions
@@ -38,7 +38,7 @@ namespace ChunkLight {
         SUN_LIGHT,
     };
 
-    static void add_propagate(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, u32 mask, u32 offset, LightPropagationType type) {
+    static void add_propagate(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, u32 mask, u32 offset, LightPropagationType type) {
         while (!lightQueue.empty()) {
             auto [pos, _] = lightQueue.front();
             lightQueue.pop();
@@ -79,7 +79,7 @@ namespace ChunkLight {
         }
     }
 
-    static void remove_propagate(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, AllLightQueue& propQueue, u32 mask, u32 offset, LightPropagationType type) {
+    static void remove_propagate(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, AllLightQueue& propQueue, u32 mask, u32 offset, LightPropagationType type) {
         while (!lightQueue.empty()) {
             auto [pos, value] = lightQueue.front();
             lightQueue.pop();
@@ -108,7 +108,7 @@ namespace ChunkLight {
         }
     }
 
-    static void add_channel(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, u8 value, u32 mask, u32 offset, LightPropagationType type) {
+    static void add_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, u8 value, u32 mask, u32 offset, LightPropagationType type) {
         AllLightQueue lightQueue;
 
         RGBIS4* light;
@@ -121,7 +121,7 @@ namespace ChunkLight {
         add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, type);
     }
 
-    static void remove_channel(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, u32 mask, u32 offset, LightPropagationType type) {
+    static void remove_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, u32 mask, u32 offset, LightPropagationType type) {
         AllLightQueue lightQueue;
         AllLightQueue propQueue;
 
@@ -137,7 +137,7 @@ namespace ChunkLight {
         add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, type);
     }
 
-    static void add_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
+    static void add_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
         for (u8 i = 0; i < 4; i++) {
             u8 offset = i * 4;
             u32 mask = 0xF << offset;
@@ -145,7 +145,7 @@ namespace ChunkLight {
         }
     }
 
-    static void remove_block_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
+    static void remove_block_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
         for (u8 i = 0; i < 4; i++) {
             u8 offset = i * 4;
             u32 mask = 0xF << offset;
@@ -153,7 +153,7 @@ namespace ChunkLight {
         }
     }
 
-    static void update_light(const VoxelGameWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos) {
+    static void update_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos) {
         AllLightQueue lightQueue;
 
         // 0..4 for each channel

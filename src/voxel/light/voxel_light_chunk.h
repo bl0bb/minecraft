@@ -7,7 +7,6 @@
 
 #include "../logic/voxel_world.h"
 #include "../logic/voxel_chunk.h"
-#include "../logic/voxel.h"
 
 class VoxelLightChunk : public BaseVoxelChunk<RGBIS4> {
 public:

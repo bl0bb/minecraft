@@ -11,8 +11,7 @@
 #include "../../block_meshes.h"
 
 
-#include "../logic/voxel.h"
-#include "../logic/voxel_game_world.h"
+#include "../block/voxel_block_world.h"
 
 #include "voxel_chunk_mesh_common.h"
 
@@ -50,7 +49,7 @@ constexpr inline void dim_to_pos(u8& x, u8& y, u8& z, u8 dim_1, u8 dim_2, u8 dim
 }
 
 
-u32 generate_voxel_mesh(const VoxelGameWorld& voxelWorld, const VoxelChunk& chunk, VoxelFace* vertices) {
+u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelChunk& chunk, VoxelFace* vertices) {
     // solid voxel as binary for each x,y,z axis, positive and negative
     u64 axis_cols[3 * CS_P2 * 2] = {0};
 

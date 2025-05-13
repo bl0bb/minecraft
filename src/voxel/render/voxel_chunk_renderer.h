@@ -10,7 +10,6 @@
 
 #include "../logic/voxel_world.h"
 #include "../logic/voxel_chunk.h"
-#include "../logic/voxel.h"
 #include "voxel_chunk_mesh_common.h"
 #include "voxel_mesher.h"
 
@@ -70,7 +69,7 @@ public:
         glGenBuffers(1, &voxel_ssbo);
     }
 
-    void generateMesh(const VoxelGameWorld& voxelWorld) {
+    void generateMesh(const VoxelBlockWorld& voxelWorld) {
         VoxelFace voxel_faces[CS_P3] = {0};
         voxel_count = generate_voxel_mesh(voxelWorld, *chunk, voxel_faces);
         updateMesh(voxel_faces);

@@ -1,13 +1,13 @@
 #ifndef RAYCAST_H
 #define RAYCAST_H
 
-#include "../voxel/logic/voxel_game_world.h"
+#include "../voxel/block/voxel_block_world.h"
 
 // cast a ray
 // voxelWorld: the world to cast the ray in
 // origin: the starting point of the ray
 // offset: the offset position from origin
-bool raycast(const VoxelGameWorld& voxelWorld, Vec3<f64>& origin, Vec3<f64>& offset) {
+bool raycast(const VoxelBlockWorld& voxelWorld, Vec3<f64>& origin, Vec3<f64>& offset) {
     Vec3<f64> pos = origin;
     Vec3<f64> dir = offset.normalized();
     f64 dist = offset.magnitude();

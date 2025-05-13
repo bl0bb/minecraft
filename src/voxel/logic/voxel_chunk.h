@@ -8,9 +8,6 @@
 #include "../../core/types.h"
 #include "../../core/shader.h"
 
-#include "voxel.h"
-
-
 // CS = chunk size
 // CS_P = chunk size padded
 static constexpr u8 CS = 32;
@@ -53,11 +50,6 @@ public:
         // C++ LOOOOVES TO CALL THIS WHEN I DONT WANT TO SO DONT DO ANYTHING
         // free(voxels);
     }
-};
-
-class VoxelChunk : public BaseVoxelChunk<EmbeddedVoxel> {
-public:
-    Vec3<i64> pos;
 };
 
 #endif

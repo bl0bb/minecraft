@@ -3,6 +3,8 @@
 
 #include "voxel_chunk.h"
 
+#include "../../blocks.h"
+
 template<typename ChunkType>
 class VoxelWorld {
 public:
@@ -19,8 +21,9 @@ public:
 
     }
 
-    VoxelWorld(Vec3<u64> _size) :
-    size(_size) {
+    VoxelWorld(Vec3<u64>& _size) :
+    size(_size),
+    chunks((ChunkType*)malloc(sizeof(ChunkType) * _size.volume())) {
 
     }
 

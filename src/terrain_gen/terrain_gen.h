@@ -4,7 +4,6 @@
 #include <vector>
 #include <algorithm>
 #include "../FastNoise/FastNoise.h"
-#include "../voxel/logic/voxel.h"
 #include "../blocks.h"
 
 
