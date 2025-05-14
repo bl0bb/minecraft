@@ -45,8 +45,6 @@ namespace VoxelWorlds {
 
 template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type>
 bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxel_ptr) {
-    // TODO: add transform to voxel_world
-
     i64 chunk_pos_x = (i64(world.size.x) / 2) + floor(f64(x) / f64(CS));
     i64 chunk_pos_y = (i64(world.size.y) / 2) + floor(f64(y) / f64(CS));
     i64 chunk_pos_z = (i64(world.size.z) / 2) + floor(f64(z) / f64(CS));

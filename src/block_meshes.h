@@ -84,8 +84,6 @@ struct BlockMesh {
         faces[4] = (BlockFace*)malloc(sizeof(BlockFace) * pzCount);
         faces[5] = (BlockFace*)malloc(sizeof(BlockFace) * nzCount);
     }
-
-    BlockMesh(BlockFace** _faces) : faces(_faces) {}
 };
 
 namespace BlockMeshTypes {

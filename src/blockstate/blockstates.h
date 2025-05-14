@@ -28,6 +28,12 @@ struct StairBlockState : public BlockState {
     // where X is if the stair is facing up or down
     // and YYY is which direction the stair is facing
     u8 direction;
+
+    StairBlockState() {}
+
+    StairBlockState(u8 _direction) : direction(_direction) {
+
+    }
 };
 
 using BlockStateStruct = std::variant<

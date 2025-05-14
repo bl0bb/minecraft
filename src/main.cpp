@@ -307,10 +307,23 @@ int main() {
         }
     }
 
+    {
+        BlockStateStruct* state = new BlockStateStruct();
+        *state = StairBlockState();
+        printf("%i\n", std::get<StairBlockState*>(*state)->direction);
+    }
+
+    // TODO: free already existing block state. OR can you just override the value set there?
+
     // block, slab and stair
     VoxelWorlds::placeVoxel(voxelBlockWorld, 10, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 12, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 14, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 10, 5, 0, new StairBlockState(0));
+
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 14, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 18, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 22, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 26, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
 
 
 
@@ -327,7 +340,6 @@ int main() {
 
         std::vector<char> fileVec;
         if (isGzipped(file)) {
-            printf("sigma\n");
             fileVec = decompressGzipFile(file);
         } else {
             fileVec = streamToString(file);
@@ -397,15 +409,15 @@ int main() {
 
                 BlockVoxelData blockTemplate = BLOCK_VOXEL_DATA[blockType];
 
-                BlockStateStruct* newState;
+                BlockStateStruct* newState = new BlockStateStruct();
                 if (blockTemplate.stateType == BlockStateTypes::BLOCK) {
-                    newState = new BlockBlockState();
+                    *newState = BlockBlockState();
                 } else if (blockTemplate.stateType == BlockStateTypes::SLAB) {
-                    newState = new SlabBlockState();
-                    static_cast<SlabBlockState*>(newState)->placement = 0;
+                    *newState = SlabBlockState();
+                    std::get<SlabBlockState*>(*newState)->placement = 0;
                 } else if (blockTemplate.stateType == BlockStateTypes::STAIR) {
-                    newState = new StairBlockState();
-                    static_cast<StairBlockState*>(newState)->direction = 0;
+                    *newState = StairBlockState();
+                    std::get<StairBlockState*>(*newState)->direction = 0;
                 }
 
                 i32 x = std::get<i32>(pos[0]->value);

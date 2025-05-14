@@ -9,7 +9,6 @@ ERROR_FLAGS = \
 # -pedantic
 
 CORE_FILES = \
-src/core/maths.cpp\
 src/FastNoise/FastNoise.cpp\
 src/shading/ambient_occlusion.cpp
 DEP_FILES = dep/src/glad.c
