@@ -18,12 +18,12 @@ FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp
 
 
 # windows
-LIBS = -Idep/include -Ldep/lib -lglfw3dll -lz
+# LIBS = -Idep/include -Ldep/lib -lglfw3dll -lz
 
 # macos (linux?)
-# LIBS = -Idep/include -Ldep/lib -lz
-# LIBS = -I/usr/local/include -lglfw -lz
-# LIBS = -I/usr/local/include $(pkg-config --libs glfw3) $(pkg-config --static --libs glfw3) -lz
+GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
+GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
+LIBS = -L$(GLFW_LIB_DIR) -lglfw -I$(GLFW_INCLUDE_DIR) -lz
 
 
 all:

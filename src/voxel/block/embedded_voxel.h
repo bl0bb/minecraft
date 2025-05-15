@@ -4,7 +4,7 @@
 #include "../../core/maths.h"
 #include "../../core/types.h"
 
-#include "../../blocks.h"
+#include "../../blocks/blocks.h"
 
 // embedded voxel
 struct EmbeddedVoxel {

@@ -7,8 +7,11 @@
 #include "../../core/types.h"
 #include "../../core/bits.h"
 
-#include "../../blocks.h"
-#include "../../block_meshes.h"
+#include "../../blocks/blocks.h"
+#include "../../blocks/mesh/block_mesh.h"
+
+// TODO: remove this and generate mesh at runtime
+#include "../../blocks/mesh/block_meshes.h"
 
 
 #include "../block/voxel_block_world.h"

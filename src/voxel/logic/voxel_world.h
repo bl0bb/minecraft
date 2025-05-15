@@ -3,7 +3,7 @@
 
 #include "voxel_chunk.h"
 
-#include "../../blocks.h"
+#include "../../blocks/blocks.h"
 
 template<typename ChunkType>
 class VoxelWorld {

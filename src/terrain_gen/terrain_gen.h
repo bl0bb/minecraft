@@ -4,7 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include "../FastNoise/FastNoise.h"
-#include "../blocks.h"
+#include "../blocks/blocks.h"
 
 
 

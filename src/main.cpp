@@ -27,8 +27,7 @@
 #include "voxel/render/voxel_world_renderer.h"
 
 #include "core/array.h"
-#include "blocks.h"
-#include "block_meshes.h"
+#include "blocks/blocks.h"
 
 #include "shading/ambient_occlusion.h"
 #include "quad.h"
@@ -111,9 +110,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 bool init_opengl() {
+
     glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
-    glDebugMessageCallback(message_callback, 0);
+
+    // this not working on mac
+    // glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+    // glDebugMessageCallback(message_callback, 0);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -129,8 +131,13 @@ bool init_opengl() {
 };
 
 GLFWwindow* init_window() {
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+
+    // apple is stupid and they want to push their own graphics stuff so they dont support later opengl versions
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 1);
 
@@ -225,6 +232,9 @@ int main() {
         return 1;
     }
 
+    const char *version = (const char*)glGetString(GL_VERSION);
+    printf("OpenGL version: %s\n", version);
+
 
 
 
@@ -254,6 +264,11 @@ int main() {
                 VoxelChunk chunk = VoxelChunk();
                 chunk.pos = Vec3<i64>(x, y, z) - world_chunk_center;
                 voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)] = chunk;
+
+                // chunk
+                BlockStateVoxelChunk blockStateChunk = BlockStateVoxelChunk();
+                blockStateChunk.pos = Vec3<i64>(x, y, z) - world_chunk_center;
+                voxelBlockStateWorld.chunks[voxelBlockStateWorld.getChunkIndex(x, y, z)] = blockStateChunk;
 
                 // render
                 VoxelChunkRenderer chunkRenderer = VoxelChunkRenderer();
@@ -307,17 +322,21 @@ int main() {
         }
     }
 
-    {
-        BlockStateStruct* state = new BlockStateStruct();
-        *state = StairBlockState();
-        printf("%i\n", std::get<StairBlockState*>(*state)->direction);
-    }
+    // {
+    //     // BlockStateStruct* state = new BlockStateStruct();
+    //     // *state = StairBlockState();
+        
+    //     BlockStateStruct* state = new BlockStateStruct(StairBlockState());
+
+    //     printf("%i\n", std::get<StairBlockState*>(*state)->direction);
+    // }
 
     // TODO: free already existing block state. OR can you just override the value set there?
 
     // block, slab and stair
     VoxelWorlds::placeVoxel(voxelBlockWorld, 10, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 10, 5, 0, new StairBlockState(0));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 10, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
+   
 
     VoxelWorlds::placeVoxel(voxelBlockWorld, 14, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
 
@@ -329,106 +348,106 @@ int main() {
 
 
 
-    {
-        // house
-        // load house nbt
-        std::ifstream file("assets/structures/plains_big_house_1.nbt", std::ios::binary);
-        if (!file) {
-            std::cerr << "Failed to open file.\n";
-            return 1;
-        }
+    // {
+    //     // house
+    //     // load house nbt
+    //     std::ifstream file("assets/structures/plains_big_house_1.nbt", std::ios::binary);
+    //     if (!file) {
+    //         std::cerr << "Failed to open file.\n";
+    //         return 1;
+    //     }
 
-        std::vector<char> fileVec;
-        if (isGzipped(file)) {
-            fileVec = decompressGzipFile(file);
-        } else {
-            fileVec = streamToString(file);
-        }
+    //     std::vector<char> fileVec;
+    //     if (isGzipped(file)) {
+    //         fileVec = decompressGzipFile(file);
+    //     } else {
+    //         fileVec = streamToString(file);
+    //     }
 
-        NBTReader nbtReader(fileVec);
-        NBT* houseNbt = nbtReader.parse();
+    //     NBTReader nbtReader(fileVec);
+    //     NBT* houseNbt = nbtReader.parse();
 
-        const auto& stuff = std::get<std::map<std::string, NBT*>>(houseNbt->value);
-        for (const auto& pair : stuff) {
-            std::cout << pair.first << " => " << pair.second << '\n';
-        }
+    //     const auto& stuff = std::get<std::map<std::string, NBT*>>(houseNbt->value);
+    //     for (const auto& pair : stuff) {
+    //         std::cout << pair.first << " => " << pair.second << '\n';
+    //     }
 
-        if (!houseNbt || houseNbt->tagType != TAG_Compound) {
-            std::cerr << "Invalid or missing root compound tag.\n";
-            return 1;
-        }
+    //     if (!houseNbt || houseNbt->tagType != TAG_Compound) {
+    //         std::cerr << "Invalid or missing root compound tag.\n";
+    //         return 1;
+    //     }
 
-        auto blocksTag = houseNbt->getCompoundTag("blocks");
+    //     auto blocksTag = houseNbt->getCompoundTag("blocks");
 
-        if (!blocksTag) {
-            std::cerr << "Missing 'blocks' tag.\n";
-            return 1;
-        }
+    //     if (!blocksTag) {
+    //         std::cerr << "Missing 'blocks' tag.\n";
+    //         return 1;
+    //     }
 
-        auto paletteTag = houseNbt->getCompoundTag("palette");
-        if (!paletteTag) {
-            std::cerr << "Missing 'palette' tag.\n";
-            return 1;
-        }
+    //     auto paletteTag = houseNbt->getCompoundTag("palette");
+    //     if (!paletteTag) {
+    //         std::cerr << "Missing 'palette' tag.\n";
+    //         return 1;
+    //     }
 
-        const auto& blocks = std::get<std::vector<NBT*>>(blocksTag->value);
-        const auto& palette = std::get<std::vector<NBT*>>(paletteTag->value);
+    //     const auto& blocks = std::get<std::vector<NBT*>>(blocksTag->value);
+    //     const auto& palette = std::get<std::vector<NBT*>>(paletteTag->value);
 
-        for (const auto& block : blocks) {
-            auto compound = std::get<std::map<std::string, NBT*>>(block->value);
+    //     for (const auto& block : blocks) {
+    //         auto compound = std::get<std::map<std::string, NBT*>>(block->value);
 
-            // Get block position
-            const auto& pos = std::get<std::vector<NBT*>>(compound["pos"]->value);
-            int stateIndex = std::get<i32>(compound["state"]->value);
+    //         // Get block position
+    //         const auto& pos = std::get<std::vector<NBT*>>(compound["pos"]->value);
+    //         int stateIndex = std::get<i32>(compound["state"]->value);
 
-            if (stateIndex >= 0 && stateIndex < palette.size()) {
-                auto stateTag = palette[stateIndex];
-                const auto& stateCompound = std::get<std::map<std::string, NBT*>>(stateTag->value);
-                std::string name = std::get<std::string>(stateCompound.at("Name")->value);
+    //         if (stateIndex >= 0 && stateIndex < palette.size()) {
+    //             auto stateTag = palette[stateIndex];
+    //             const auto& stateCompound = std::get<std::map<std::string, NBT*>>(stateTag->value);
+    //             std::string name = std::get<std::string>(stateCompound.at("Name")->value);
 
-                if (name == "minecraft:air" || name == "minecraft:jigsaw" || name == "minecraft:oak_door" || name == "minecraft:wall_torch" || name == "minecraft:glass_pane" || name == "minecraft:white_bed" || name == "minecraft:chest") {
-                    continue;
-                }
+    //             if (name == "minecraft:air" || name == "minecraft:jigsaw" || name == "minecraft:oak_door" || name == "minecraft:wall_torch" || name == "minecraft:glass_pane" || name == "minecraft:white_bed" || name == "minecraft:chest") {
+    //                 continue;
+    //             }
 
-                BlockType blockType;
-                if (name == "minecraft:dirt") {
-                    blockType = BlockTypes::DIRT;
-                } else if (name == "minecraft:cobblestone") {
-                    blockType = BlockTypes::COBBLESTONE;
-                } else if (name == "minecraft:oak_log") {
-                    blockType = BlockTypes::OAK_LOG;
-                } else if (name == "minecraft:oak_planks") {
-                    blockType = BlockTypes::OAK_PLANKS;
-                } else if (name == "minecraft:dirt_path") {
-                    blockType = BlockTypes::DIRT;
-                } else if (name == "minecraft:oak_door") {
-                    blockType = BlockTypes::OAK_PLANKS;
-                } else if (name == "minecraft:cobblestone_stairs") {
-                    blockType = BlockTypes::COBBLESTONE_STAIRS;
-                }
+    //             BlockType blockType;
+    //             if (name == "minecraft:dirt") {
+    //                 blockType = BlockTypes::DIRT;
+    //             } else if (name == "minecraft:cobblestone") {
+    //                 blockType = BlockTypes::COBBLESTONE;
+    //             } else if (name == "minecraft:oak_log") {
+    //                 blockType = BlockTypes::OAK_LOG;
+    //             } else if (name == "minecraft:oak_planks") {
+    //                 blockType = BlockTypes::OAK_PLANKS;
+    //             } else if (name == "minecraft:dirt_path") {
+    //                 blockType = BlockTypes::DIRT;
+    //             } else if (name == "minecraft:oak_door") {
+    //                 blockType = BlockTypes::OAK_PLANKS;
+    //             } else if (name == "minecraft:cobblestone_stairs") {
+    //                 blockType = BlockTypes::COBBLESTONE_STAIRS;
+    //             }
 
-                BlockVoxelData blockTemplate = BLOCK_VOXEL_DATA[blockType];
+    //             BlockVoxelData blockTemplate = BLOCK_VOXEL_DATA[blockType];
 
-                BlockStateStruct* newState = new BlockStateStruct();
-                if (blockTemplate.stateType == BlockStateTypes::BLOCK) {
-                    *newState = BlockBlockState();
-                } else if (blockTemplate.stateType == BlockStateTypes::SLAB) {
-                    *newState = SlabBlockState();
-                    std::get<SlabBlockState*>(*newState)->placement = 0;
-                } else if (blockTemplate.stateType == BlockStateTypes::STAIR) {
-                    *newState = StairBlockState();
-                    std::get<StairBlockState*>(*newState)->direction = 0;
-                }
+    //             BlockStateStruct* newState = new BlockStateStruct();
+    //             if (blockTemplate.stateType == BlockStateTypes::BLOCK) {
+    //                 *newState = BlockBlockState();
+    //             } else if (blockTemplate.stateType == BlockStateTypes::SLAB) {
+    //                 *newState = SlabBlockState();
+    //                 std::get<SlabBlockState>(*newState).placement = 0;
+    //             } else if (blockTemplate.stateType == BlockStateTypes::STAIR) {
+    //                 *newState = StairBlockState();
+    //                 std::get<StairBlockState>(*newState).direction = 0;
+    //             }
 
-                i32 x = std::get<i32>(pos[0]->value);
-                i32 y = std::get<i32>(pos[1]->value);
-                i32 z = std::get<i32>(pos[2]->value);
+    //             i32 x = std::get<i32>(pos[0]->value);
+    //             i32 y = std::get<i32>(pos[1]->value);
+    //             i32 z = std::get<i32>(pos[2]->value);
 
-                VoxelWorlds::placeVoxel(voxelBlockWorld, x, y, z, EmbeddedVoxel(blockType));
-                VoxelWorlds::placeVoxel(voxelBlockStateWorld, x, y, z, BlockStateVoxel(newState));
-            }
-        }
-    }
+    //             VoxelWorlds::placeVoxel(voxelBlockWorld, x, y, z, EmbeddedVoxel(blockType));
+    //             VoxelWorlds::placeVoxel(voxelBlockStateWorld, x, y, z, BlockStateVoxel(newState));
+    //         }
+    //     }
+    // }
     
 
     
@@ -501,7 +520,7 @@ int main() {
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
 
     // Allocate storage
-    u16 numTextures = 50; // big number
+    u16 numTextures = 100; // big number
     u8 texWidth = 16;
     u8 texHeight = 16;
 
@@ -522,6 +541,7 @@ int main() {
     glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+    printf("bluh 1\n");
 
     // LOAD TEXTURES
     u32* block_textures_data = new u32[array_size(block_textures)]{0};
@@ -545,6 +565,7 @@ int main() {
 
 
 
+    printf("bluh 1\n");
 
 
     Shader geometryShader = Shader("voxel/main.vert", "voxel/main.frag");
@@ -661,6 +682,7 @@ int main() {
 
     u32 shaderType = 0;
 
+    printf("bluh 1\n");
 
 
     while (!glfwWindowShouldClose(window)) {

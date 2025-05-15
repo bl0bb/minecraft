@@ -41,10 +41,7 @@ public:
 
     VoxelType* voxels;
 
-    BaseVoxelChunk() {
-        voxels = new VoxelType[CS_3];
-        std::memset(voxels, 0, CS_3);
-    }
+    BaseVoxelChunk() : voxels(new VoxelType[CS_3]) {}
 
     ~BaseVoxelChunk() {
         // C++ LOOOOVES TO CALL THIS WHEN I DONT WANT TO SO DONT DO ANYTHING
