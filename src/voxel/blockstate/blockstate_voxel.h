@@ -10,7 +10,7 @@
 struct BlockStateVoxel {
     BlockStateStruct* state;
 
-    BlockStateVoxel() {}
+    BlockStateVoxel() : state(new BlockStateStruct()) {}
 
     BlockStateVoxel(BlockStateStruct* _state) : state(_state) {}
 };

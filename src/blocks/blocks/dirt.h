@@ -17,7 +17,7 @@ void _dirt_init() {
         BlockTextures::DIRT,
         BlockTextures::DIRT,
         BlockTextures::DIRT,
-        BlockTextures::DIRT,
+        BlockTextures::DIRT
     );
 }
 

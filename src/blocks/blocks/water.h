@@ -17,7 +17,7 @@ void _water_init() {
         BlockTextures::WATER,
         BlockTextures::WATER,
         BlockTextures::WATER,
-        BlockTextures::WATER,
+        BlockTextures::WATER
     );
 }
 

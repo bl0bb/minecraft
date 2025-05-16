@@ -17,7 +17,7 @@ void _oak_slab_init() {
         BlockTextures::OAK_PLANKS,
         BlockTextures::OAK_PLANKS,
         BlockTextures::OAK_PLANKS,
-        BlockTextures::OAK_PLANKS,
+        BlockTextures::OAK_PLANKS
     );
 }
 

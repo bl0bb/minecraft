@@ -27,7 +27,7 @@
 #include "voxel/render/voxel_world_renderer.h"
 
 #include "core/array.h"
-#include "blocks/blocks.h"
+#include "blocks/block.h"
 
 #include "shading/ambient_occlusion.h"
 #include "quad.h"
@@ -114,8 +114,9 @@ bool init_opengl() {
     glEnable(GL_DEBUG_OUTPUT);
 
     // this not working on mac
-    // glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
-    // glDebugMessageCallback(message_callback, 0);
+    // or is it?
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+    glDebugMessageCallback(message_callback, 0);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -131,12 +132,8 @@ bool init_opengl() {
 };
 
 GLFWwindow* init_window() {
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-
-    // apple is stupid and they want to push their own graphics stuff so they dont support later opengl versions
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 1);
@@ -239,6 +236,9 @@ int main() {
 
 
 
+    // Load blocks
+    loadBlocks();
+
     // load block meshes
     loadBlocksMeshes();
 
@@ -334,15 +334,29 @@ int main() {
     // TODO: free already existing block state. OR can you just override the value set there?
 
     // block, slab and stair
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 10, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 10, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
-   
+    VoxelWorlds::placeVoxel(voxelBlockWorld, -12, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 14, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, -8, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, -8, 5, 0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(0))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, -4, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, -4, 5, 0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(1))));
 
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 18, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 22, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 26, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 0, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 0, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 4, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 4, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(1))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 8, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 8, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(2))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 12, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 12, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(3))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 16, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 16, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(4))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 20, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 20, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(5))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 24, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 24, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(6))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 28, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 28, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(7))));
 
 
 
@@ -465,7 +479,7 @@ int main() {
 
                 auto start = std::chrono::high_resolution_clock::now();
 
-                chunk.generateMesh(voxelBlockWorld);
+                chunk.generateMesh(voxelBlockWorld, voxelBlockStateWorld);
             
                 auto end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> elapsed = end - start;
@@ -476,6 +490,9 @@ int main() {
             }
         }
     }
+
+
+    
 
 
 
@@ -516,7 +533,9 @@ int main() {
 
     // textures
     GLuint textureArray;
+    printf("passed 1\n");
     glGenTextures(1, &textureArray);
+    printf("passed 1\n");
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
 
     // Allocate storage
@@ -529,6 +548,7 @@ int main() {
 
     glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, texWidth, texHeight, numTextures);
 
+    printf("passed 1\n");
     
 
     // set to default settings
@@ -536,15 +556,17 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    printf("passed 1\n");
 
     // turn off texture smoothing
     glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    printf("bluh 1\n");
+    printf("passed 1\n");
 
     // LOAD TEXTURES
     u32* block_textures_data = new u32[array_size(block_textures)]{0};
+    printf("passed 1\n");
 
     for (u16 i = 1; i < array_size(block_textures); i++) {
         std::string path = "assets/textures/";
@@ -554,6 +576,7 @@ int main() {
         load_texture(path.c_str(), texIdx++, texWidth, texHeight, nrChannels);
         block_textures_data[i] = nrChannels;
     }
+    printf("passed 1\n");
 
 
     // Create SSBO for texture metadata
@@ -562,15 +585,16 @@ int main() {
     glBufferData(GL_SHADER_STORAGE_BUFFER, array_size(block_textures) * sizeof(u32), block_textures_data, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, texture_ssbo);
 
+    printf("passed 1\n");
 
 
 
-    printf("bluh 1\n");
 
 
     Shader geometryShader = Shader("voxel/main.vert", "voxel/main.frag");
     Shader edgeShader = Shader("edge/edge.vert", "edge/edge.frag");
 
+    printf("passed 1\n");
 
     /*
     // --------------------
@@ -661,6 +685,7 @@ int main() {
 
 
 
+    printf("passed 1\n");
 
 
 
@@ -678,13 +703,13 @@ int main() {
         stbi_image_free(data);
     }
 
+    printf("passed 1\n");
 
 
     u32 shaderType = 0;
 
-    printf("bluh 1\n");
 
-
+    
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;

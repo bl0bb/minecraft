@@ -17,7 +17,7 @@ void _grass_init() {
         BlockTextures::GRASS_BLOCK_SIDE,
         BlockTextures::GRASS_BLOCK_SIDE,
         BlockTextures::GRASS_BLOCK_SIDE,
-        BlockTextures::GRASS_BLOCK_SIDE,
+        BlockTextures::GRASS_BLOCK_SIDE
     );
 }
 

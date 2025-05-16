@@ -17,7 +17,7 @@ void _oak_log_init() {
         BlockTextures::OAK_LOG,
         BlockTextures::OAK_LOG,
         BlockTextures::OAK_LOG,
-        BlockTextures::OAK_LOG,
+        BlockTextures::OAK_LOG
     );
 }
 

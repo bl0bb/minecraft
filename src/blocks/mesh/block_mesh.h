@@ -6,6 +6,14 @@
 #include "../../core/types.h"
 #include "../../core/maths.h"
 
+namespace BlockMeshTypes {
+enum BlockMeshTypeEnum {
+    BLOCK,
+    SLAB,
+    STAIR,
+};
+}
+
 struct BlockFace {
     // // 0-3 (4) (16) from x
     // // 4-7 (4) (16) from y
@@ -85,5 +93,10 @@ struct BlockMesh {
         faces[5] = (BlockFace*)malloc(sizeof(BlockFace) * nzCount);
     }
 };
+
+typedef RGBI4 (*getLightFunc)();
+typedef BlockMesh (*BlockMeshFunc)(const BlockStateStruct& state);
+
+BlockMeshFunc* BLOCK_MESHES = (BlockMeshFunc*)malloc(sizeof(BlockMeshFunc) * (BlockMeshTypes::STAIR + 1));
 
 #endif

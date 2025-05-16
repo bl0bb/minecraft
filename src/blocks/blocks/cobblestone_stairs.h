@@ -17,7 +17,7 @@ void _cobblestone_stairs_init() {
         BlockTextures::COBBLESTONE,
         BlockTextures::COBBLESTONE,
         BlockTextures::COBBLESTONE,
-        BlockTextures::COBBLESTONE,
+        BlockTextures::COBBLESTONE
     );
 }
 

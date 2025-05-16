@@ -17,7 +17,7 @@ void _stone_init() {
         BlockTextures::STONE,
         BlockTextures::STONE,
         BlockTextures::STONE,
-        BlockTextures::STONE,
+        BlockTextures::STONE
     );
 }
 

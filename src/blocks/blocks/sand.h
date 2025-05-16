@@ -17,7 +17,7 @@ void _sand_init() {
         BlockTextures::SAND,
         BlockTextures::SAND,
         BlockTextures::SAND,
-        BlockTextures::SAND,
+        BlockTextures::SAND
     );
 }
 

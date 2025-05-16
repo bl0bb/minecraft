@@ -21,7 +21,7 @@ void _furnace_init() {
         BlockTextures::FURNACE_SIDE,
         BlockTextures::FURNACE_SIDE,
         BlockTextures::FURNACE_FRONT,
-        BlockTextures::FURNACE_FRONT,
+        BlockTextures::FURNACE_FRONT
     );
 }
 

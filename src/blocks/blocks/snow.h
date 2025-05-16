@@ -17,7 +17,7 @@ void _snow_init() {
         BlockTextures::SNOW,
         BlockTextures::SNOW,
         BlockTextures::SNOW,
-        BlockTextures::SNOW,
+        BlockTextures::SNOW
     );
 }
 

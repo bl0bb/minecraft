@@ -17,7 +17,7 @@ void _air_init() {
         BlockTextures::NONE,
         BlockTextures::NONE,
         BlockTextures::NONE,
-        BlockTextures::NONE,
+        BlockTextures::NONE
     );
 }
 

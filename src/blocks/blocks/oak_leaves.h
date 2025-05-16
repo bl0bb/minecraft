@@ -17,7 +17,7 @@ void _oak_leaves_init() {
         BlockTextures::OAK_LEAVES,
         BlockTextures::OAK_LEAVES,
         BlockTextures::OAK_LEAVES,
-        BlockTextures::OAK_LEAVES,
+        BlockTextures::OAK_LEAVES
     );
 }
 

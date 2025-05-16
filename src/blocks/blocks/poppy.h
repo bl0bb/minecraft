@@ -17,7 +17,7 @@ void _poppy_init() {
         BlockTextures::POPPY,
         BlockTextures::POPPY,
         BlockTextures::POPPY,
-        BlockTextures::POPPY,
+        BlockTextures::POPPY
     );
 }
 

@@ -52,7 +52,7 @@ constexpr inline void dim_to_pos(u8& x, u8& y, u8& z, u8 dim_1, u8 dim_2, u8 dim
 }
 
 
-u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelChunk& chunk, VoxelFace* vertices) {
+u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld, const VoxelChunk& chunk, VoxelFace* vertices) {
     // solid voxel as binary for each x,y,z axis, positive and negative
     u64 axis_cols[3 * CS_P2 * 2] = {0};
 
@@ -64,6 +64,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelChunk& chu
 
     // index
     u32 vertexIdx = 0;
+
 
 
     // build binary representation for every solid voxel y,x,z axis
@@ -162,7 +163,6 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelChunk& chu
 
 
 
-
     // face culling
     for (u8 axis = 0; axis < 3; axis++) {
         for (u8 j = 0; j < 2; j++) {
@@ -223,7 +223,10 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelChunk& chu
 
                         BlockVoxelData blockData = BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type];
                         BlockTexture blockTexture = blockData.get_face(dir);
-                        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType];
+
+                        // BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType];
+                        // BlockMesh blockMesh = blockData.get_mesh();
+                        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x, y, z)->state);
 
                         for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
                             BlockFace face = blockMesh.faces[dir][i];
@@ -237,7 +240,6 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelChunk& chu
             }
         }
     }
-
 
     return vertexIdx;
 }

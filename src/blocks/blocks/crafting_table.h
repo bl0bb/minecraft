@@ -16,7 +16,7 @@ void _crafting_table_init() {
         BlockTextures::CRAFTING_TABLE_SIDE,
         BlockTextures::CRAFTING_TABLE_SIDE,
         BlockTextures::CRAFTING_TABLE_FRONT,
-        BlockTextures::CRAFTING_TABLE_FRONT,
+        BlockTextures::CRAFTING_TABLE_FRONT
     );
 }
 

@@ -47,11 +47,9 @@ struct SlabBlockState : public BlockState {
 struct StairBlockState : public BlockState {
     // 0 = right
     // 1 = left
-    // 2 = top
-    // 3 = bottom
-    // 4 = back
-    // 5 = front
-    // XYYY
+    // 2 = back
+    // 3 = front
+    // XYY
     // where X is if the stair is facing up or down
     // and YYY is which direction the stair is facing
     u8 direction;

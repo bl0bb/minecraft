@@ -69,9 +69,9 @@ public:
         glGenBuffers(1, &voxel_ssbo);
     }
 
-    void generateMesh(const VoxelBlockWorld& voxelWorld) {
+    void generateMesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld) {
         VoxelFace voxel_faces[CS_P3] = {0};
-        voxel_count = generate_voxel_mesh(voxelWorld, *chunk, voxel_faces);
+        voxel_count = generate_voxel_mesh(voxelWorld, voxelBlockStateWorld, *chunk, voxel_faces);
         updateMesh(voxel_faces);
     }
 

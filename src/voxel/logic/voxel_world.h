@@ -65,6 +65,16 @@ bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxe
 }
 
 template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type>
+VoxelType* getVoxelUnsafe(const VoxelWorldType& world, i64 x, i64 y, i64 z) {
+    VoxelType* voxel;
+    if (!getVoxel(world, x, y, z, &voxel)) {
+        throw std::runtime_error("getVoxelUnsafe: voxel not found");
+    }
+
+    return voxel;
+}
+
+template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type>
 bool placeVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType voxelToPlace) {
     VoxelType* voxel;
     if (!getVoxel(world, x, y, z, &voxel)) {
