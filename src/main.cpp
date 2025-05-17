@@ -265,7 +265,7 @@ int main() {
                 chunk.pos = Vec3<i64>(x, y, z) - world_chunk_center;
                 voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)] = chunk;
 
-                // chunk
+                // block state
                 BlockStateVoxelChunk blockStateChunk = BlockStateVoxelChunk();
                 blockStateChunk.pos = Vec3<i64>(x, y, z) - world_chunk_center;
                 voxelBlockStateWorld.chunks[voxelBlockStateWorld.getChunkIndex(x, y, z)] = blockStateChunk;
@@ -334,29 +334,29 @@ int main() {
     // TODO: free already existing block state. OR can you just override the value set there?
 
     // block, slab and stair
-    VoxelWorlds::placeVoxel(voxelBlockWorld, -12, 5, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,      -12, 6, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
-    VoxelWorlds::placeVoxel(voxelBlockWorld, -8, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, -8, 5, 0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(0))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, -4, 5, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, -4, 5, 0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(1))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,      -10, 6, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, -10, 6, 0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(0))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       -8, 6, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -8, 6, 0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(1))));
 
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 0, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 0, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 4, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 4, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(1))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 8, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 8, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(2))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 12, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 12, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(3))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 16, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 16, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(4))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 20, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 20, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(5))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 24, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 24, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(6))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld, 28, 5, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, 28, 5, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(7))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       -6, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -6, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       -4, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -4, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(1))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       -2, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -2, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(2))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        0, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   0, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(3))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        2, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   2, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(4))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        4, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   4, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(5))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        6, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   6, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(6))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        8, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   8, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(7))));
 
 
 

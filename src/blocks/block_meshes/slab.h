@@ -5,13 +5,17 @@
 #include "../blockstate.h"
 
 static BlockMesh _getSlabBlockMesh(const BlockStateStruct& state) {
-     BlockMesh slab(1, 1, 1, 1, 1, 1);
-    slab.faces[0][0] = BlockFace(0, 0, 0, 16 - 1,  8 - 1);
-    slab.faces[1][0] = BlockFace(0, 0, 0, 16 - 1,  8 - 1);
-    slab.faces[2][0] = BlockFace(8, 0, 0, 16 - 1, 16 - 1);
-    slab.faces[3][0] = BlockFace(8, 0, 0, 16 - 1, 16 - 1);
-    slab.faces[4][0] = BlockFace(0, 0, 0, 16 - 1,  8 - 1);
-    slab.faces[5][0] = BlockFace(0, 0, 0, 16 - 1,  8 - 1);
+    printf("fluh 1\n");
+    auto placement = std::get<SlabBlockState>(state).placement;
+    printf("fluh 2\n");
+
+    BlockMesh slab(1, 1, 1, 1, 1, 1);
+    slab.faces[0][0] = BlockFace(0, 0, placement == 0 ? 0 : 8, 16 - 1,  (placement == 0 ? 8 : 16) - 1);
+    slab.faces[1][0] = BlockFace(0, 0, placement == 0 ? 0 : 8, 16 - 1,  (placement == 0 ? 8 : 16) - 1);
+    slab.faces[2][0] = BlockFace(placement == 0 ? 8 : 0, 0, 0, 16 - 1, 16 - 1);
+    slab.faces[3][0] = BlockFace(placement == 0 ? 0 : 8, 0, 0, 16 - 1, 16 - 1);
+    slab.faces[4][0] = BlockFace(0, 0, placement == 0 ? 0 : 8, 16 - 1,  (placement == 0 ? 8 : 16) - 1);
+    slab.faces[5][0] = BlockFace(0, 0, placement == 0 ? 0 : 8, 16 - 1,  (placement == 0 ? 8 : 16) - 1);
     return slab;
 }
 

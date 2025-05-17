@@ -226,7 +226,12 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
                         // BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType];
                         // BlockMesh blockMesh = blockData.get_mesh();
-                        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x, y, z)->state);
+
+                        i64 world_x = x + chunk.pos.x * CS;
+                        i64 world_y = y + chunk.pos.y * CS;
+                        i64 world_z = z + chunk.pos.z * CS;
+
+                        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, world_x, world_y, world_z)->state);
 
                         for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
                             BlockFace face = blockMesh.faces[dir][i];
