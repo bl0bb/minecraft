@@ -3,21 +3,20 @@
 
 #include "../blocks.h"
 
+constexpr inline BlockTexture _oak_planks_get_texture(const BlockStateStruct& state, u8 dir) {
+    return BlockTextures::OAK_PLANKS;
+}
+
 void _oak_planks_init() {
     BLOCK_VOXEL_DATA[BlockTypes::OAK_PLANKS] = BlockVoxelData(
-        0,
-        0,
+        BlockStateTypes::BLOCK,
+        BlockMeshTypes::BLOCK,
         false,
         false,
         false,
         false,
         nullptr,
-        BlockTextures::OAK_PLANKS,
-        BlockTextures::OAK_PLANKS,
-        BlockTextures::OAK_PLANKS,
-        BlockTextures::OAK_PLANKS,
-        BlockTextures::OAK_PLANKS,
-        BlockTextures::OAK_PLANKS
+        _oak_planks_get_texture
     );
 }
 

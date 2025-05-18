@@ -13,6 +13,8 @@ enum BlockStateTypeEnum : BlockStateType {
     BLOCK,
     SLAB,
     STAIR,
+    LOG,
+    TORCH,
 };
 }
 
@@ -26,6 +28,8 @@ public:
 
 
 // states
+
+// standard
 struct BlockBlockState : public BlockState {
     // a block is just a block
     // no state needed
@@ -62,10 +66,44 @@ struct StairBlockState : public BlockState {
     StairBlockState(const StairBlockState& other) : BlockState(other), direction(other.direction) {}
 };
 
+// directional
+struct LogBlockState : public BlockState {
+    // 0 = right / left
+    // 1 = top / bottom
+    // 2 = back / front
+    u8 direction;
+
+    LogBlockState() {}
+
+    LogBlockState(u8 _direction) : direction(_direction) {}
+
+    // Copy constructor
+    LogBlockState(const LogBlockState& other) : BlockState(other), direction(other.direction) {}
+};
+
+// advanced
+struct TorchBlockState : public BlockState {
+    // 0 = top
+    // 1 = right
+    // 2 = left
+    // 3 = back
+    // 4 = front
+    u8 direction;
+
+    TorchBlockState() {}
+
+    TorchBlockState(u8 _direction) : direction(_direction) {}
+
+    // Copy constructor
+    TorchBlockState(const TorchBlockState& other) : BlockState(other), direction(other.direction) {}
+};
+
 using BlockStateStruct = std::variant<
     BlockBlockState,
     SlabBlockState,
-    StairBlockState
+    StairBlockState,
+    LogBlockState,
+    TorchBlockState
 >;
 
 #endif

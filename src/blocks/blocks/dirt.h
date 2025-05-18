@@ -3,21 +3,20 @@
 
 #include "../blocks.h"
 
+constexpr inline BlockTexture _dirt_get_texture(const BlockStateStruct& state, u8 dir) {
+    return BlockTextures::DIRT;
+}
+
 void _dirt_init() {
     BLOCK_VOXEL_DATA[BlockTypes::DIRT] = BlockVoxelData(
-        0,
-        0,
+        BlockStateTypes::BLOCK,
+        BlockMeshTypes::BLOCK,
         false,
         false,
         false,
         false,
         nullptr,
-        BlockTextures::DIRT,
-        BlockTextures::DIRT,
-        BlockTextures::DIRT,
-        BlockTextures::DIRT,
-        BlockTextures::DIRT,
-        BlockTextures::DIRT
+        _dirt_get_texture
     );
 }
 

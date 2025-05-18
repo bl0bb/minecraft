@@ -3,21 +3,20 @@
 
 #include "../blocks.h"
 
+constexpr inline BlockTexture _snow_get_texture(const BlockStateStruct& state, u8 dir) {
+    return BlockTextures::SNOW;
+}
+
 void _snow_init() {
     BLOCK_VOXEL_DATA[BlockTypes::SNOW] = BlockVoxelData(
-        0,
-        0,
+        BlockStateTypes::BLOCK,
+        BlockMeshTypes::BLOCK,
         false,
         false,
         false,
         false,
         nullptr,
-        BlockTextures::SNOW,
-        BlockTextures::SNOW,
-        BlockTextures::SNOW,
-        BlockTextures::SNOW,
-        BlockTextures::SNOW,
-        BlockTextures::SNOW
+        _snow_get_texture
     );
 }
 

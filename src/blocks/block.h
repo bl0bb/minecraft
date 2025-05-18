@@ -19,6 +19,8 @@
 #include "blocks/sand.h"
 #include "blocks/snow.h"
 #include "blocks/stone.h"
+#include "blocks/stripped_oak_log.h"
+#include "blocks/torch.h"
 #include "blocks/water.h"
 
 // other includes
@@ -42,6 +44,8 @@ void loadBlocks() {
     _sand_init();
     _snow_init();
     _stone_init();
+    _stripped_oak_log_init();
+    _torch_init();
     _water_init();
 }
 

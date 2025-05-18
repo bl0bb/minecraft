@@ -3,21 +3,20 @@
 
 #include "../blocks.h"
 
+constexpr inline BlockTexture _cobblestone_get_texture(const BlockStateStruct& state, u8 dir) {
+    return BlockTextures::COBBLESTONE;
+}
+
 void _cobblestone_init() {
     BLOCK_VOXEL_DATA[BlockTypes::COBBLESTONE] = BlockVoxelData(
-        0,
-        0,
+        BlockStateTypes::BLOCK,
+        BlockMeshTypes::BLOCK,
         false,
         false,
         false,
         false,
         nullptr,
-        BlockTextures::COBBLESTONE,
-        BlockTextures::COBBLESTONE,
-        BlockTextures::COBBLESTONE,
-        BlockTextures::COBBLESTONE,
-        BlockTextures::COBBLESTONE,
-        BlockTextures::COBBLESTONE
+        _cobblestone_get_texture
     );
 }
 

@@ -66,6 +66,43 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
     u32 vertexIdx = 0;
 
 
+    auto addVoxelAxis = [&voxelBlockStateWorld, &axis_cols](BlockVoxelData& blockData, u8 x, u8 y, u8 z, i64 world_x, i64 world_y, i64 world_z) {
+        if (blockData.transparent == false) {
+            BlockStateStruct* state = VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, world_x, world_y, world_z)->state;
+            BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
+
+            // z,y - x axis
+            if (blockMesh.culls(0) || true) {
+                // positive
+                axis_cols[z + (y * CS_P) + CS_P2 * 0] |= (u64)1 << x;
+            }
+            if (blockMesh.culls(1) || true) {
+                // negative
+                axis_cols[z + (y * CS_P) + CS_P2 * 1] |= (u64)1 << x;
+            }
+
+            // x,z - y axis
+            if (blockMesh.culls(2) || true) {
+                // positive
+                axis_cols[x + (z * CS_P) + CS_P2 * 2] |= (u64)1 << y;
+            }
+            if (blockMesh.culls(3) || true) {
+                // negative
+                axis_cols[x + (z * CS_P) + CS_P2 * 3] |= (u64)1 << y;
+            }
+
+            // x,y - z axis
+            if (blockMesh.culls(4) || true) {
+                // positive
+                axis_cols[x + (y * CS_P) + CS_P2 * 4] |= (u64)1 << z;
+            }
+            if (blockMesh.culls(5) || true) {
+                // negative
+                axis_cols[x + (y * CS_P) + CS_P2 * 5] |= (u64)1 << z;
+            }
+        }
+    };
+
 
     // build binary representation for every solid voxel y,x,z axis
     // voxels in this chunk
@@ -76,30 +113,13 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                 u8 ay = y + 1;
                 u8 az = z + 1;
 
+                i64 world_x = ax - 1 + chunk.pos.x * CS;
+                i64 world_y = ay - 1 + chunk.pos.y * CS;
+                i64 world_z = az - 1 + chunk.pos.z * CS;
+
                 // TODO: check if voxel is solid (not see through)
-                if (chunk.voxels[get_zxy_index(x, y, z)].type) {
-                    // // z,y - x axis
-                    // axis_cols[az + (ay * CS_P)] |= (u64)1 << ax;
-                    // // x,z - y axis
-                    // axis_cols[ax + (az * CS_P) + CS_P2] |= (u64)1 << ay;
-                    // // x,y - z axis
-                    // axis_cols[ax + (ay * CS_P) + CS_P2 * 2] |= (u64)1 << az;
-
-                    // z,y - x axis
-                    axis_cols[az + (ay * CS_P) + CS_P2 * 0] |= (u64)1 << ax;
-                    // negative
-                    axis_cols[az + (ay * CS_P) + CS_P2 * 1] |= (u64)1 << ax;
-
-                    // x,z - y axis
-                    axis_cols[ax + (az * CS_P) + CS_P2 * 2] |= (u64)1 << ay;
-                    // negative
-                    axis_cols[ax + (az * CS_P) + CS_P2 * 3] |= (u64)1 << ay;
-
-                    // x,y - z axis
-                    axis_cols[ax + (ay * CS_P) + CS_P2 * 4] |= (u64)1 << az;
-                    // negative
-                    axis_cols[ax + (ay * CS_P) + CS_P2 * 5] |= (u64)1 << az;
-                }
+                BlockVoxelData blockData = BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type];
+                addVoxelAxis(blockData, ax, ay, az, world_x, world_y, world_z);
             }
         }
     }
@@ -132,29 +152,14 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                     // TODO: check if voxel is solid (not see through)
                     EmbeddedVoxel* voxel;
                     bool has_voxel = VoxelWorlds::getVoxel(voxelWorld, world_x, world_y, world_z, &voxel);
-                    if (has_voxel == true && voxel->type != BlockTypes::AIR) {
-                        // // z,y - x axis
-                        // axis_cols[z + (y * CS_P)] |= (u64)1 << x;
-                        // // x,z - y axis
-                        // axis_cols[x + (z * CS_P) + CS_P2] |= (u64)1 << y;
-                        // // x,y - z axis
-                        // axis_cols[x + (y * CS_P) + CS_P2 * 2] |= (u64)1 << z;
 
-                        // z,y - x axis
-                        axis_cols[z + (y * CS_P) + CS_P2 * 0] |= (u64)1 << x;
-                        // negative
-                        axis_cols[z + (y * CS_P) + CS_P2 * 1] |= (u64)1 << x;
-
-                        // x,z - y axis
-                        axis_cols[x + (z * CS_P) + CS_P2 * 2] |= (u64)1 << y;
-                        // negative
-                        axis_cols[x + (z * CS_P) + CS_P2 * 3] |= (u64)1 << y;
-
-                        // x,y - z axis
-                        axis_cols[x + (y * CS_P) + CS_P2 * 4] |= (u64)1 << z;
-                        // negative
-                        axis_cols[x + (y * CS_P) + CS_P2 * 5] |= (u64)1 << z;
+                    if (has_voxel == false) {
+                        continue;
                     }
+
+                    
+                    BlockVoxelData blockData = BLOCK_VOXEL_DATA[voxel->type];
+                    addVoxelAxis(blockData, x, y, z, world_x, world_y, world_z);
                 }
             }
         }
@@ -221,25 +226,21 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                             z = dim_3;
                         }
 
-                        BlockVoxelData blockData = BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type];
-                        BlockTexture blockTexture = blockData.get_face(dir);
-
-                        // BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType];
-                        // BlockMesh blockMesh = blockData.get_mesh();
-
                         i64 world_x = x + chunk.pos.x * CS;
                         i64 world_y = y + chunk.pos.y * CS;
                         i64 world_z = z + chunk.pos.z * CS;
 
-                        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, world_x, world_y, world_z)->state);
+                        BlockStateStruct* state = VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, world_x, world_y, world_z)->state;
+
+                        BlockVoxelData blockData = BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type];
+                        
+                        BlockTexture blockTexture = blockData.get_texture(*state, dir);
+                        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
 
                         for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
                             BlockFace face = blockMesh.faces[dir][i];
-                            vertices[vertexIdx++] = getQuad(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), dir, blockTexture);
+                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture);
                         }
-
-
-                        // vertices[vertexIdx++] = getQuad(x, y, z, dir, BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type].get_face(dir));
                     }
                 }
             }

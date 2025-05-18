@@ -3,25 +3,36 @@
 
 #include "../blocks.h"
 
-constexpr inline RGBI4 getLightTest() {
+constexpr inline BlockTexture _furnace_get_texture(const BlockStateStruct& state, u8 dir) {
+    if (dir == 0) {
+        return BlockTextures::FURNACE_SIDE;
+    } else if (dir == 1) {
+        return BlockTextures::FURNACE_SIDE;
+    } else if (dir == 2) {
+        return BlockTextures::FURNACE_TOP;
+    } else if (dir == 3) {
+        return BlockTextures::FURNACE_TOP;
+    } else if (dir == 4) {
+        return BlockTextures::FURNACE_FRONT;
+    } else {
+        return BlockTextures::FURNACE_FRONT;
+    }
+}
+
+constexpr inline RGBI4 getFurnaceLight() {
     return Colors::createRGBI4(15, 0, 0, 15);
 }
 
 void _furnace_init() {
     BLOCK_VOXEL_DATA[BlockTypes::FURNACE] = BlockVoxelData(
-        0,
-        0,
+        BlockStateTypes::BLOCK, // TODO: furnace
+        BlockMeshTypes::BLOCK,
         false,
         false,
         true,
         false,
-        getLightTest,
-        BlockTextures::FURNACE_TOP,
-        BlockTextures::FURNACE_TOP,
-        BlockTextures::FURNACE_SIDE,
-        BlockTextures::FURNACE_SIDE,
-        BlockTextures::FURNACE_FRONT,
-        BlockTextures::FURNACE_FRONT
+        getFurnaceLight,
+        _furnace_get_texture
     );
 }
 

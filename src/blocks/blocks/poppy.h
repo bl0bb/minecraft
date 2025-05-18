@@ -3,21 +3,20 @@
 
 #include "../blocks.h"
 
+constexpr inline BlockTexture _poppy_get_texture(const BlockStateStruct& state, u8 dir) {
+    return BlockTextures::POPPY;
+}
+
 void _poppy_init() {
     BLOCK_VOXEL_DATA[BlockTypes::POPPY] = BlockVoxelData(
-        0,
-        0,
+        BlockStateTypes::BLOCK,
+        BlockMeshTypes::BLOCK, // TODO: add plant
         false,
         false,
         false,
         false,
         nullptr,
-        BlockTextures::POPPY,
-        BlockTextures::POPPY,
-        BlockTextures::POPPY,
-        BlockTextures::POPPY,
-        BlockTextures::POPPY,
-        BlockTextures::POPPY
+        _poppy_get_texture
     );
 }
 

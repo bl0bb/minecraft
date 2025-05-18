@@ -3,20 +3,32 @@
 
 #include "../blocks.h"
 
+constexpr inline BlockTexture _crafting_table_get_texture(const BlockStateStruct& state, u8 dir) {
+    if (dir == 0) {
+        return BlockTextures::CRAFTING_TABLE_SIDE;
+    } else if (dir == 1) {
+        return BlockTextures::CRAFTING_TABLE_SIDE;
+    } else if (dir == 2) {
+        return BlockTextures::CRAFTING_TABLE_TOP;
+    } else if (dir == 3) {
+        return BlockTextures::OAK_PLANKS;
+    } else if (dir == 4) {
+        return BlockTextures::CRAFTING_TABLE_FRONT;
+    } else {
+        return BlockTextures::CRAFTING_TABLE_FRONT;
+    }
+}
+
 void _crafting_table_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::CRAFTING_TABLE] = BlockVoxelData(0,
-        0,
+    BLOCK_VOXEL_DATA[BlockTypes::CRAFTING_TABLE] = BlockVoxelData(
+        BlockStateTypes::BLOCK,
+        BlockMeshTypes::BLOCK,
         false,
         false,
         false,
         false,
         nullptr,
-        BlockTextures::CRAFTING_TABLE_TOP,
-        BlockTextures::OAK_PLANKS,
-        BlockTextures::CRAFTING_TABLE_SIDE,
-        BlockTextures::CRAFTING_TABLE_SIDE,
-        BlockTextures::CRAFTING_TABLE_FRONT,
-        BlockTextures::CRAFTING_TABLE_FRONT
+        _crafting_table_get_texture
     );
 }
 

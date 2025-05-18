@@ -9,14 +9,29 @@
 #include "block_mesh.h"
 
 // block meshes
+
+// standard
 #include "../block_meshes/block.h"
 #include "../block_meshes/slab.h"
 #include "../block_meshes/stair.h"
 
+// log
+#include "../block_meshes/log.h"
+
+// advanced
+#include "../block_meshes/torch.h"
+
 void loadBlocksMeshes() {
+    // standard building blocks
     _loadBlockBlockMesh();
     _loadSlabBlockMesh();
     _loadStairBlockMesh();
+
+    // log
+    _loadLogBlockMesh();
+
+    // advanced
+    _loadTorchBlockMesh();
 }
 
 #endif

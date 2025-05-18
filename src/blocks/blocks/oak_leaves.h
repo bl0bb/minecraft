@@ -3,21 +3,20 @@
 
 #include "../blocks.h"
 
+constexpr inline BlockTexture _oak_leaves_get_texture(const BlockStateStruct& state, u8 dir) {
+    return BlockTextures::OAK_LEAVES;
+}
+
 void _oak_leaves_init() {
     BLOCK_VOXEL_DATA[BlockTypes::OAK_LEAVES] = BlockVoxelData(
-        0,
-        0,
+        BlockStateTypes::BLOCK,
+        BlockMeshTypes::BLOCK,
         true,
         false,
         false,
         false,
         nullptr,
-        BlockTextures::OAK_LEAVES,
-        BlockTextures::OAK_LEAVES,
-        BlockTextures::OAK_LEAVES,
-        BlockTextures::OAK_LEAVES,
-        BlockTextures::OAK_LEAVES,
-        BlockTextures::OAK_LEAVES
+        _oak_leaves_get_texture
     );
 }
 

@@ -136,7 +136,7 @@ GLFWwindow* init_window() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_SAMPLES, 1);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong", FULLSCREEN ? glfwGetPrimaryMonitor() : nullptr, nullptr);
     if (!window) {
@@ -235,13 +235,17 @@ int main() {
 
 
 
+    int msaaSamples = 0;
+    glGetIntegerv(GL_SAMPLES, &msaaSamples);
+    std::cout << "MSAA Samples: " << msaaSamples << "\n";
+
+
 
     // Load blocks
     loadBlocks();
 
     // load block meshes
     loadBlocksMeshes();
-
 
 
 
@@ -334,134 +338,198 @@ int main() {
     // TODO: free already existing block state. OR can you just override the value set there?
 
     // block, slab and stair
-    VoxelWorlds::placeVoxel(voxelBlockWorld,      -12, 6, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,      -12, 6,  0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
-    VoxelWorlds::placeVoxel(voxelBlockWorld,      -10, 6, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld, -10, 6, 0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(0))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld,       -8, 6, 0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -8, 6, 0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(1))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,      -10, 6,  0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld, -10, 6,  0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(0))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       -8, 6,  0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -8, 6,  0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(1))));
 
-    VoxelWorlds::placeVoxel(voxelBlockWorld,       -6, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -6, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld,       -4, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -4, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(1))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld,       -2, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -2, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(2))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld,        0, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   0, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(3))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld,        2, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   2, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(4))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld,        4, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   4, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(5))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld,        6, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   6, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(6))));
-    VoxelWorlds::placeVoxel(voxelBlockWorld,        8, 6, 0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   8, 6, 0, BlockStateVoxel(new BlockStateStruct(StairBlockState(7))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       -6, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -6, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       -4, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -4, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(1))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       -2, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  -2, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(2))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        0, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   0, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(3))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        2, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   2, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(4))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        4, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   4, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(5))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        6, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   6, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(6))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,        8, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,   8, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(7))));
+
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       12, 6,  0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       12, 7,  0, EmbeddedVoxel(BlockTypes::TORCH));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  12, 7,  0, BlockStateVoxel(new BlockStateStruct(TorchBlockState(0))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       13, 6,  0, EmbeddedVoxel(BlockTypes::TORCH));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  13, 6,  0, BlockStateVoxel(new BlockStateStruct(TorchBlockState(1))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       11, 6,  0, EmbeddedVoxel(BlockTypes::TORCH));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  11, 6,  0, BlockStateVoxel(new BlockStateStruct(TorchBlockState(2))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       12, 6,  1, EmbeddedVoxel(BlockTypes::TORCH));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  12, 6,  1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(3))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       12, 6, -1, EmbeddedVoxel(BlockTypes::TORCH));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  12, 6, -1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(4))));
+
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       16, 6,  0, EmbeddedVoxel(BlockTypes::OAK_LOG));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  16, 6,  0, BlockStateVoxel(new BlockStateStruct(LogBlockState(0))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       18, 6,  0, EmbeddedVoxel(BlockTypes::OAK_LOG));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  18, 6,  0, BlockStateVoxel(new BlockStateStruct(LogBlockState(1))));
+    VoxelWorlds::placeVoxel(voxelBlockWorld,       20, 6,  0, EmbeddedVoxel(BlockTypes::OAK_LOG));
+    VoxelWorlds::placeVoxel(voxelBlockStateWorld,  20, 6,  0, BlockStateVoxel(new BlockStateStruct(LogBlockState(2))));
 
 
 
 
 
-    // {
-    //     // house
-    //     // load house nbt
-    //     std::ifstream file("assets/structures/plains_big_house_1.nbt", std::ios::binary);
-    //     if (!file) {
-    //         std::cerr << "Failed to open file.\n";
-    //         return 1;
-    //     }
 
-    //     std::vector<char> fileVec;
-    //     if (isGzipped(file)) {
-    //         fileVec = decompressGzipFile(file);
-    //     } else {
-    //         fileVec = streamToString(file);
-    //     }
 
-    //     NBTReader nbtReader(fileVec);
-    //     NBT* houseNbt = nbtReader.parse();
+    {
+        auto placeNBT = [&voxelBlockWorld, &voxelBlockStateWorld](std::string filePath, i32 placeX, i32 placeY, i32 placeZ) {
+            // load house nbt
+            std::ifstream file(filePath, std::ios::binary);
+            if (!file) {
+                std::cerr << "Failed to open file.\n";
+                return 1;
+            }
 
-    //     const auto& stuff = std::get<std::map<std::string, NBT*>>(houseNbt->value);
-    //     for (const auto& pair : stuff) {
-    //         std::cout << pair.first << " => " << pair.second << '\n';
-    //     }
+            std::vector<char> fileVec;
+            if (isGzipped(file)) {
+                fileVec = decompressGzipFile(file);
+            } else {
+                fileVec = streamToString(file);
+            }
 
-    //     if (!houseNbt || houseNbt->tagType != TAG_Compound) {
-    //         std::cerr << "Invalid or missing root compound tag.\n";
-    //         return 1;
-    //     }
+            NBTReader nbtReader(fileVec);
+            NBT* houseNbt = nbtReader.parse();
 
-    //     auto blocksTag = houseNbt->getCompoundTag("blocks");
+            if (!houseNbt || houseNbt->tagType != TAG_Compound) {
+                std::cerr << "Invalid or missing root compound tag.\n";
+                return 1;
+            }
 
-    //     if (!blocksTag) {
-    //         std::cerr << "Missing 'blocks' tag.\n";
-    //         return 1;
-    //     }
+            auto blocksTag = houseNbt->getCompoundTag("blocks");
 
-    //     auto paletteTag = houseNbt->getCompoundTag("palette");
-    //     if (!paletteTag) {
-    //         std::cerr << "Missing 'palette' tag.\n";
-    //         return 1;
-    //     }
+            if (!blocksTag) {
+                std::cerr << "Missing 'blocks' tag.\n";
+                return 1;
+            }
 
-    //     const auto& blocks = std::get<std::vector<NBT*>>(blocksTag->value);
-    //     const auto& palette = std::get<std::vector<NBT*>>(paletteTag->value);
+            auto paletteTag = houseNbt->getCompoundTag("palette");
+            if (!paletteTag) {
+                std::cerr << "Missing 'palette' tag.\n";
+                return 1;
+            }
 
-    //     for (const auto& block : blocks) {
-    //         auto compound = std::get<std::map<std::string, NBT*>>(block->value);
+            const auto& blocks = std::get<std::vector<NBT*>>(blocksTag->value);
+            const auto& palette = std::get<std::vector<NBT*>>(paletteTag->value);
 
-    //         // Get block position
-    //         const auto& pos = std::get<std::vector<NBT*>>(compound["pos"]->value);
-    //         int stateIndex = std::get<i32>(compound["state"]->value);
+            for (const auto& block : blocks) {
+                auto compound = std::get<std::map<std::string, NBT*>>(block->value);
 
-    //         if (stateIndex >= 0 && stateIndex < palette.size()) {
-    //             auto stateTag = palette[stateIndex];
-    //             const auto& stateCompound = std::get<std::map<std::string, NBT*>>(stateTag->value);
-    //             std::string name = std::get<std::string>(stateCompound.at("Name")->value);
+                // Get block position
+                const auto& pos = std::get<std::vector<NBT*>>(compound.at("pos")->value);
+                int stateIndex = std::get<i32>(compound.at("state")->value);
 
-    //             if (name == "minecraft:air" || name == "minecraft:jigsaw" || name == "minecraft:oak_door" || name == "minecraft:wall_torch" || name == "minecraft:glass_pane" || name == "minecraft:white_bed" || name == "minecraft:chest") {
-    //                 continue;
-    //             }
+                if (stateIndex >= 0 && stateIndex < palette.size()) {
+                    auto stateTag = palette[stateIndex];
+                    const auto& stateCompound = std::get<std::map<std::string, NBT*>>(stateTag->value);
+                    std::string name = std::get<std::string>(stateCompound.at("Name")->value);
 
-    //             BlockType blockType;
-    //             if (name == "minecraft:dirt") {
-    //                 blockType = BlockTypes::DIRT;
-    //             } else if (name == "minecraft:cobblestone") {
-    //                 blockType = BlockTypes::COBBLESTONE;
-    //             } else if (name == "minecraft:oak_log") {
-    //                 blockType = BlockTypes::OAK_LOG;
-    //             } else if (name == "minecraft:oak_planks") {
-    //                 blockType = BlockTypes::OAK_PLANKS;
-    //             } else if (name == "minecraft:dirt_path") {
-    //                 blockType = BlockTypes::DIRT;
-    //             } else if (name == "minecraft:oak_door") {
-    //                 blockType = BlockTypes::OAK_PLANKS;
-    //             } else if (name == "minecraft:cobblestone_stairs") {
-    //                 blockType = BlockTypes::COBBLESTONE_STAIRS;
-    //             }
+                    bool hasProperties = stateCompound.find("Properties") != stateCompound.end();
+                    std::map<std::string, NBT*>* properties;
+                    if (hasProperties) {
+                        properties = &std::get<std::map<std::string, NBT*>>(stateCompound.at("Properties")->value);
+                    }
 
-    //             BlockVoxelData blockTemplate = BLOCK_VOXEL_DATA[blockType];
+                    if (name == "minecraft:air" || name == "minecraft:jigsaw" || name == "minecraft:oak_door" || name == "minecraft:glass_pane" || name == "minecraft:white_bed" || name == "minecraft:yellow_bed" || name == "minecraft:chest" || name == "minecraft:oak_fence" || name == "minecraft:oak_pressure_plate") {
+                        continue;
+                    }
 
-    //             BlockStateStruct* newState = new BlockStateStruct();
-    //             if (blockTemplate.stateType == BlockStateTypes::BLOCK) {
-    //                 *newState = BlockBlockState();
-    //             } else if (blockTemplate.stateType == BlockStateTypes::SLAB) {
-    //                 *newState = SlabBlockState();
-    //                 std::get<SlabBlockState>(*newState).placement = 0;
-    //             } else if (blockTemplate.stateType == BlockStateTypes::STAIR) {
-    //                 *newState = StairBlockState();
-    //                 std::get<StairBlockState>(*newState).direction = 0;
-    //             }
+                    BlockType blockType;
+                    if (name == "minecraft:grass_block") {
+                        blockType = BlockTypes::GRASS;
+                    } else if (name == "minecraft:dirt") {
+                        blockType = BlockTypes::DIRT;
+                    } else if (name == "minecraft:cobblestone") {
+                        blockType = BlockTypes::COBBLESTONE;
+                    } else if (name == "minecraft:oak_log") {
+                        blockType = BlockTypes::OAK_LOG;
+                    } else if (name == "minecraft:oak_planks") {
+                        blockType = BlockTypes::OAK_PLANKS;
+                    } else if (name == "minecraft:oak_slab") {
+                        blockType = BlockTypes::OAK_SLAB;
+                    } else if (name == "minecraft:oak_stairs") {
+                        blockType = BlockTypes::OAK_STAIRS;
+                    } else if (name == "minecraft:dirt_path") {
+                        blockType = BlockTypes::DIRT;
+                    } else if (name == "minecraft:oak_door") {
+                        blockType = BlockTypes::OAK_PLANKS;
+                    } else if (name == "minecraft:cobblestone_stairs") {
+                        blockType = BlockTypes::COBBLESTONE_STAIRS;
+                    } else if (name == "minecraft:wall_torch") {
+                        blockType = BlockTypes::TORCH;
+                    } else if (name == "minecraft:stripped_oak_log") {
+                        blockType = BlockTypes::STRIPPED_OAK_LOG;
+                    } else {
+                        std::cerr << "Unsupported block type: " << name << "\n";
+                        return 1;
+                    }
 
-    //             i32 x = std::get<i32>(pos[0]->value);
-    //             i32 y = std::get<i32>(pos[1]->value);
-    //             i32 z = std::get<i32>(pos[2]->value);
+                    BlockVoxelData blockTemplate = BLOCK_VOXEL_DATA[blockType];
 
-    //             VoxelWorlds::placeVoxel(voxelBlockWorld, x, y, z, EmbeddedVoxel(blockType));
-    //             VoxelWorlds::placeVoxel(voxelBlockStateWorld, x, y, z, BlockStateVoxel(newState));
-    //         }
-    //     }
-    // }
+                    BlockStateStruct* newState = new BlockStateStruct();
+                    if (blockTemplate.stateType == BlockStateTypes::BLOCK) {
+                        *newState = BlockBlockState();
+                    } else if (blockTemplate.stateType == BlockStateTypes::SLAB) {
+                        *newState = SlabBlockState();
+                        std::get<SlabBlockState>(*newState).placement = 0;
+                    } else if (blockTemplate.stateType == BlockStateTypes::STAIR) {
+                        *newState = StairBlockState();
+                        if (hasProperties) {
+                            std::string half = std::get<std::string>(properties->at("half")->value);
+                            std::string facing = std::get<std::string>(properties->at("facing")->value);
+                            // NBT stairs are facing the "wrong" way
+                            std::get<StairBlockState>(*newState).direction = (facing == "east" ? 1 : facing == "west" ? 0 : facing == "north" ? 2 : 3) + (half == "bottom" ? 0 : 4);
+                        }
+                    } else if (blockTemplate.stateType == BlockStateTypes::LOG) {
+                        *newState = LogBlockState();
+                        if (hasProperties) {
+                            std::string axis = std::get<std::string>(properties->at("axis")->value);
+                            std::get<LogBlockState>(*newState).direction = axis[0] - 'x';
+                        }
+                    } else if (blockTemplate.stateType == BlockStateTypes::TORCH) {
+                        *newState = TorchBlockState();
+                        if (hasProperties) {
+                            std::string facing = std::get<std::string>(properties->at("facing")->value);
+                            std::get<TorchBlockState>(*newState).direction = facing[0] - 'x';
+                        }
+                    }
+
+                    i32 x = std::get<i32>(pos[0]->value);
+                    i32 y = std::get<i32>(pos[1]->value);
+                    i32 z = std::get<i32>(pos[2]->value);
+
+                    x += placeX;
+                    y += placeY;
+                    z += placeZ;
+
+                    VoxelWorlds::placeVoxel(voxelBlockWorld, x, y, z, EmbeddedVoxel(blockType));
+                    VoxelWorlds::placeVoxel(voxelBlockStateWorld, x, y, z, BlockStateVoxel(newState));
+                }
+            }
+
+            return 0;
+        };
+
+        if (placeNBT("assets/structures/plains_big_house_1.nbt", -20, 5, 10)) return 1;
+        if (placeNBT("assets/structures/plains_medium_house_1.nbt", -10, 5, 10)) return 1;
+        if (placeNBT("assets/structures/plains_medium_house_2.nbt", 10, 5, 10)) return 1;
+    }
     
 
     
@@ -533,9 +601,7 @@ int main() {
 
     // textures
     GLuint textureArray;
-    printf("passed 1\n");
     glGenTextures(1, &textureArray);
-    printf("passed 1\n");
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
 
     // Allocate storage
@@ -546,27 +612,22 @@ int main() {
     // skip first
     u16 texIdx = 1;
 
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, texWidth, texHeight, numTextures);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, std::floor(std::log2(std::max(texWidth, texHeight))) + 1, GL_RGBA8, texWidth, texHeight, numTextures);
 
-    printf("passed 1\n");
     
 
-    // set to default settings
+    // repeat, only matters on greedy meshing i think (but we dont use that anymore)
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    printf("passed 1\n");
 
     // turn off texture smoothing
-    glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    printf("passed 1\n");
+
 
     // LOAD TEXTURES
     u32* block_textures_data = new u32[array_size(block_textures)]{0};
-    printf("passed 1\n");
 
     for (u16 i = 1; i < array_size(block_textures); i++) {
         std::string path = "assets/textures/";
@@ -576,7 +637,9 @@ int main() {
         load_texture(path.c_str(), texIdx++, texWidth, texHeight, nrChannels);
         block_textures_data[i] = nrChannels;
     }
-    printf("passed 1\n");
+
+    // mipmap does some anti aliasing stuff bluhhh
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 
     // Create SSBO for texture metadata
@@ -585,7 +648,6 @@ int main() {
     glBufferData(GL_SHADER_STORAGE_BUFFER, array_size(block_textures) * sizeof(u32), block_textures_data, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, texture_ssbo);
 
-    printf("passed 1\n");
 
 
 
@@ -594,7 +656,6 @@ int main() {
     Shader geometryShader = Shader("voxel/main.vert", "voxel/main.frag");
     Shader edgeShader = Shader("edge/edge.vert", "edge/edge.frag");
 
-    printf("passed 1\n");
 
     /*
     // --------------------
@@ -685,7 +746,6 @@ int main() {
 
 
 
-    printf("passed 1\n");
 
 
 
@@ -703,7 +763,6 @@ int main() {
         stbi_image_free(data);
     }
 
-    printf("passed 1\n");
 
 
     u32 shaderType = 0;

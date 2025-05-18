@@ -3,21 +3,20 @@
 
 #include "../blocks.h"
 
+constexpr inline BlockTexture _water_get_texture(const BlockStateStruct& state, u8 dir) {
+    return BlockTextures::WATER;
+}
+
 void _water_init() {
     BLOCK_VOXEL_DATA[BlockTypes::WATER] = BlockVoxelData(
-        0,
-        0,
+        BlockStateTypes::BLOCK,
+        BlockMeshTypes::BLOCK,
         false,
         false,
         false,
         false,
         nullptr,
-        BlockTextures::WATER,
-        BlockTextures::WATER,
-        BlockTextures::WATER,
-        BlockTextures::WATER,
-        BlockTextures::WATER,
-        BlockTextures::WATER
+        _water_get_texture
     );
 }
 

@@ -21,6 +21,8 @@ constexpr const char* block_textures[] = {
     "oak_log",
     "oak_leaves",
     "oak_planks",
+    "stripped_oak_log_top",
+    "stripped_oak_log",
     "crafting_table_top",
     "crafting_table_front",
     "crafting_table_side",
@@ -29,6 +31,7 @@ constexpr const char* block_textures[] = {
     "furnace_front",
     "water",
     "poppy",
+    "torch",
 };
 
 typedef u16 BlockTexture;
@@ -46,6 +49,8 @@ enum BlockTextureEnum : BlockTexture {
     OAK_LOG,
     OAK_LEAVES,
     OAK_PLANKS,
+    STRIPPED_OAK_LOG_TOP,
+    STRIPPED_OAK_LOG,
     CRAFTING_TABLE_TOP,
     CRAFTING_TABLE_FRONT,
     CRAFTING_TABLE_SIDE,
@@ -54,6 +59,7 @@ enum BlockTextureEnum : BlockTexture {
     FURNACE_FRONT,
     WATER,
     POPPY,
+    TORCH,
 };
 }
 
@@ -74,14 +80,17 @@ enum BlockTypeEnum : BlockType {
     OAK_PLANKS,
     OAK_SLAB,
     OAK_STAIRS,
+    STRIPPED_OAK_LOG,
     CRAFTING_TABLE,
     FURNACE,
     WATER,
     POPPY,
+    TORCH,
 };
 }
 
 typedef RGBI4 (*getLightFunc)();
+typedef BlockTexture (*getTextureFunc)(const BlockStateStruct& state, u8 dir);
 
 struct BlockVoxelData {
     u8 stateType;
@@ -94,12 +103,7 @@ struct BlockVoxelData {
 
     getLightFunc get_light;
 
-    BlockTexture texture_top;
-    BlockTexture texture_bottom;
-    BlockTexture texture_right;
-    BlockTexture texture_left;
-    BlockTexture texture_back;
-    BlockTexture texture_front;
+    getTextureFunc get_texture;
 
     BlockVoxelData(
         u8 _stateType,
@@ -112,12 +116,7 @@ struct BlockVoxelData {
 
         getLightFunc _get_light,
 
-        BlockTexture _texture_top,
-        BlockTexture _texture_bottom,
-        BlockTexture _texture_right,
-        BlockTexture _texture_left,
-        BlockTexture _texture_back,
-        BlockTexture _texture_front
+        getTextureFunc _get_texture
         ) :
     stateType(_stateType),
     meshType(_meshType),
@@ -129,32 +128,10 @@ struct BlockVoxelData {
 
     get_light(_get_light),
 
-    texture_top(_texture_top),
-    texture_bottom(_texture_bottom),
-    texture_right(_texture_right),
-    texture_left(_texture_left),
-    texture_back(_texture_back),
-    texture_front(_texture_front) {
-        
-    }
-
-    BlockTexture get_face(u8 dir) const {
-        if (dir == 0) {
-            return texture_right;
-        } else if (dir == 1) {
-            return texture_left;
-        } else if (dir == 2) {
-            return texture_top;
-        } else if (dir == 3) {
-            return texture_bottom;
-        } else if (dir == 4) {
-            return texture_back;
-        } else {
-            return texture_front;
-        }
-    }
+    get_texture(_get_texture)
+    {}
 };
 
-BlockVoxelData* BLOCK_VOXEL_DATA = (BlockVoxelData*)malloc(sizeof(BlockVoxelData) * (BlockTypes::POPPY + 1));
+BlockVoxelData* BLOCK_VOXEL_DATA = (BlockVoxelData*)malloc(sizeof(BlockVoxelData) * (BlockTypes::TORCH + 1));
 
 #endif

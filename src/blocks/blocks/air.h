@@ -3,21 +3,20 @@
 
 #include "../blocks.h"
 
+constexpr inline BlockTexture _air_get_texture(const BlockStateStruct& state, u8 dir) {
+    return BlockTextures::NONE;
+}
+
 void _air_init() {
     BLOCK_VOXEL_DATA[BlockTypes::AIR] = BlockVoxelData(
-        0,
-        0,
+        BlockStateTypes::BLOCK,
+        BlockMeshTypes::BLOCK,
         true,
         false,
         false,
         false,
         nullptr,
-        BlockTextures::NONE,
-        BlockTextures::NONE,
-        BlockTextures::NONE,
-        BlockTextures::NONE,
-        BlockTextures::NONE,
-        BlockTextures::NONE
+        _air_get_texture
     );
 }
 

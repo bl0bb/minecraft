@@ -39,13 +39,33 @@ void main() {
   QuadData data = instanceData[gl_InstanceID];
   uint data1 = data.data1;
   uint data2 = data.data2;
-  vec3 offset = vec3(data1 & 31, (data1 >> 5) & 31, (data1 >> 10) & 31);
 
-  vec2 face_offset = vec2((data1 >> 15) & 15, (data1 >> 19) & 15) / 16.0f;
-  vec2 face_size = (vec2((data1 >> 27) & 15, ((data2 & 7) << 1) | ((data1 >> 31) & 1)) + 1) / 16.0f;
-  float depth = ((data1 >> 23) & 15) / 16.0f;
+  uint data_x =          (data1 >>         0) & ( 32 - 1);
+  uint data_y =          (data1 >>         5) & ( 32 - 1);
+  uint data_z =          (data1 >>        10) & ( 32 - 1);
+  uint data_face_x =     (data1 >>        15) & ( 16 - 1);
+  uint data_face_y =     (data1 >>        19) & ( 16 - 1);
+  uint data_face_depth = (data1 >>        23) & ( 16 - 1);
+  uint data_face_w =     (data1 >>        27) & ( 16 - 1);
+  uint data_face_h =     ((data2 & 7) << 1) | ((data1 >> 31) & 1); // (data1 >> 31) & (16 - 1);
+  uint data_uv_x =       (data2 >> (35 - 32)) & ( 16 - 1);
+  uint data_uv_y =       (data2 >> (39 - 32)) & ( 16 - 1);
+  uint data_uv_w =       (data2 >> (43 - 32)) & ( 16 - 1);
+  uint data_uv_h =       (data2 >> (47 - 32)) & ( 16 - 1);
+  uint data_uv_rot =     (data2 >> (51 - 32)) & (  4 - 1);
+  uint data_dir =        (data2 >> (53 - 32)) & (  8 - 1);
+  uint data_type =       (data2 >> (56 - 32)) & (256 - 1);
 
-  uint axis = (data2 >> 3) & 7;
+  vec3 offset = vec3(data_x, data_y, data_z);
+
+  vec2 face_offset = vec2(data_face_x, data_face_y) / 16.0f;
+  float depth = data_face_depth / 16.0f;
+  vec2 face_size = (vec2(data_face_w, data_face_h) + 1) / 16.0f;
+
+  vec2 uvOffset = vec2(data_uv_x, data_uv_y) / 16.0f;
+  vec2 uvSize = (vec2(data_uv_w, data_uv_h) + 1) / 16.0f;
+
+  uint axis = data_dir;
   uint isNegative = axis & 1;
 
   vec2 fixedPos = face_offset + (face_size * vec2(aPos));
@@ -90,9 +110,21 @@ void main() {
 
 
 
-  texIndex = int((data2 >> 6) & 15);
+  texIndex = int(data_type);
 
-  texUv = vec2(aPos.x * face_size.x, (1 - aPos.y * face_size.y));
+  texUv = uvOffset + vec2(aPos) * uvSize;
+  texUv.y = 1 - texUv.y;
+
+  uint uvRot = data_uv_rot;
+  if (uvRot == 1) {
+    texUv = vec2(texUv.y, 1.0f - texUv.x);
+  } else if (uvRot == 2) {
+    texUv = vec2(1.0f - texUv.x, 1.0f - texUv.y);
+  } else if (uvRot == 3) {
+    texUv = vec2(1.0f - texUv.y, texUv.x);
+  }
+
+
 
 
   Axis = axis;

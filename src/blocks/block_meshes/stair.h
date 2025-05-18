@@ -147,18 +147,18 @@ static BlockMesh _getStairBlockMesh(const BlockStateStruct& state) {
         }
     }
 
-    BlockMesh stair(rightCount, leftCount, topCount, bottomCount, backCount, frontCount);
+    BlockMesh stair(rightCount, leftCount, topCount, bottomCount, backCount, frontCount, false, false, false, false, false, false);
 
-    stair.faces[rightIdx][0] =  BlockFace(0, 0,     0,     16 - 1,  8 - 1);
-    stair.faces[rightIdx][1] =  BlockFace(0, 9 - 1, 9 - 1, 16 - 1, 16 - 1);
-    stair.faces[leftIdx][0] =   BlockFace(0, 0,     0,     16 - 1,  8 - 1);
-    stair.faces[leftIdx][1] =   BlockFace(0, 0,     9 - 1,  8 - 1, 16 - 1);
-    stair.faces[topIdx][0] =    BlockFace(8, 0,     0,     16 - 1,  8 - 1);
-    stair.faces[topIdx][1] =    BlockFace(0, 0,     9 - 1, 16 - 1, 16 - 1);
-    stair.faces[bottomIdx][0] = BlockFace(0, 0,     0,     16 - 1, 16 - 1);
-    stair.faces[backIdx][0] =   BlockFace(0, 0,     0,     16 - 1, 16 - 1);
-    stair.faces[frontIdx][0] =  BlockFace(0, 0,     0,     16 - 1,  8 - 1);
-    stair.faces[frontIdx][1] =  BlockFace(8, 0,     9 - 1, 16 - 1, 16 - 1);
+    stair.faces[rightIdx][0] =  BlockFace(0,    0,    0,     0,     16 - 1,  8 - 1,    0,     0,     16 - 1,  8 - 1);
+    stair.faces[rightIdx][1] =  BlockFace(0,    0,    9 - 1, 9 - 1, 16 - 1, 16 - 1,    9 - 1, 9 - 1, 16 - 1, 16 - 1);
+    stair.faces[leftIdx][0] =   BlockFace(0,    0,    0,     0,     16 - 1,  8 - 1,    0,     0,     16 - 1,  8 - 1);
+    stair.faces[leftIdx][1] =   BlockFace(0,    0,    0,     9 - 1,  8 - 1, 16 - 1,    0,     9 - 1,  8 - 1, 16 - 1);
+    stair.faces[topIdx][0] =    BlockFace(0,    8,    0,     0,     16 - 1,  8 - 1,    0,     0,     16 - 1,  8 - 1);
+    stair.faces[topIdx][1] =    BlockFace(0,    0,    0,     9 - 1, 16 - 1, 16 - 1,    0,     9 - 1, 16 - 1, 16 - 1);
+    stair.faces[bottomIdx][0] = BlockFace(0,    0,    0,     0,     16 - 1, 16 - 1,    0,     0,     16 - 1, 16 - 1);
+    stair.faces[backIdx][0] =   BlockFace(0,    0,    0,     0,     16 - 1, 16 - 1,    0,     0,     16 - 1, 16 - 1);
+    stair.faces[frontIdx][0] =  BlockFace(0,    0,    0,     0,     16 - 1,  8 - 1,    0,     0,     16 - 1,  8 - 1);
+    stair.faces[frontIdx][1] =  BlockFace(0,    8,    0,     9 - 1, 16 - 1, 16 - 1,    0,     9 - 1, 16 - 1, 16 - 1);
 
     if (dir == 0) {
         // right
@@ -172,22 +172,42 @@ static BlockMesh _getStairBlockMesh(const BlockStateStruct& state) {
                 i8 newFromY;
                 i8 newToX;
                 i8 newToY;
+
+                i8 newUvFromX;
+                i8 newUvFromY;
+                i8 newUvToX;
+                i8 newUvToY;
                 if (isFlipped) {
                     newFromX = face.fromY;
                     newFromY = 16 - 1 - face.fromX;
                     newToX = face.toY;
                     newToY = 16 - 1 - face.toX;
+
+                    newUvFromX = face.uvFromY;
+                    newUvFromY = 16 - 1 - face.uvFromX;
+                    newUvToX = face.uvToY;
+                    newUvToY = 16 - 1 - face.uvToX;
                 } else {
                     newFromX = 16 - 1 - face.fromY;
                     newFromY = face.fromX;
                     newToX = 16 - 1 - face.toY;
                     newToY = face.toX;
+
+                    newUvFromX = 16 - 1 - face.uvFromY;
+                    newUvFromY = face.uvFromX;
+                    newUvToX = 16 - 1 - face.uvToY;
+                    newUvToY = face.uvToX;
                 }
 
                 face.fromX = std::min(newFromX, newToX);
                 face.fromY = std::min(newFromY, newToY);
                 face.toX = std::max(newFromX, newToX);
                 face.toY = std::max(newFromY, newToY);
+
+                face.uvFromX = std::min(newUvFromX, newUvToX);
+                face.uvFromY = std::min(newUvFromY, newUvToY);
+                face.uvToX = std::max(newUvFromX, newUvToX);
+                face.uvToY = std::max(newUvFromY, newUvToY);
             }
         }
     } else if (dir == 1) {
@@ -202,22 +222,42 @@ static BlockMesh _getStairBlockMesh(const BlockStateStruct& state) {
                 i8 newFromY;
                 i8 newToX;
                 i8 newToY;
+
+                i8 newUvFromX;
+                i8 newUvFromY;
+                i8 newUvToX;
+                i8 newUvToY;
                 if (isFlipped) {
                     newFromX = 16 - 1 - face.fromY;
                     newFromY = face.fromX;
                     newToX = 16 - 1 - face.toY;
                     newToY = face.toX;
+                    
+                    newUvFromX = 16 - 1 - face.uvFromY;
+                    newUvFromY = face.uvFromX;
+                    newUvToX = 16 - 1 - face.uvToY;
+                    newUvToY = face.uvToX;
                 } else {
                     newFromX = face.fromY;
                     newFromY = 16 - 1 - face.fromX;
                     newToX = face.toY;
                     newToY = 16 - 1 - face.toX;
+                    
+                    newUvFromX = face.uvFromY;
+                    newUvFromY = 16 - 1 - face.uvFromX;
+                    newUvToX = face.uvToY;
+                    newUvToY = 16 - 1 - face.uvToX;
                 }
 
                 face.fromX = std::min(newFromX, newToX);
                 face.fromY = std::min(newFromY, newToY);
                 face.toX = std::max(newFromX, newToX);
                 face.toY = std::max(newFromY, newToY);
+
+                face.uvFromX = std::min(newUvFromX, newUvToX);
+                face.uvFromY = std::min(newUvFromY, newUvToY);
+                face.uvToX = std::max(newUvFromX, newUvToX);
+                face.uvToY = std::max(newUvFromY, newUvToY);
             }
         }
     } else if (dir == 2) {
@@ -233,10 +273,20 @@ static BlockMesh _getStairBlockMesh(const BlockStateStruct& state) {
                 i8 newToX = 16 - 1 - face.toX;
                 i8 newToY = 16 - 1 - face.toY;
 
+                i8 newUvFromX = 16 - 1 - face.uvFromX;
+                i8 newUvFromY = 16 - 1 - face.uvFromY;
+                i8 newUvToX = 16 - 1 - face.uvToX;
+                i8 newUvToY = 16 - 1 - face.uvToY;
+
                 face.fromX = std::min(newFromX, newToX);
                 face.fromY = std::min(newFromY, newToY);
                 face.toX = std::max(newFromX, newToX);
                 face.toY = std::max(newFromY, newToY);
+
+                face.uvFromX = std::min(newUvFromX, newUvToX);
+                face.uvFromY = std::min(newUvFromY, newUvToY);
+                face.uvToX = std::max(newUvFromX, newUvToX);
+                face.uvToY = std::max(newUvFromY, newUvToY);
             }
         }
     }
@@ -251,10 +301,20 @@ static BlockMesh _getStairBlockMesh(const BlockStateStruct& state) {
             i8 newToX = 16 - 1 - face.toY;
             i8 newToY = face.toX;
 
+            i8 newUvFromX = 16 - 1 - face.uvFromY;
+            i8 newUvFromY = face.uvFromX;
+            i8 newUvToX = 16 - 1 - face.uvToY;
+            i8 newUvToY = face.uvToX;
+
             face.fromX = std::min(newFromX, newToX);
             face.fromY = std::min(newFromY, newToY);
             face.toX = std::max(newFromX, newToX);
             face.toY = std::max(newFromY, newToY);
+
+            face.uvFromX = std::min(newUvFromX, newUvToX);
+            face.uvFromY = std::min(newUvFromY, newUvToY);
+            face.uvToX = std::max(newUvFromX, newUvToX);
+            face.uvToY = std::max(newUvFromY, newUvToY);
         }
 
         // left
@@ -265,11 +325,21 @@ static BlockMesh _getStairBlockMesh(const BlockStateStruct& state) {
             i8 newFromY = 16 - 1 - face.fromX;
             i8 newToX = face.toY;
             i8 newToY = 16 - 1 - face.toX;
+            
+            i8 newUvFromX = face.uvFromY;
+            i8 newUvFromY = 16 - 1 - face.uvFromX;
+            i8 newUvToX = face.uvToY;
+            i8 newUvToY = 16 - 1 - face.uvToX;
 
             face.fromX = std::min(newFromX, newToX);
             face.fromY = std::min(newFromY, newToY);
             face.toX = std::max(newFromX, newToX);
             face.toY = std::max(newFromY, newToY);
+
+            face.uvFromX = std::min(newUvFromX, newUvToX);
+            face.uvFromY = std::min(newUvFromY, newUvToY);
+            face.uvToX = std::max(newUvFromX, newUvToX);
+            face.uvToY = std::max(newUvFromY, newUvToY);
         }
     }
 
@@ -277,7 +347,7 @@ static BlockMesh _getStairBlockMesh(const BlockStateStruct& state) {
 }
 
 void _loadStairBlockMesh() {
-    BLOCK_MESHES[BlockMeshTypes::STAIR] = &_getStairBlockMesh;
+    BLOCK_MESHES[BlockMeshTypes::STAIR] = _getStairBlockMesh;
 }
 
 #endif
