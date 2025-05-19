@@ -53,54 +53,29 @@ constexpr inline void dim_to_pos(u8& x, u8& y, u8& z, u8 dim_1, u8 dim_2, u8 dim
 
 
 u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld, const VoxelChunk& chunk, VoxelFace* vertices) {
-    // solid voxel as binary for each x,y,z axis, positive and negative
-    u64 axis_cols[3 * CS_P2 * 2] = {0};
-
-    // the cull mask to perform greedy slicing, based on solids on previous axis_cols
-    u64 col_face_masks[3 * CS_P2 * 2] = {0};
-
-    // masks that represent surfaces to perform greedy meshing
-    std::unordered_map<u64, u64[3 * CS_P2 * 2]> surface_face_masks;
-
-    // index
-    u32 vertexIdx = 0;
+    // load voxels and block states with padding for quick lookup
+    EmbeddedVoxel* blocks[CS_P3] = {nullptr};
+    BlockStateStruct* blockStates[CS_P3] = {nullptr};
 
 
-    auto addVoxelAxis = [&voxelBlockStateWorld, &axis_cols](BlockVoxelData& blockData, u8 x, u8 y, u8 z, i64 world_x, i64 world_y, i64 world_z) {
-        if (blockData.transparent == false) {
-            BlockStateStruct* state = VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, world_x, world_y, world_z)->state;
-            BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
+    auto addVoxelAxis = [&voxelBlockStateWorld, &voxelWorld, &blocks, &blockStates](u8 x, u8 y, u8 z, i64 world_x, i64 world_y, i64 world_z) {
+        EmbeddedVoxel* voxel;
 
-            // z,y - x axis
-            if (blockMesh.culls(0) || true) {
-                // positive
-                axis_cols[z + (y * CS_P) + CS_P2 * 0] |= (u64)1 << x;
-            }
-            if (blockMesh.culls(1) || true) {
-                // negative
-                axis_cols[z + (y * CS_P) + CS_P2 * 1] |= (u64)1 << x;
-            }
-
-            // x,z - y axis
-            if (blockMesh.culls(2) || true) {
-                // positive
-                axis_cols[x + (z * CS_P) + CS_P2 * 2] |= (u64)1 << y;
-            }
-            if (blockMesh.culls(3) || true) {
-                // negative
-                axis_cols[x + (z * CS_P) + CS_P2 * 3] |= (u64)1 << y;
-            }
-
-            // x,y - z axis
-            if (blockMesh.culls(4) || true) {
-                // positive
-                axis_cols[x + (y * CS_P) + CS_P2 * 4] |= (u64)1 << z;
-            }
-            if (blockMesh.culls(5) || true) {
-                // negative
-                axis_cols[x + (y * CS_P) + CS_P2 * 5] |= (u64)1 << z;
-            }
+        bool has_voxel = VoxelWorlds::getVoxel(voxelWorld, world_x, world_y, world_z, &voxel);
+        if (has_voxel == false) {
+            return;
         }
+        
+        if (voxel->type == BlockTypes::AIR) {
+            return;
+        }
+
+        BlockVoxelData blockData = BLOCK_VOXEL_DATA[voxel->type];
+
+        BlockStateStruct* state = VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, world_x, world_y, world_z)->state;
+
+        blocks[get_zxy_index_p(x, y, z)] = voxel;
+        blockStates[get_zxy_index_p(x, y, z)] = state;
     };
 
 
@@ -113,13 +88,11 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                 u8 ay = y + 1;
                 u8 az = z + 1;
 
-                i64 world_x = ax - 1 + chunk.pos.x * CS;
-                i64 world_y = ay - 1 + chunk.pos.y * CS;
-                i64 world_z = az - 1 + chunk.pos.z * CS;
+                i64 world_x = x + chunk.pos.x * CS;
+                i64 world_y = y + chunk.pos.y * CS;
+                i64 world_z = z + chunk.pos.z * CS;
 
-                // TODO: check if voxel is solid (not see through)
-                BlockVoxelData blockData = BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type];
-                addVoxelAxis(blockData, ax, ay, az, world_x, world_y, world_z);
+                addVoxelAxis(ax, ay, az, world_x, world_y, world_z);
             }
         }
     }
@@ -147,43 +120,9 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                     i64 world_x = x - 1 + chunk.pos.x * CS;
                     i64 world_y = y - 1 + chunk.pos.y * CS;
                     i64 world_z = z - 1 + chunk.pos.z * CS;
-
                     
-                    // TODO: check if voxel is solid (not see through)
-                    EmbeddedVoxel* voxel;
-                    bool has_voxel = VoxelWorlds::getVoxel(voxelWorld, world_x, world_y, world_z, &voxel);
-
-                    if (has_voxel == false) {
-                        continue;
-                    }
-
-                    
-                    BlockVoxelData blockData = BLOCK_VOXEL_DATA[voxel->type];
-                    addVoxelAxis(blockData, x, y, z, world_x, world_y, world_z);
+                    addVoxelAxis(x, y, z, world_x, world_y, world_z);
                 }
-            }
-        }
-    }
-
-
-
-
-    // face culling
-    for (u8 axis = 0; axis < 3; axis++) {
-        for (u8 j = 0; j < 2; j++) {
-            u8 dir = axis * 2 + j;
-            for (u16 i = 0; i < CS_P2; i++) {
-                u64 col = axis_cols[(CS_P2 * dir) + i];
-
-                // sample axis, and set true when air meets solid
-                u64 mask = col;
-                if (j == 0) {
-                    mask &= ~(col >> 1);
-                } else {
-                    mask &= ~(col << 1);
-                }
-
-                col_face_masks[(CS_P2 * dir) + i] = mask;
             }
         }
     }
@@ -194,54 +133,66 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
 
     // meshing
-    // generate quads
-    for (u8 axis = 0; axis < 3; axis++) {
-        for (u8 j = 0; j < 2; j++) {
-            u8 dir = axis * 2 + j;
-            for (u8 dim_2 = 0; dim_2 < CS; dim_2++) {
-                for (u8 dim_1 = 0; dim_1 < CS; dim_1++) {
-                    u32 index = (dim_1 + 1) + ((dim_2 + 1) * CS_P) + (CS_P2 * dir);
-                    u64 face_mask = col_face_masks[index];
+    
+    // index
+    u32 vertexIdx = 0;
 
-                    // remove padding right
-                    face_mask >>= 1;
-                    // remove padding left
-                    face_mask &= ~(u64(1) << CS);
+    // generate quads new
+    for (u8 x = 1; x < CS_P - 1; x++) {
+        for (u8 y = 1; y < CS_P - 1; y++) {
+            for (u8 z = 1; z < CS_P - 1; z++) {
+                EmbeddedVoxel* voxel = blocks[get_zxy_index_p(x, y, z)];
+                if (voxel == nullptr) {
+                    continue;
+                }
+                BlockVoxelData blockData = BLOCK_VOXEL_DATA[voxel->type];
 
-                    while (face_mask) {
-                        u8 dim_3 = pop_lsb(face_mask);
+                BlockStateStruct* state = blockStates[get_zxy_index_p(x, y, z)];
 
-                        u8 x, y, z;
-                        if (axis == 0) {
-                            z = dim_1;
-                            y = dim_2;
-                            x = dim_3;
-                        } else if (axis == 1) {
-                            x = dim_1;
-                            z = dim_2;
-                            y = dim_3;
-                        } else {
-                            x = dim_1;
-                            y = dim_2;
-                            z = dim_3;
-                        }
+                for (u8 dir = 0; dir < 6; dir++) {
+                    u8 newX = x;
+                    u8 newY = y;
+                    u8 newZ = z;
+                    if (dir == 0) newX++;
+                    else if (dir == 1) newX--;
+                    else if (dir == 2) newY++;
+                    else if (dir == 3) newY--;
+                    else if (dir == 4) newZ++;
+                    else newZ--;
 
-                        i64 world_x = x + chunk.pos.x * CS;
-                        i64 world_y = y + chunk.pos.y * CS;
-                        i64 world_z = z + chunk.pos.z * CS;
+                    BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
 
-                        BlockStateStruct* state = VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, world_x, world_y, world_z)->state;
-
-                        BlockVoxelData blockData = BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type];
-                        
+                    auto addFace = [blocks, blockStates, vertices, &vertexIdx, state, &blockMesh, &blockData, dir, x, y, z]() {
                         BlockTexture blockTexture = blockData.get_texture(*state, dir);
-                        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
 
                         for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
                             BlockFace face = blockMesh.faces[dir][i];
-                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture);
+                            vertices[vertexIdx++] = VoxelFace(x - 1, y - 1, z - 1, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture);
                         }
+                    };
+
+                    EmbeddedVoxel* otherVoxel = blocks[get_zxy_index_p(newX, newY, newZ)];
+                    if (otherVoxel == nullptr) {
+                        // no other voxel, add face
+                        addFace();
+                        continue;
                     }
+                    
+                    BlockVoxelData otherBlockData = BLOCK_VOXEL_DATA[otherVoxel->type];
+                    BlockStateStruct* otherState = blockStates[get_zxy_index_p(newX, newY, newZ)];
+                    BlockMesh otherBlockMesh = BLOCK_MESHES[otherBlockData.meshType](*otherState);
+
+
+                    // check whether or not to create a face based on other voxel
+
+                    // if other block culls (hides full face) and is not transparent
+                    // then we cant see this face
+                    // so continue
+                    if (otherBlockMesh.culls(dir) && otherBlockData.transparent == false) {
+                        continue;
+                    }
+
+                    addFace();
                 }
             }
         }

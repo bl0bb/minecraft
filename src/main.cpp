@@ -486,8 +486,19 @@ int main() {
                     if (blockTemplate.stateType == BlockStateTypes::BLOCK) {
                         *newState = BlockBlockState();
                     } else if (blockTemplate.stateType == BlockStateTypes::SLAB) {
-                        *newState = SlabBlockState();
-                        std::get<SlabBlockState>(*newState).placement = 0;
+                        if (hasProperties) {
+                            std::string type = std::get<std::string>(properties->at("type")->value);
+                            if (type == "double") {
+                                // slab to full block
+                                *newState = BlockBlockState();
+                                blockType -= 1;
+                            } else {
+                                *newState = SlabBlockState();
+                                std::get<SlabBlockState>(*newState).placement = type == "top" ? 1 : 0;
+                            }
+                        } else {
+                            *newState = SlabBlockState();
+                        }
                     } else if (blockTemplate.stateType == BlockStateTypes::STAIR) {
                         *newState = StairBlockState();
                         if (hasProperties) {
