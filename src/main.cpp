@@ -109,8 +109,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
+#if GL_API == 0
 bool init_opengl() {
-
     glEnable(GL_DEBUG_OUTPUT);
 
     // this not working on mac
@@ -129,13 +129,47 @@ bool init_opengl() {
     glEnable(GL_MULTISAMPLE);
 
     return true;
-};
+}
+#elif GL_API == 1
+// TODO
+void createVkInstance() {
+    VkApplicationInfo appInfo{};
+    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInfo.pApplicationName = "Vulkan Cube";
+    appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.pEngineName = "No Engine";
+    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.apiVersion = VK_API_VERSION_1_0;
+
+    uint32_t glfwExtensionCount = 0;
+    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+    VkInstanceCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    createInfo.pApplicationInfo = &appInfo;
+    createInfo.enabledExtensionCount = glfwExtensionCount;
+    createInfo.ppEnabledExtensionNames = glfwExtensions;
+
+    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create instance!");
+    }
+}
+
+bool init_vulkan() {
+    createVkInstance();
+    return true;
+}
+#endif
 
 GLFWwindow* init_window() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 
+    #if GL_API == 0
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    #elif GL_API == 1
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    #endif
     glfwWindowHint(GLFW_SAMPLES, 4);
 
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong", FULLSCREEN ? glfwGetPrimaryMonitor() : nullptr, nullptr);
@@ -151,12 +185,16 @@ GLFWwindow* init_window() {
     
     glfwMakeContextCurrent(window);
 
+    #if GL_API == 0
     if (!gladLoadGL()) {
         fprintf(stderr, "Unable to initialize glad\n");
         glfwDestroyWindow(window);
         glfwTerminate();
         return nullptr;
     }
+    #elif GL_API == 1
+    // TODO
+    #endif
 
     return window;
 }
@@ -175,6 +213,7 @@ int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight, i32& n
         return 1;
     }
 
+    #if GL_API == 0
     GLuint format;
     switch (nrChannels) {
         case 1:
@@ -200,6 +239,9 @@ int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight, i32& n
         texWidth, texHeight, 1, // width, height, depth
         format, GL_UNSIGNED_BYTE, data // format, type, pixels
     );
+    #elif GL_API == 1
+    // TODO
+    #endif
 
     stbi_image_free(data);
 
@@ -229,17 +271,26 @@ int main() {
         return 1;
     }
 
+    #if GL_API == 0
     const char *version = (const char*)glGetString(GL_VERSION);
     printf("OpenGL version: %s\n", version);
+    #elif GL_API == 1
+    // TODO: get Vulkan version
+    const char *version = "???";
+    printf("Vulkan version: %s\n", version);
+    #endif
 
 
 
-
+    #if GL_API == 0
     int msaaSamples = 0;
     glGetIntegerv(GL_SAMPLES, &msaaSamples);
     std::cout << "MSAA Samples: " << msaaSamples << "\n";
-
-
+    #elif GL_API == 1
+    // TODO
+    int msaaSamples = 6969;
+    std::cout << "MSAA Samples: " << msaaSamples << "\n";
+    #endif
 
     // Load blocks
     loadBlocks();
@@ -547,8 +598,6 @@ int main() {
 
 
 
-
-
     // mesh / light
     for (i64 x = 0; x < world_size.x; x++) {
         for (i64 y = 0; y < world_size.y; y++) {
@@ -607,6 +656,7 @@ int main() {
 
 
 
+    #if GL_API == 0
     // texture ssbo
     GLuint texture_ssbo;
 
@@ -777,6 +827,9 @@ int main() {
 
 
     u32 shaderType = 0;
+    #elif GL_API == 1
+    // TODO
+    #endif
 
 
     
@@ -815,8 +868,12 @@ int main() {
 
             // --------------------------------------
             // GEOMETRY PASS
+            #if GL_API == 0
             // glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            #elif GL_API == 1
+            // TODO
+            #endif
             Vec3<i64> cameraChunkPos = camera->position / CS;
 
             // rendering

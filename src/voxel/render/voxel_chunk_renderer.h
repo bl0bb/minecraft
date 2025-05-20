@@ -21,17 +21,22 @@ public:
     
     u32 voxel_count;
 
+    #if GL_API == 0
     // voxel faces
     GLuint vao, vbo, ebo;
     GLuint voxel_ssbo;
+    #elif GL_API == 1
+    // TODO
+    #endif
 
     VoxelChunkRenderer() {
 
     }
 
     void init() {
+        #if GL_API == 0
         // Define your cube vertices (positions only for simplicity)
-        float cubeVertices[] = {
+        f32 cubeVertices[] = {
             0, 0, 0,
             1, 0, 0,
             1, 1, 0,
@@ -67,6 +72,9 @@ public:
 
         // Create SSBO for instance positions
         glGenBuffers(1, &voxel_ssbo);
+        #elif GL_API == 1
+        // TODO
+        #endif
     }
 
     void generateMesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld) {
@@ -76,11 +84,16 @@ public:
     }
 
     void updateMesh(VoxelFace* data) const {
+        #if GL_API == 0
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, CS_P3 * sizeof(VoxelFace), data, GL_STATIC_DRAW);
+        #elif GL_API == 1
+        // TODO
+        #endif
     }
 
     void render(Shader& shaderProgram) const {
+        #if GL_API == 0
         // Bind VAO and draw
         glBindVertexArray(vao);
 
@@ -90,6 +103,9 @@ public:
 
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, voxel_count);
         glBindVertexArray(0);
+        #elif GL_API == 1
+        // TODO
+        #endif
     }
 };
 
