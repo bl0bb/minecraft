@@ -162,10 +162,9 @@ bool init_vulkan() {
 #endif
 
 GLFWwindow* init_window() {
+    #if GL_API == 0
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-
-    #if GL_API == 0
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     #elif GL_API == 1
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -266,10 +265,14 @@ int main() {
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetKeyCallback(window, key_callback);
 
+    #if GL_API == 0
     if (!init_opengl()) {
         fprintf(stderr, "Unable to initialize glad/opengl\n");
         return 1;
     }
+    #elif GL_API == 1
+    // TODO
+    #endif
 
     #if GL_API == 0
     const char *version = (const char*)glGetString(GL_VERSION);
@@ -316,7 +319,7 @@ int main() {
         for (i64 x = 0; x < world_size.x; x++) {
             for (i64 z = 0; z < world_size.z; z++) {
                 // game
-                VoxelChunk chunk = VoxelChunk();
+                VoxelBlockChunk chunk = VoxelBlockChunk();
                 chunk.pos = Vec3<i64>(x, y, z) - world_chunk_center;
                 voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)] = chunk;
 
@@ -346,7 +349,7 @@ int main() {
     //     for (i64 x = 0; x < world_size.x; x++) {
     //         for (i64 z = 0; z < world_size.z; z++) {
     //             // game
-    //             VoxelChunk& chunk = voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)];
+    //             VoxelBlockChunk& chunk = voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)];
 
     //             auto start = std::chrono::high_resolution_clock::now();
     //             noise.GenerateFullTerrain(chunk.voxels, x, y, z);
@@ -363,7 +366,7 @@ int main() {
     for (i64 cx = -i64(world_size.x) / 2; cx < i64(world_size.x) / 2; cx++) {
         for (i64 cz = -i64(world_size.z) / 2; cz < i64(world_size.z) / 2; cz++) {
             // game
-            VoxelChunk& chunk = voxelBlockWorld.chunks[voxelBlockWorld.chunkPosToChunkIndex(cx, 0, cz)];
+            VoxelBlockChunk& chunk = voxelBlockWorld.chunks[voxelBlockWorld.chunkPosToChunkIndex(cx, 0, cz)];
 
             for (u8 x = 0; x < CS; x++) {
                 for (u8 z = 0; z < CS; z++) {
@@ -849,6 +852,7 @@ int main() {
             auto wishdir = (camera->front * forwardMove) + (camera->right * rightMove);
             camera->position = camera->position + wishdir * noclipSpeed * deltaTime;
 
+            #if GL_API == 0
             if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) shaderType = 0;
             else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) shaderType = 1;
             else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) shaderType = 2;
@@ -859,6 +863,9 @@ int main() {
             else if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) shaderType = 7;
             else if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) shaderType = 8;
             else if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) shaderType = 9;
+            #elif GL_API == 1
+            // TODO
+            #endif
             
 
             // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
@@ -883,22 +890,34 @@ int main() {
             f32 view_mat[16];
             camera->getViewMatrix().toGLMatrix(view_mat);
 
+            #if GL_API == 0
             Shader* activeShader;
             if (shaderType == 0 || true) {
                 activeShader = &geometryShader;
             } else if (shaderType == 1) {
                 activeShader = &edgeShader;
             }
-
             activeShader->use();
+            #elif GL_API == 1
+            // TODO
+            #endif
 
+            #if GL_API == 0
             activeShader->setMat4("u_projection", proj_mat);
             activeShader->setMat4("u_view", view_mat);
             activeShader->setVec3("eye_position", camera->position);
+            #elif GL_API == 1
+            // TODO
+            #endif
 
             Vec3<i64> intCamPosition = camera->position;
+            #if GL_API == 0
             activeShader->setIVec3("eye_position_int", intCamPosition);
+            #elif GL_API == 1
+            // TODO
+            #endif
 
+            #if GL_API == 0
             if (shaderType == 0 || true) {
                 // bind textures
                 glActiveTexture(GL_TEXTURE0);
@@ -913,8 +932,15 @@ int main() {
                 edgeShader.setFloat("texelWidth", 1.0f / WINDOW_WIDTH);
                 edgeShader.setFloat("texelHeight", 1.0f / WINDOW_HEIGHT);
             }
+            #elif GL_API == 1
+            // TODO
+            #endif
 
+            #if GL_API == 0
             voxelWorldRenderer.render(geometryShader);
+            #elif GL_API == 1
+            // TODO
+            #endif
 
             // glBindFramebuffer(GL_FRAMEBUFFER, 0);
             // --------------------------------------

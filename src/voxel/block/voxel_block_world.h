@@ -5,12 +5,12 @@
 
 #include "embedded_voxel.h"
 
-class VoxelChunk : public BaseVoxelChunk<EmbeddedVoxel> {
+class VoxelBlockChunk : public BaseVoxelChunk<EmbeddedVoxel> {
 public:
     Vec3<i64> pos;
 };
 
-class VoxelBlockWorld : public VoxelWorld<VoxelChunk> {
+class VoxelBlockWorld : public VoxelWorld<VoxelBlockChunk> {
 public:
     
 };

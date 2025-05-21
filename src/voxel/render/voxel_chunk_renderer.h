@@ -17,7 +17,7 @@
 
 class VoxelChunkRenderer {
 public:
-    VoxelChunk* chunk;
+    VoxelBlockChunk* chunk;
     
     u32 voxel_count;
 
@@ -79,7 +79,7 @@ public:
 
     void generateMesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld) {
         VoxelFace voxel_faces[CS_P3];
-        voxel_count = generate_voxel_mesh(voxelWorld, voxelBlockStateWorld, *chunk, voxel_faces);
+        voxel_count = generate_voxel_mesh(voxelWorld, voxelBlockStateWorld, chunk->pos, voxel_faces);
         updateMesh(voxel_faces);
     }
 
