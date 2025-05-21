@@ -128,6 +128,10 @@ bool init_opengl() {
 
     glEnable(GL_MULTISAMPLE);
 
+    // transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     return true;
 }
 #elif GL_API == 1
@@ -443,7 +447,7 @@ int main() {
 
 
     {
-        auto placeNBT = [&voxelBlockWorld, &voxelBlockStateWorld](std::string filePath, i32 placeX, i32 placeY, i32 placeZ) {
+        auto placeNBT = [&voxelBlockWorld, &voxelBlockStateWorld, &voxelLightWorld](std::string filePath, i32 placeX, i32 placeY, i32 placeZ) {
             // load house nbt
             std::ifstream file(filePath, std::ios::binary);
             if (!file) {
@@ -534,6 +538,12 @@ int main() {
                         return 1;
                     }
 
+                    Vec3<i64> worldPos(
+                        std::get<i32>(pos[0]->value) + placeX,
+                        std::get<i32>(pos[1]->value) + placeY,
+                        std::get<i32>(pos[2]->value) + placeZ
+                    );
+
                     BlockVoxelData blockTemplate = BLOCK_VOXEL_DATA[blockType];
 
                     BlockStateStruct* newState = new BlockStateStruct();
@@ -573,18 +583,13 @@ int main() {
                             std::string facing = std::get<std::string>(properties->at("facing")->value);
                             std::get<TorchBlockState>(*newState).direction = facing[0] - 'x';
                         }
+
+                        // light
+                        ChunkLight::add_light(voxelBlockWorld, voxelLightWorld, worldPos, Colors::createRGBIS4(15, 14, 12, 15, 0));
                     }
 
-                    i32 x = std::get<i32>(pos[0]->value);
-                    i32 y = std::get<i32>(pos[1]->value);
-                    i32 z = std::get<i32>(pos[2]->value);
-
-                    x += placeX;
-                    y += placeY;
-                    z += placeZ;
-
-                    VoxelWorlds::placeVoxel(voxelBlockWorld, x, y, z, EmbeddedVoxel(blockType));
-                    VoxelWorlds::placeVoxel(voxelBlockStateWorld, x, y, z, BlockStateVoxel(newState));
+                    VoxelWorlds::placeVoxel(voxelBlockWorld,      worldPos.x, worldPos.y, worldPos.z, EmbeddedVoxel(blockType));
+                    VoxelWorlds::placeVoxel(voxelBlockStateWorld, worldPos.x, worldPos.y, worldPos.z, BlockStateVoxel(newState));
                 }
             }
 
@@ -597,8 +602,62 @@ int main() {
     }
     
 
+
+    {
+        // Add a small tree
+        i64 x = -20;
+        i64 y = 5;
+        i64 z = -20;
+
+        VoxelWorlds::placeVoxel(voxelBlockWorld,           x, y + 1, z, EmbeddedVoxel(BlockTypes::OAK_LOG));
+        *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x, y + 1, z)->state = LogBlockState();
+        VoxelWorlds::placeVoxel(voxelBlockWorld,           x, y + 2, z, EmbeddedVoxel(BlockTypes::OAK_LOG));
+        *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x, y + 2, z)->state = LogBlockState();
+        VoxelWorlds::placeVoxel(voxelBlockWorld,           x, y + 3, z, EmbeddedVoxel(BlockTypes::OAK_LOG));
+        *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x, y + 3, z)->state = LogBlockState();
+        VoxelWorlds::placeVoxel(voxelBlockWorld,           x, y + 4, z, EmbeddedVoxel(BlockTypes::OAK_LOG));
+        *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x, y + 4, z)->state = LogBlockState();
+
+        for (i8 cy = 0; cy < 2; cy++) {
+            for (i8 cx = -2; cx < 3; cx++) {
+                for (i8 cz = -2; cz < 3; cz++) {
+                    if (cx == 0 && cz == 0) {
+                        continue;
+                    }
+                    VoxelWorlds::placeVoxel(voxelBlockWorld,           x + cx, y + 1 + cy, z + cz, EmbeddedVoxel(BlockTypes::OAK_LEAVES));
+                    *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x + cx, y + 1 + cy, z + cz)->state = BlockBlockState();
+                }
+            }
+        }
+        for (i8 cy = 0; cy < 2; cy++) {
+            for (i8 cx = -1; cx < 2; cx++) {
+                for (i8 cz = -1; cz < 2; cz++) {
+                    if (cx == 0 && cz == 0) {
+                        continue;
+                    }
+                    VoxelWorlds::placeVoxel(voxelBlockWorld,           x + cx, y + 3 + cy, z + cz, EmbeddedVoxel(BlockTypes::OAK_LEAVES));
+                    *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x + cx, y + 3 + cy, z + cz)->state = BlockBlockState();
+                }
+            }
+        }
+        VoxelWorlds::placeVoxel(voxelBlockWorld,           x, y + 3 + 2, z, EmbeddedVoxel(BlockTypes::OAK_LEAVES));
+        *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x, y + 3 + 2, z)->state = BlockBlockState();
+
+        VoxelWorlds::placeVoxel(voxelBlockWorld,           x + -1, y + 3 + 1, z + -1, EmbeddedVoxel(BlockTypes::AIR));
+        *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x + -1, y + 3 + 1, z + -1)->state = BlockBlockState();
+        VoxelWorlds::placeVoxel(voxelBlockWorld,           x + -1, y + 3 + 1, z +  1, EmbeddedVoxel(BlockTypes::AIR));
+        *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x + -1, y + 3 + 1, z +  1)->state = BlockBlockState();
+        VoxelWorlds::placeVoxel(voxelBlockWorld,           x +  1, y + 3 + 1, z + -1, EmbeddedVoxel(BlockTypes::AIR));
+        *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x +  1, y + 3 + 1, z + -1)->state = BlockBlockState();
+        VoxelWorlds::placeVoxel(voxelBlockWorld,           x +  1, y + 3 + 1, z +  1, EmbeddedVoxel(BlockTypes::AIR));
+        *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, x +  1, y + 3 + 1, z +  1)->state = BlockBlockState();
+    }
     
 
+    // {
+    //     auto pos = Vec3<i64>(10, 5, 10);
+    //     ChunkLight::add_light(voxelBlockWorld, voxelLightWorld, pos, Colors::createRGBIS4(15, 0, 0, 15, 0));
+    // }
 
 
     // mesh / light
@@ -610,7 +669,7 @@ int main() {
 
                 auto start = std::chrono::high_resolution_clock::now();
 
-                chunk.generateMesh(voxelBlockWorld, voxelBlockStateWorld);
+                chunk.generateMesh(voxelBlockWorld, voxelBlockStateWorld, voxelLightWorld);
             
                 auto end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double, std::milli> elapsed = end - start;
@@ -721,99 +780,15 @@ int main() {
     Shader edgeShader = Shader("edge/edge.vert", "edge/edge.frag");
 
 
-    /*
-    // --------------------
-    // AO
-    // Shaders
-    Shader geometryShader("voxel/main.vert", "voxel/main.frag");
-    Shader ssaoShader("ambient_occlusion/ssao.vert", "ambient_occlusion/ssao.frag");
-    Shader blurShader("ambient_occlusion/ssao.vert", "ambient_occlusion/blur.frag");
-    Shader finalShader("ambient_occlusion/ssao.vert", "ambient_occlusion/final.frag");
-
-    // G-Buffer
-    GLuint gBuffer;
-    glGenFramebuffers(1, &gBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-
-    GLuint gPosition, gNormal;
-    glGenTextures(1, &gPosition);
-    glGenTextures(1, &gNormal);
-
-    // Position color buffer
-    glBindTexture(GL_TEXTURE_2D, gPosition);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
-
-    // Normal color buffer
-    glBindTexture(GL_TEXTURE_2D, gNormal);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-
-    // Tell OpenGL which color attachments we'll use
-    GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-    glDrawBuffers(2, attachments);
-
-    // Depth buffer
-    GLuint rboDepth;
-    glGenRenderbuffers(1, &rboDepth);
-    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cout << "G-Buffer not complete!" << std::endl;
-    }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // SSAO framebuffer
-    GLuint ssaoFBO, ssaoBlurFBO;
-    glGenFramebuffers(1, &ssaoFBO);
-    glGenFramebuffers(1, &ssaoBlurFBO);
-
-    GLuint ssaoColorBuffer, ssaoColorBufferBlur;
-    glGenTextures(1, &ssaoColorBuffer);
-    glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBuffer, 0);
-
-    glGenTextures(1, &ssaoColorBufferBlur);
-    glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RED, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ssaoColorBufferBlur, 0);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // Create SSAO kernel + noise
-    std::vector<Vec3<f32>> ssaoKernel;
-    std::vector<Vec3<f32>> ssaoNoise;
-    GLuint ssao_noise_texture = generateSSAOTexture(ssaoKernel, ssaoNoise);
-    // --------------------
-    */
-
-
-
-
-
-    // GLuint quadVao = createQuad();
 
 
 
 
 
 
-    // TextRenderer textRenderer = TextRenderer(16, 8, 8, 16 * 8, 16 * 8);
+
+
+
     TextRenderer textRenderer(16, 8, 8, 16 * 8, 16 * 8);
 
     Shader textShader = Shader("text/main.vert", "text/main.frag");
@@ -946,68 +921,6 @@ int main() {
             // --------------------------------------
 
 
-
-
-
-            // // --------------------------------------
-            // // 2. SSAO Pass: generate SSAO texture
-            // glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-            // glClear(GL_COLOR_BUFFER_BIT);
-            // ssaoShader.use();
-            // for (unsigned int i = 0; i < 64; ++i)
-            //     ssaoShader.setVec3("samples[" + std::to_string(i) + "]", ssaoKernel[i]);
-            // ssaoShader.setMat4("projection", proj_mat);
-
-            // glActiveTexture(GL_TEXTURE0);
-            // glBindTexture(GL_TEXTURE_2D, gPosition);
-            // glActiveTexture(GL_TEXTURE1);
-            // glBindTexture(GL_TEXTURE_2D, gNormal);
-            // glActiveTexture(GL_TEXTURE2);
-            // glBindTexture(GL_TEXTURE_2D, ssao_noise_texture);
-
-            // ssaoShader.setInt("gPosition", 0);
-            // ssaoShader.setInt("gNormal", 1);
-            // ssaoShader.setInt("texNoise", 2);
-
-            // glBindVertexArray(quadVao);
-            // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            // // --------------------------------------
-
-            // // --------------------------------------
-            // // 3. Blur Pass: blur SSAO texture
-            // glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
-            // glClear(GL_COLOR_BUFFER_BIT);
-            // blurShader.use();
-
-            // glActiveTexture(GL_TEXTURE0);
-            // glBindTexture(GL_TEXTURE_2D, ssaoColorBuffer);
-            // blurShader.setInt("ssaoInput", 0);
-
-            // glBindVertexArray(quadVao);
-            // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            // // --------------------------------------
-
-            // // --------------------------------------
-            // // 4. Lighting Pass: render final scene
-            // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            // finalShader.use();
-
-            // glActiveTexture(GL_TEXTURE0);
-            // glBindTexture(GL_TEXTURE_2D, gPosition);
-            // glActiveTexture(GL_TEXTURE1);
-            // glBindTexture(GL_TEXTURE_2D, gNormal);
-            // glActiveTexture(GL_TEXTURE2);
-            // glBindTexture(GL_TEXTURE_2D, ssaoColorBufferBlur);
-
-            // finalShader.setInt("gPosition", 0);
-            // finalShader.setInt("gNormal", 1);
-            // finalShader.setInt("ssao", 2);
-
-            // glBindVertexArray(quadVao);
-            // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            // // --------------------------------------
 
 
 

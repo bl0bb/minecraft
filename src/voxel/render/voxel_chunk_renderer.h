@@ -77,9 +77,9 @@ public:
         #endif
     }
 
-    void generateMesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld) {
+    void generateMesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld, const VoxelLightWorld& voxelLightWorld) {
         VoxelFace voxel_faces[CS_P3];
-        voxel_count = generate_voxel_mesh(voxelWorld, voxelBlockStateWorld, chunk->pos, voxel_faces);
+        voxel_count = generate_voxel_mesh(voxelWorld, voxelBlockStateWorld, voxelLightWorld, chunk->pos, voxel_faces);
         updateMesh(voxel_faces);
     }
 

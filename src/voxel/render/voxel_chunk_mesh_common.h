@@ -3,6 +3,7 @@
 
 #include "../../core/types.h"
 
+// data1
 // x = 0-4 (5) (32)
 // y = 5-9 (5) (32)
 // z = 10-14 (5) (32)
@@ -19,12 +20,16 @@
 // dir = 53-55 (3) (8)
 // type = 56-63 (8) (256)
 
+// data2
+// light = 0-19 (20) (1048576)
+
 struct VoxelFace {
     u64 data1;
+    u64 data2;
 
     VoxelFace() {};
     
-    VoxelFace(u64 x, u64 y, u64 z, u64 face_x, u64 face_y, u64 face_depth, u64 face_w, u64 face_h, u64 uv_x, u64 uv_y, u64 uv_w, u64 uv_h, u64 uv_rot, u64 dir, u64 type) :
+    VoxelFace(u64 x, u64 y, u64 z, u64 face_x, u64 face_y, u64 face_depth, u64 face_w, u64 face_h, u64 uv_x, u64 uv_y, u64 uv_w, u64 uv_h, u64 uv_rot, u64 dir, u64 type, RGBIS4 light) :
     data1(  (x           <<  0) |
             (y           <<  5) |
             (z           << 10) |
@@ -39,7 +44,8 @@ struct VoxelFace {
             (uv_h        << 47) |
             (uv_rot      << 51) |
             (dir         << 53) |
-            (type        << 56))
+            (type        << 56)),
+    data2(  (light       <<  0))
     {};
 };
 

@@ -145,7 +145,7 @@ namespace ChunkLight {
         }
     }
 
-    static void remove_block_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
+    static void remove_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
         for (u8 i = 0; i < 4; i++) {
             u8 offset = i * 4;
             u32 mask = 0xF << offset;

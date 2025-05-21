@@ -52,9 +52,10 @@ constexpr inline void dim_to_pos(u8& x, u8& y, u8& z, u8 dim_1, u8 dim_2, u8 dim
 }
 
 
-u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld, const Vec3<i64>& chunkPos, VoxelFace* vertices) {
+u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld, const VoxelLightWorld& voxelLightWorld, const Vec3<i64>& chunkPos, VoxelFace* vertices) {
     VoxelBlockChunk& chunk = voxelWorld.chunks[voxelWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
     BlockStateVoxelChunk& stateChunk = voxelBlockStateWorld.chunks[voxelBlockStateWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
+    VoxelLightChunk& lightChunk = voxelLightWorld.chunks[voxelLightWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
     
     // voxel as binary for each x,y,z axis, positive and negative
     u64 axis_cols[3 * CS_P2 * 2] = {0};
@@ -226,23 +227,11 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                     other_opaque_col = opaque_col << 1;
                 }
 
-                // face is true if
-
-                // merge meets air
-                // non-merge meets air
-                // non-merge meets non-merge
-
-                // do & operation with axis cols
-                // because if not
-                // it enables EVERY block in "non-merge meets non-merge"
-
-                u64 mask = axis_col & (
-                    (merge_col & ~other_axis_col) |     // merge meets air
-                    (~merge_col & ~other_axis_col) |    // non-merge meets air
-                    (~merge_col & ~other_merge_col)     // non-merge meets non-merge
+                u64 mask = axis_col & (              // only create a face if this is an actual block
+                    (merge_col & ~other_axis_col) |  // merge meets air
+                    (merge_col & ~other_merge_col) | // merge meets non-merge
+                    (~merge_col)                     // non-merge will not merge with anything, so if this face is a non-merge, always return true
                 );
-                
-                // u64 mask = axis_col & ~other_axis_col;
 
                 col_face_masks[(CS_P2 * dir) + i] = mask;
             }
@@ -307,7 +296,8 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
                         for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
                             BlockFace face = blockMesh.faces[dir][i];
-                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture);
+
+                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture, lightChunk.voxels[get_zxy_index(x, y, z)]);
                         }
                     }
                 }

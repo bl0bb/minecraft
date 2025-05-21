@@ -27,15 +27,15 @@ namespace Colors {
     constexpr u8 COLOR8_MAX = 255;
 
     constexpr inline RGBI4 createRGBI4(u8 r, u8 g, u8 b, u8 i) {
-        return (r << 12) | (g << 8) | (b << 4) | i;
+        return (i << 12) | (b << 8) | (g << 4) | r;
     }
 
-    constexpr inline RGBI4 createRGBIS4(u8 r, u8 g, u8 b, u8 i, u8 s) {
-        return (r << 16) | (g << 12) | (b << 8) | (i << 4) | s;
+    constexpr inline RGBIS4 createRGBIS4(u8 r, u8 g, u8 b, u8 i, u8 s) {
+        return (s << 16) | (i << 12) | (b << 8) | (g << 4) | r;
     }
 
     constexpr inline RGBI8 createRGBI8(u8 r, u8 g, u8 b, u8 i) {
-        return (r << 24) | (g << 16) | (b << 8) | i;
+        return (i << 24) | (b << 16) | (g << 8) | r;
     }
 
     template<typename T>
