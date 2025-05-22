@@ -4,24 +4,25 @@
 #include "../../core/types.h"
 
 // data1
-// x = 0-4 (5) (32)
-// y = 5-9 (5) (32)
-// z = 10-14 (5) (32)
-// face_x = 15-18 (4) (16)
-// face_y = 19-22 (4) (16)
-// face_depth = 23-26 (4) (16)
-// face_w = 27-30 (4) (16)
-// face_h = 31-34 (4) (16)
-// uv_x = 35-38 (4) (16)
-// uv_y = 39-42 (4) (16)
-// uv_w = 43-46 (4) (16)
-// uv_h = 47-50 (4) (16)
-// uv_rot = 51-52 (2) (4)
-// dir = 53-55 (3) (8)
-// type = 56-63 (8) (256)
+// x =           0 -  4  (5)      (32)
+// y =           5 -  9  (5)      (32)
+// z =          10 - 14  (5)      (32)
+// face_x =     15 - 18  (4)      (16)
+// face_y =     19 - 22  (4)      (16)
+// face_depth = 23 - 26  (4)      (16)
+// face_w =     27 - 30  (4)      (16)
+// face_h =     31 - 34  (4)      (16)
+// uv_x =       35 - 38  (4)      (16)
+// uv_y =       39 - 42  (4)      (16)
+// uv_w =       43 - 46  (4)      (16)
+// uv_h =       47 - 50  (4)      (16)
+// uv_rot =     51 - 52  (2)       (4)
+// dir =        53 - 55  (3)       (8)
+// type =       56 - 63  (8)     (256)
 
 // data2
-// light = 0-19 (20) (1048576)
+// light =       0 - 19 (20) (1048576)
+// ao =         20 - 28  (9)     (512)
 
 struct VoxelFace {
     u64 data1;
@@ -29,7 +30,7 @@ struct VoxelFace {
 
     VoxelFace() {};
     
-    VoxelFace(u64 x, u64 y, u64 z, u64 face_x, u64 face_y, u64 face_depth, u64 face_w, u64 face_h, u64 uv_x, u64 uv_y, u64 uv_w, u64 uv_h, u64 uv_rot, u64 dir, u64 type, RGBIS4 light) :
+    VoxelFace(u64 x, u64 y, u64 z, u64 face_x, u64 face_y, u64 face_depth, u64 face_w, u64 face_h, u64 uv_x, u64 uv_y, u64 uv_w, u64 uv_h, u64 uv_rot, u64 dir, u64 type, RGBIS4 light, u16 ao) :
     data1(  (x           <<  0) |
             (y           <<  5) |
             (z           << 10) |
@@ -45,7 +46,9 @@ struct VoxelFace {
             (uv_rot      << 51) |
             (dir         << 53) |
             (type        << 56)),
-    data2(  (light       <<  0))
+
+    data2(  (light       <<  0) |
+            (ao          << 20))
     {};
 };
 

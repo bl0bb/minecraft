@@ -11,8 +11,9 @@ layout(location = 2) out vec4 gNormal;
 
 in flat int texIndex;
 in vec2 texUv;
-in flat vec3 LightColor;
 in flat uint Axis;
+in flat vec3 LightColor;
+in float Ao;
 in vec3 FragPos;
 
 out vec4 FragColor;
@@ -54,7 +55,8 @@ void main() {
 
     FragColor *= vec4(vec3(lightLookup[Axis]), 1.0);
 
-    FragColor *= vec4(LightColor, 1.0);
+    // FragColor *= vec4(LightColor, 1.0);
+    FragColor *= Ao;
 
     // ao
     gPosition = vec4(FragPos, 1.0);

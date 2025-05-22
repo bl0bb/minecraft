@@ -84,6 +84,8 @@
         "string_view": "cpp",
         "variant": "cpp",
         "map": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "__tree": "cpp",
+        "complex": "cpp"
     }
 }

@@ -4,8 +4,9 @@ layout(location = 0) in vec3 aPos;
 
 out flat int texIndex;
 out vec2 texUv;
-out flat vec3 LightColor;
 out flat uint Axis;
+out flat vec3 LightColor;
+out float Ao;
 out vec3 FragPos;
 
 struct QuadData {
@@ -35,6 +36,14 @@ const vec3 normalLookup[6] = {
   vec3( 0,  0, -1 ),
 };
 
+// TODO: "aoLookup[4]" instead of "aoLookup[]"?
+const float aoLookup[] = {
+  1.0,
+  0.7,
+  0.5,
+  0.15,
+};
+
 
 
 void main() {
@@ -60,6 +69,7 @@ void main() {
   uint data_dir =        (data2 >> (53 - 32)) & (      8 - 1);
   uint data_type =       (data2 >> (56 - 32)) & (    256 - 1);
   uint data_light =      (data3 >>         0) & (1048576 - 1);
+  uint data_ao =         (data3 >>        20) & (    512 - 1);
 
   vec3 offset = vec3(data_x, data_y, data_z);
 
@@ -130,6 +140,7 @@ void main() {
   }
 
 
+  // light
   uint lightR = (data_light >> (4 * 0)) & 15;
   uint lightG = (data_light >> (4 * 1)) & 15;
   uint lightB = (data_light >> (4 * 2)) & 15;
@@ -140,6 +151,10 @@ void main() {
 
   LightColor = vec3(lightR, lightG, lightB) / 16.0;
 
+  // ao
+  Ao = aoLookup[data_ao % 4];
+
+  // other
   Axis = axis;
   FragPos = vec3(gl_Position);
 }

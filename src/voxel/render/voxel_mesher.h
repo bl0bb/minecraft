@@ -35,6 +35,21 @@ void printBinary(unsigned int num, u8 count) {
 
 
 
+
+const Vec2<i8> AO_DIRS[] = {
+    {-1, -1},
+    {-1,  0},
+    {-1,  1},
+    { 0, -1},
+    { 0,  0},
+    { 0,  1},
+    { 1, -1},
+    { 1,  0},
+    { 1,  1},
+};
+
+
+
 constexpr inline void dim_to_pos(u8& x, u8& y, u8& z, u8 dim_1, u8 dim_2, u8 dim_3, u8 axis) {
     if (axis == 0) {
         x = dim_1;
@@ -282,6 +297,46 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                             z = dim_3;
                         }
 
+
+
+
+                        // ao test
+                        u16 ao_mask;
+                        for (u8 ao_i; ao_i < array_size(AO_DIRS); ao_i++) {
+                            Vec2<i8> ao_offset = AO_DIRS[ao_i];
+                            Vec3<i8> ao_pos;
+
+                            if (dir == 0)       ao_pos = { 1, ao_offset.y, ao_offset.x};
+                            else if (dir == 1)  ao_pos = {-1, ao_offset.y, ao_offset.x};
+                            else if (dir == 2)  ao_pos = {ao_offset.x,  1, ao_offset.y};
+                            else if (dir == 3)  ao_pos = {ao_offset.x, -1, ao_offset.y};
+                            else if (dir == 4)  ao_pos = {ao_offset.x, ao_offset.y,  1};
+                            else                ao_pos = {ao_offset.x, ao_offset.y, -1};
+
+                            Vec3<i8> voxel_pos = Vec3<i8>(x, y, z) + ao_pos;
+
+                            EmbeddedVoxel* voxel;
+                            if (!VoxelWorlds::getVoxel(voxelWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &voxel)) {
+                                continue;
+                            }
+
+                            if (voxel->type == BlockTypes::AIR) {
+                                continue;
+                            }
+
+                            BlockVoxelData blockData = BLOCK_VOXEL_DATA[voxel->type];
+
+                            if (blockData.transparent) {
+                                continue;
+                            }
+
+                            ao_mask |= 1 << ao_i;
+                        }
+
+
+
+
+
                         // i64 world_x = x + chunkPos.x * CS;
                         // i64 world_y = y + chunkPos.y * CS;
                         // i64 world_z = z + chunkPos.z * CS;
@@ -297,7 +352,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                         for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
                             BlockFace face = blockMesh.faces[dir][i];
 
-                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture, lightChunk.voxels[get_zxy_index(x, y, z)]);
+                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture, lightChunk.voxels[get_zxy_index(x, y, z)], ao_mask);
                         }
                     }
                 }
