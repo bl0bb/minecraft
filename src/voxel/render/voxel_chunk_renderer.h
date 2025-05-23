@@ -78,7 +78,7 @@ public:
     }
 
     void generateMesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld, const VoxelLightWorld& voxelLightWorld) {
-        VoxelFace voxel_faces[CS_P3];
+        VoxelFace voxel_faces[CS_3];
         voxel_count = generate_voxel_mesh(voxelWorld, voxelBlockStateWorld, voxelLightWorld, chunk->pos, voxel_faces);
         updateMesh(voxel_faces);
     }
@@ -86,7 +86,7 @@ public:
     void updateMesh(VoxelFace* data) const {
         #if GL_API == 0
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, CS_P3 * sizeof(VoxelFace), data, GL_STATIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, CS_3 * sizeof(VoxelFace), data, GL_STATIC_DRAW);
         #elif GL_API == 1
         // TODO
         #endif

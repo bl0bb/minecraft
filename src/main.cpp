@@ -395,6 +395,9 @@ int main() {
 
     // TODO: free already existing block state. OR can you just override the value set there?
 
+
+    VoxelWorlds::placeVoxel(voxelBlockWorld,      -16, 5,  0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+
     // block, slab and stair
     VoxelWorlds::placeVoxel(voxelBlockWorld,      -12, 6,  0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 

@@ -6,7 +6,8 @@ out flat int texIndex;
 out vec2 texUv;
 out flat uint Axis;
 out flat vec3 LightColor;
-out float Ao;
+out vec2 AoUV;
+out flat uint Ao;
 out vec3 FragPos;
 
 struct QuadData {
@@ -47,6 +48,17 @@ const float aoLookup[] = {
 
 
 void main() {
+  uint vertex_id;
+  if (gl_VertexID == 0) {
+    vertex_id = 0;
+  } else if (gl_VertexID == 1) {
+    vertex_id = 1;
+  } else if (gl_VertexID == 2) {
+    vertex_id = 2;
+  } else {
+    vertex_id = 3;
+  }
+
   QuadData data = instanceData[gl_InstanceID];
   uint data1 = data.data1;
   uint data2 = data.data2;
@@ -152,7 +164,14 @@ void main() {
   LightColor = vec3(lightR, lightG, lightB) / 16.0;
 
   // ao
-  Ao = aoLookup[data_ao % 4];
+  // uint ao_fill = 0;
+  // ao_fill += (data_ao >> (((vertex_id * 2) + 0) % 8)) & 1;
+  // ao_fill += (data_ao >> (((vertex_id * 2) + 1) % 8)) & 1;
+  // ao_fill += (data_ao >> (((vertex_id * 2) + 2) % 8)) & 1;
+  // Ao = 1.0 - (ao_fill / 1.0); // aoLookup[ao_fill];
+
+  Ao = data_ao;
+  AoUV = vec2(aPos);
 
   // other
   Axis = axis;

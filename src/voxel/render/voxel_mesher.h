@@ -6,6 +6,7 @@
 
 #include "../../core/types.h"
 #include "../../core/bits.h"
+#include "../../core/array.h"
 
 #include "../../blocks/blocks.h"
 #include "../../blocks/mesh/block_mesh.h"
@@ -37,15 +38,52 @@ void printBinary(unsigned int num, u8 count) {
 
 
 const Vec2<i8> AO_DIRS[] = {
+    { 1,  1},
+    { 1,  0},
+    { 1, -1},
+    { 0, -1},
     {-1, -1},
     {-1,  0},
     {-1,  1},
-    { 0, -1},
-    { 0,  0},
     { 0,  1},
-    { 1, -1},
-    { 1,  0},
-    { 1,  1},
+    
+    // { 1,  1},
+    // { 1,  0},
+    // { 1, -1},
+    // { 0,  1},
+    // { 0, -1},
+    // {-1,  1},
+    // {-1,  0},
+    // {-1, -1},
+
+    // { 1,  0},
+    // { 1,  1},
+    // { 0,  1},
+    // {-1,  1},
+    // {-1,  0},
+    // {-1, -1},
+    // { 0, -1},
+    // { 1, -1},
+    
+    // {-1, -1},
+    // {-1,  0},
+    // {-1,  1},
+    // { 0, -1},
+    // // { 0,  0},
+    // { 0,  1},
+    // { 1, -1},
+    // { 1,  0},
+    // { 1,  1},
+
+    // {-1, -1},
+    // {-1,  0},
+    // {-1,  1},
+    // { 0, -1},
+    // { 0,  0},
+    // { 0,  1},
+    // { 1, -1},
+    // { 1,  0},
+    // { 1,  1},
 };
 
 
@@ -301,10 +339,10 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
 
                         // ao test
-                        u16 ao_mask;
-                        for (u8 ao_i; ao_i < array_size(AO_DIRS); ao_i++) {
+                        u16 ao_mask = 0;
+                        for (u8 ao_i = 0; ao_i < array_size(AO_DIRS); ao_i++) {
                             Vec2<i8> ao_offset = AO_DIRS[ao_i];
-                            Vec3<i8> ao_pos;
+                            Vec3<i64> ao_pos;
 
                             if (dir == 0)       ao_pos = { 1, ao_offset.y, ao_offset.x};
                             else if (dir == 1)  ao_pos = {-1, ao_offset.y, ao_offset.x};
@@ -313,7 +351,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                             else if (dir == 4)  ao_pos = {ao_offset.x, ao_offset.y,  1};
                             else                ao_pos = {ao_offset.x, ao_offset.y, -1};
 
-                            Vec3<i8> voxel_pos = Vec3<i8>(x, y, z) + ao_pos;
+                            Vec3<i64> voxel_pos = (chunk.pos * CS) + Vec3<i64>(x, y, z) + ao_pos;
 
                             EmbeddedVoxel* voxel;
                             if (!VoxelWorlds::getVoxel(voxelWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &voxel)) {
