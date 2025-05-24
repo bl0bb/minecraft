@@ -6,6 +6,7 @@ out flat int texIndex;
 out vec2 texUv;
 out flat uint Axis;
 out vec3 LightColor;
+out float Sunlight;
 out vec2 AoUV;
 out flat uint Ao;
 out vec3 FragPos;
@@ -161,7 +162,9 @@ void main() {
 
   // float lightIFloat = lightI / 16.0;
 
-  LightColor = vec3(lightR, lightG, lightB) / 16.0;
+  LightColor = vec3(lightR, lightG, lightB) / 15.0;
+
+  Sunlight = lightS / 15.0;
 
   // ao
   // uint ao_fill = 0;

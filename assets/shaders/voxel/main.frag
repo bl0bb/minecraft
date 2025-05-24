@@ -13,6 +13,7 @@ in flat int texIndex;
 in vec2 texUv;
 in flat uint Axis;
 in vec3 LightColor;
+in float Sunlight;
 in vec2 AoUV;
 in flat uint Ao;
 in vec3 FragPos;
@@ -94,8 +95,11 @@ void main() {
   // directional darkness thingy
   FragColor *= vec4(vec3(lightLookup[Axis]), 1.0);
 
-  // light
-  FragColor *= vec4(LightColor, 1.0);
+  // light / sunlight
+  vec3 finalLight = clamp(vec3(Sunlight) + LightColor, 0.0, 1.0);
+
+  FragColor *= vec4(finalLight, 1.0);
+
   
 
 

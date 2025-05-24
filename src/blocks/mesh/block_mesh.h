@@ -13,6 +13,7 @@ enum BlockMeshTypeEnum {
     STAIR,
     LOG,
     TORCH,
+    GLASS_PANE,
 };
 }
 

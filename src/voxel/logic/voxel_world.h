@@ -27,11 +27,11 @@ public:
 
     }
 
-    u64 getChunkIndex(u64 x, u64 y, u64 z) const {
+    constexpr u64 getChunkIndex(u64 x, u64 y, u64 z) const {
         return z + (x * size.z) + (y * size.x * size.z);
     }
 
-    u64 chunkPosToChunkIndex(u64 x, u64 y, u64 z) const {
+    constexpr u64 chunkPosToChunkIndex(u64 x, u64 y, u64 z) const {
         i64 chunk_pos_x = (i64(size.x) / 2) + x;
         i64 chunk_pos_y = (i64(size.y) / 2) + y;
         i64 chunk_pos_z = (i64(size.z) / 2) + z;
@@ -44,7 +44,7 @@ public:
 namespace VoxelWorlds {
 
 template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type, typename ChunkType = VoxelWorldType::chunk_type>
-bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxel_ptr) {
+constexpr bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxel_ptr) {
     i64 chunk_pos_x = (i64(world.size.x) / 2) + floor(f64(x) / f64(CS));
     i64 chunk_pos_y = (i64(world.size.y) / 2) + floor(f64(y) / f64(CS));
     i64 chunk_pos_z = (i64(world.size.z) / 2) + floor(f64(z) / f64(CS));
@@ -65,7 +65,7 @@ bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxe
 }
 
 template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type>
-VoxelType* getVoxelUnsafe(const VoxelWorldType& world, i64 x, i64 y, i64 z) {
+constexpr VoxelType* getVoxelUnsafe(const VoxelWorldType& world, i64 x, i64 y, i64 z) {
     VoxelType* voxel;
     if (!getVoxel(world, x, y, z, &voxel)) {
         throw std::runtime_error("getVoxelUnsafe: voxel not found");
@@ -75,7 +75,7 @@ VoxelType* getVoxelUnsafe(const VoxelWorldType& world, i64 x, i64 y, i64 z) {
 }
 
 template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type>
-bool placeVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType voxelToPlace) {
+constexpr bool placeVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType voxelToPlace) {
     VoxelType* voxel;
     if (!getVoxel(world, x, y, z, &voxel)) {
         return false;
@@ -84,35 +84,6 @@ bool placeVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType voxe
     *voxel = voxelToPlace;
     
     return true;
-}
-
-template<typename VoxelChunkType, typename VoxelType = VoxelChunkType::voxel_type>
-constexpr void calculateHeightmap(const VoxelChunkType& chunk, u8* heightmap) {
-    bool found_block;
-    for (u8 x = 0; x < CS; x++) {
-        for (u8 z = 0; z < CS; z++) {
-            found_block = false;
-            heightmap[x + (z * CS)] = CS;
-            for (u8 y = CS - 1; y >= 0; y--) {
-                if (BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type].transparent == true) {
-                    heightmap[x + (z * CS)] = y;
-                    break;
-                }
-            }
-            if (!found_block) {
-                heightmap[x + (z * CS)] = 0;
-            }
-        }
-    }
-}
-
-inline u8 heightAt(const u8* heightmap, u8 x, u8 z) {
-    return heightmap[x + (z * CS)];
-}
-
-template<typename VoxelWorldType>
-inline u8 heightAtWorld(const VoxelWorldType& world, u8 x, u8 z) {
-    return world.heightmap[x + (z * CS)];
 }
 
 }

@@ -21,6 +21,9 @@
 // advanced
 #include "../block_meshes/torch.h"
 
+// glass pane
+#include "../block_meshes/glass_pane.h"
+
 void loadBlocksMeshes() {
     // standard building blocks
     _loadBlockBlockMesh();
@@ -32,6 +35,9 @@ void loadBlocksMeshes() {
 
     // advanced
     _loadTorchBlockMesh();
+
+    // glass pane
+    _loadGlassPaneBlockMesh();
 }
 
 #endif

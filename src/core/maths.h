@@ -103,6 +103,16 @@ struct Vec2 {
         );
     }
 
+    // Sum
+    T sum() const {
+        return x + y;
+    }
+
+    // Volume
+    T volume() const {
+        return x * y;
+    }
+
     const T& operator[](size_t index) const {
         switch(index) {
             case 0: return x;

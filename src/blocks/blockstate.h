@@ -15,6 +15,7 @@ enum BlockStateTypeEnum : BlockStateType {
     STAIR,
     LOG,
     TORCH,
+    GLASS_PANE,
 };
 }
 
@@ -98,12 +99,29 @@ struct TorchBlockState : public BlockState {
     TorchBlockState(const TorchBlockState& other) : BlockState(other), direction(other.direction) {}
 };
 
+// advanced
+struct GlassPaneBlockState : public BlockState {
+    // bit 0 = right
+    // bit 1 = left
+    // bit 2 = back
+    // bit 3 = front
+    u8 connections;
+
+    GlassPaneBlockState() {}
+
+    GlassPaneBlockState(u8 _connections) : connections(_connections) {}
+
+    // Copy constructor
+    GlassPaneBlockState(const GlassPaneBlockState& other) : BlockState(other), connections(other.connections) {}
+};
+
 using BlockStateStruct = std::variant<
     BlockBlockState,
     SlabBlockState,
     StairBlockState,
     LogBlockState,
-    TorchBlockState
+    TorchBlockState,
+    GlassPaneBlockState
 >;
 
 #endif

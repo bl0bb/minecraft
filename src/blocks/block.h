@@ -9,6 +9,7 @@
 #include "blocks/crafting_table.h"
 #include "blocks/dirt.h"
 #include "blocks/furnace.h"
+#include "blocks/glass_pane.h"
 #include "blocks/grass.h"
 #include "blocks/oak_leaves.h"
 #include "blocks/oak_log.h"
@@ -34,6 +35,7 @@ void loadBlocks() {
     _crafting_table_init();
     _dirt_init();
     _furnace_init();
+    _glass_pane_init();
     _grass_init();
     _oak_leaves_init();
     _oak_log_init();

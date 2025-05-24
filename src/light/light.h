@@ -6,6 +6,7 @@
 #include "../core/maths.h"
 #include "../core/color.h"
 #include "../voxel/block/voxel_block_world.h"
+#include "../voxel/height/voxel_height_world.h"
 #include "../voxel/light/voxel_light_world.h"
 
 // Directions
@@ -70,7 +71,15 @@ namespace ChunkLight {
 
                 bool sunlight_down = type == SUN_LIGHT && i == 0;
 
-                if ((newVal != 0 || newBlock.transparent) && ((sunlight_down && newVal < val) || (newVal + 1 < val))) {
+                u8 actualDir;
+                if (i == 0) actualDir = 3;
+                else if (i == 1) actualDir = 2;
+                else if (i == 2) actualDir = 0;
+                else if (i == 3) actualDir = 1;
+                else if (i == 4) actualDir = 4;
+                else actualDir = 5;
+
+                if ((newVal != 0 || newBlock.transparent/* || blockMesh.culls(actualDir)*/) && ((sunlight_down && newVal < val) || (newVal + 1 < val))) {
                     // sunlight does not get dimmer as it propagates down
                     i8 delta = sunlight_down ? 0 : -1;
                     
@@ -158,7 +167,7 @@ namespace ChunkLight {
         }
     }
 
-    static void update_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos) {
+    static void update_light(const VoxelBlockWorld& voxelWorld, const VoxelHeightWorld& heightWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos) {
         AllLightQueue lightQueue;
 
         // 0..4 for each channel
@@ -184,13 +193,17 @@ namespace ChunkLight {
                 lightQueue.push({newPos, 0});
             }
 
-            if (sunlight && pos.y > VoxelWorlds::heightAtWorld(voxelLightWorld, pos.x, pos.z)) {
+            // printf("fluh 1 %i %i\n", pos.x, pos.y);
+            // printf("fluh 2 %i\n", heightWorld.heightAt(pos.x, pos.z));
+            if (sunlight && pos.y > heightWorld.heightAt(pos.x, pos.z)) {
                 RGBIS4* light;
                 if (VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
-                    *light = Colors::COLOR4_MAX;
+                    *light = Colors::createRGBIS4(0, 0, 0, 0, 15);
                     lightQueue.push({pos, 0});
                 }
             }
+
+            add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, SUN_LIGHT);
         }
     }
 };
