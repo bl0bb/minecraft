@@ -41,7 +41,9 @@ public:
 
     VoxelType* voxels;
 
-    BaseVoxelChunk() : voxels(new VoxelType[CS_3]) {}
+    BaseVoxelChunk(VoxelType* _voxels) : voxels(_voxels) {}
+
+    BaseVoxelChunk() : voxels(new VoxelType[CS_3]()) {}
 
     ~BaseVoxelChunk() {
         // C++ LOOOOVES TO CALL THIS WHEN I DONT WANT TO SO DONT DO ANYTHING

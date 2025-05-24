@@ -64,15 +64,18 @@ namespace ChunkLight {
                     continue;
                 }
 
+                u8 newVal = (*newLight & mask) >> offset;
+
                 BlockVoxelData newBlock = BLOCK_VOXEL_DATA[voxel->type];
 
                 bool sunlight_down = type == SUN_LIGHT && i == 0;
 
-                if ((newLight != 0 || newBlock.transparent) && ((sunlight_down && *newLight < *light) || (*newLight + 1 < val))) {
+                if ((newVal != 0 || newBlock.transparent) && ((sunlight_down && newVal < val) || (newVal + 1 < val))) {
                     // sunlight does not get dimmer as it propagates down
                     i8 delta = sunlight_down ? 0 : -1;
-
+                    
                     *newLight = (*newLight & ~mask) | ((((*light & mask) >> offset) + delta) << offset);
+
                     lightQueue.push({newPos, 0});
                 }
             }
@@ -115,7 +118,9 @@ namespace ChunkLight {
         if (!VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
             return;
         }
-        *light = (*light & ~mask) | (((u32)value) << offset);
+
+        // set color of source block
+        VoxelWorlds::placeVoxel(voxelLightWorld, pos.x, pos.y, pos.z, (*light & ~mask) | (((u32)value) << offset));
 
         lightQueue.push({pos, 0});
         add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, type);

@@ -46,44 +46,7 @@ const Vec2<i8> AO_DIRS[] = {
     {-1,  0},
     {-1,  1},
     { 0,  1},
-    
-    // { 1,  1},
-    // { 1,  0},
-    // { 1, -1},
-    // { 0,  1},
-    // { 0, -1},
-    // {-1,  1},
-    // {-1,  0},
-    // {-1, -1},
-
-    // { 1,  0},
-    // { 1,  1},
-    // { 0,  1},
-    // {-1,  1},
-    // {-1,  0},
-    // {-1, -1},
-    // { 0, -1},
-    // { 1, -1},
-    
-    // {-1, -1},
-    // {-1,  0},
-    // {-1,  1},
-    // { 0, -1},
-    // // { 0,  0},
-    // { 0,  1},
-    // { 1, -1},
-    // { 1,  0},
-    // { 1,  1},
-
-    // {-1, -1},
-    // {-1,  0},
-    // {-1,  1},
-    // { 0, -1},
-    // { 0,  0},
-    // { 0,  1},
-    // { 1, -1},
-    // { 1,  0},
-    // { 1,  1},
+    { 0,  0},
 };
 
 
@@ -104,11 +67,28 @@ constexpr inline void dim_to_pos(u8& x, u8& y, u8& z, u8 dim_1, u8 dim_2, u8 dim
     }
 }
 
+template<typename T>
+constexpr inline void getFaceOffset(T& x, T& y, T& z, u8 axis) {
+    if (axis == 0) {
+        x++;
+    } else if (axis == 1) {
+        x--;
+    } else if (axis == 2) {
+        y++;
+    } else if (axis == 3) {
+        y--;
+    } else if (axis == 4) {
+        z++;
+    } else {
+        z--;
+    }
+}
+
 
 u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld, const VoxelLightWorld& voxelLightWorld, const Vec3<i64>& chunkPos, VoxelFace* vertices) {
-    VoxelBlockChunk& chunk = voxelWorld.chunks[voxelWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
+    VoxelBlockChunk& chunk =           voxelWorld.          chunks[voxelWorld.          chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
     BlockStateVoxelChunk& stateChunk = voxelBlockStateWorld.chunks[voxelBlockStateWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
-    VoxelLightChunk& lightChunk = voxelLightWorld.chunks[voxelLightWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
+    VoxelLightChunk& lightChunk =      voxelLightWorld.     chunks[voxelLightWorld.     chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
     
     // voxel as binary for each x,y,z axis, positive and negative
     u64 axis_cols[3 * CS_P2 * 2] = {0};
@@ -390,7 +370,22 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                         for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
                             BlockFace face = blockMesh.faces[dir][i];
 
-                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture, lightChunk.voxels[get_zxy_index(x, y, z)], ao_mask);
+
+                            i64 world_x = x + chunkPos.x * CS;
+                            i64 world_y = y + chunkPos.y * CS;
+                            i64 world_z = z + chunkPos.z * CS;
+                            getFaceOffset(world_x, world_y, world_z, dir);
+
+                            RGBIS4 light;
+                            RGBIS4* lightPtr;
+                            if (VoxelWorlds::getVoxel(voxelLightWorld, world_x, world_y, world_z, &lightPtr)) {
+                                light = *lightPtr;
+                            } else {
+                                light = 0;
+                            }
+
+                            // lightChunk.voxels[get_zxy_index(x, y, z)]
+                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture, light, ao_mask);
                         }
                     }
                 }

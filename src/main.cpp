@@ -588,7 +588,7 @@ int main() {
                         }
 
                         // light
-                        ChunkLight::add_light(voxelBlockWorld, voxelLightWorld, worldPos, Colors::createRGBIS4(15, 14, 12, 15, 0));
+                        ChunkLight::add_light(voxelBlockWorld, voxelLightWorld, worldPos, Colors::createRGBIS4(10, 10, 10, 0, 0));
                     }
 
                     VoxelWorlds::placeVoxel(voxelBlockWorld,      worldPos.x, worldPos.y, worldPos.z, EmbeddedVoxel(blockType));
@@ -657,10 +657,15 @@ int main() {
     }
     
 
-    // {
-    //     auto pos = Vec3<i64>(10, 5, 10);
-    //     ChunkLight::add_light(voxelBlockWorld, voxelLightWorld, pos, Colors::createRGBIS4(15, 0, 0, 15, 0));
-    // }
+    {
+        VoxelWorlds::placeVoxel(voxelBlockWorld, 13, 4, -10, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+        VoxelWorlds::placeVoxel(voxelBlockWorld, 11, 4, -10, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+        VoxelWorlds::placeVoxel(voxelBlockWorld, 12, 4, -11, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+        VoxelWorlds::placeVoxel(voxelBlockWorld, 12, 4,  -9, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+        VoxelWorlds::placeVoxel(voxelBlockWorld, 12, 5, -10, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+        auto pos = Vec3<i64>(12, 4, -10);
+        ChunkLight::add_light(voxelBlockWorld, voxelLightWorld, pos, Colors::createRGBIS4(15, 15, 15, 0, 0));
+    }
 
 
     // mesh / light

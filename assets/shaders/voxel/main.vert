@@ -5,7 +5,7 @@ layout(location = 0) in vec3 aPos;
 out flat int texIndex;
 out vec2 texUv;
 out flat uint Axis;
-out flat vec3 LightColor;
+out vec3 LightColor;
 out vec2 AoUV;
 out flat uint Ao;
 out vec3 FragPos;
