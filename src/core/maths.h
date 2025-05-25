@@ -6,6 +6,7 @@
 #include <math.h>
 #include <array>
 #include <stdexcept>
+#include <algorithm>
 
 #include "types.h"
 
@@ -113,12 +114,23 @@ struct Vec2 {
         return x * y;
     }
 
+    // Index
     const T& operator[](size_t index) const {
         switch(index) {
             case 0: return x;
             case 1: return y;
             default: throw std::out_of_range("Index out of range for Vector2");
         }
+    }
+
+    // Equal
+    bool operator==(const Vec2<T>& other) const {
+        return x == other.x && y == other.y;
+    }
+
+    // Not equal
+    bool operator!=(const Vec2<T>& other) const {
+        return x != other.x || y != other.y;
     }
 };
 
@@ -205,6 +217,33 @@ struct Vec3 {
         return x * y * z;
     }
 
+    Vec3<T> abs() const {
+        return Vec3<T>(std::abs(x), std::abs(y), std::abs(z));
+    }
+
+    // Has smaller dim
+    bool hasSmallerDim(const Vec3<T>& other) const {
+        T sortedA[3] = {x, y, z};
+        T sortedB[3] = {other.x, other.y, other.z};
+
+        std::sort(sortedA, sortedA + 3);
+        std::sort(sortedB, sortedB + 3);
+
+        for (u8 i = 0; i < 3; i++) {
+            // we are smaller
+            if (sortedA[i] < sortedB[i]) return true;
+
+            // they are smaller
+            if (sortedA[i] > sortedB[i]) return false;
+
+            // we are equal, check next
+        }
+
+        // equally close
+        return false;
+    }
+
+    // Index
     const T& operator[](size_t index) const {
         switch(index) {
             case 0: return x;
@@ -212,6 +251,16 @@ struct Vec3 {
             case 2: return z;
             default: throw std::out_of_range("Index out of range for Vector3");
         }
+    }
+
+    // Equal
+    bool operator==(const Vec3<T>& other) const {
+        return x == other.x && y == other.y && z == other.z;
+    }
+
+    // Not equal
+    bool operator!=(const Vec3<T>& other) const {
+        return x != other.x || y != other.y || z != other.z;
     }
 };
 

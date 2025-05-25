@@ -380,6 +380,12 @@ int main() {
     // flat grass
     for (i64 cx = -i64(world_size.x) / 2; cx < i64(world_size.x) / 2; cx++) {
         for (i64 cz = -i64(world_size.z) / 2; cz < i64(world_size.z) / 2; cz++) {
+            if (cx == -2 && cz == 1) {
+                VoxelWorlds::placeVoxel(voxelBlockWorld, cx * CS, 5, cz * CS, EmbeddedVoxel(BlockTypes::COBBLESTONE));
+            } else {
+                VoxelWorlds::placeVoxel(voxelBlockWorld, cx * CS, 5, cz * CS, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+            }
+
             // game
             VoxelBlockChunk& chunk = voxelBlockWorld.chunks[voxelBlockWorld.chunkPosToChunkIndex(cx, 0, cz)];
 
@@ -410,98 +416,100 @@ int main() {
 
     {
         i64 start_x = -63;
+        i64 start_y = -63;
+        i64 start_z = 6;
         
         // oak planks
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 0, 5,  0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 0, 5,  start_z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
         // block, slab and stair
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 2, 6,  0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 2, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
         // slabs
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 4, 6,  0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 4, 6,  0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(0))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 8, 6,  0, EmbeddedVoxel(BlockTypes::OAK_SLAB));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 8, 6,  0, BlockStateVoxel(new BlockStateStruct(SlabBlockState(1))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 4, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 4, 6,  start_z, BlockStateVoxel(new BlockStateStruct(SlabBlockState(0))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 8, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_SLAB));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 8, 6,  start_z, BlockStateVoxel(new BlockStateStruct(SlabBlockState(1))));
 
         // stairs
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 12, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 12, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 16, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 16, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(1))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 18, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 18, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(2))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 20, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 20, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(3))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 22, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 22, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(4))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 24, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 24, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(5))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 28, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 28, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(6))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 30, 6,  0, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 30, 6,  0, BlockStateVoxel(new BlockStateStruct(StairBlockState(7))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 12, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 12, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 16, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 16, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(1))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 18, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 18, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(2))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 20, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 20, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(3))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 22, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 22, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(4))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 24, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 24, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(5))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 28, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 28, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(6))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 30, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 30, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(7))));
 
         // block that torches attaches to
         VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 32, 6,  0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
         // torch
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 34, 7,  0, EmbeddedVoxel(BlockTypes::TORCH));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 34, 7,  0, BlockStateVoxel(new BlockStateStruct(TorchBlockState(0))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 36, 6,  0, EmbeddedVoxel(BlockTypes::TORCH));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 36, 6,  0, BlockStateVoxel(new BlockStateStruct(TorchBlockState(1))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 38, 6,  0, EmbeddedVoxel(BlockTypes::TORCH));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 38, 6,  0, BlockStateVoxel(new BlockStateStruct(TorchBlockState(2))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 40, 6,  1, EmbeddedVoxel(BlockTypes::TORCH));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 40, 6,  1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(3))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 42, 6, -1, EmbeddedVoxel(BlockTypes::TORCH));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 42, 6, -1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(4))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 34, 7,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 34, 7,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(0))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 36, 6,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 36, 6,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(1))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 38, 6,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 38, 6,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(2))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 40, 6,  start_z + 1, EmbeddedVoxel(BlockTypes::TORCH));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 40, 6,  start_z + 1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(3))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 42, 6,  start_z - 1, EmbeddedVoxel(BlockTypes::TORCH));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 42, 6,  start_z - 1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(4))));
 
         // oak log
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 44, 6,  0, EmbeddedVoxel(BlockTypes::OAK_LOG));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 44, 6,  0, BlockStateVoxel(new BlockStateStruct(LogBlockState(0))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 46, 6,  0, EmbeddedVoxel(BlockTypes::OAK_LOG));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 46, 6,  0, BlockStateVoxel(new BlockStateStruct(LogBlockState(1))));
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 48, 6,  0, EmbeddedVoxel(BlockTypes::OAK_LOG));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 48, 6,  0, BlockStateVoxel(new BlockStateStruct(LogBlockState(2))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 44, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_LOG));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 44, 6,  start_z, BlockStateVoxel(new BlockStateStruct(LogBlockState(0))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 46, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_LOG));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 46, 6,  start_z, BlockStateVoxel(new BlockStateStruct(LogBlockState(1))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 48, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_LOG));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 48, 6,  start_z, BlockStateVoxel(new BlockStateStruct(LogBlockState(2))));
 
         // glass panes
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 50, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 50, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0000)))); // none
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 50, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 50, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0000)))); // none
 
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 52, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 52, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0001)))); // right
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 54, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 54, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0010)))); // left
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 56, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 56, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0100)))); // back
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 58, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 58, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1000)))); // front
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 52, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 52, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0001)))); // right
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 54, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 54, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0010)))); // left
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 56, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 56, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0100)))); // back
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 58, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 58, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1000)))); // front
         
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 60, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 60, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0011)))); // right, left
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 62, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 62, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1100)))); // back, front
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 60, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 60, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0011)))); // right, left
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 62, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 62, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1100)))); // back, front
         
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 64, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 64, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0101)))); // right, back
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 66, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 66, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0110)))); // back, left
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 68, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 68, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1010)))); // left, front
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 70, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 70, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1001)))); // front, right
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 64, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 64, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0101)))); // right, back
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 66, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 66, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0110)))); // back, left
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 68, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 68, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1010)))); // left, front
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 70, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 70, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1001)))); // front, right
         
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 72, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 72, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0111)))); // right, back, left
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 74, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 74, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1110)))); // back, left, front
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 76, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 76, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1011)))); // left, front, right
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 78, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 78, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1101)))); // front, right, back
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 72, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 72, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b0111)))); // right, back, left
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 74, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 74, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1110)))); // back, left, front
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 76, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 76, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1011)))); // left, front, right
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 78, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 78, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1101)))); // front, right, back
 
-        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 80, 6,  0, EmbeddedVoxel(BlockTypes::GLASS_PANE));
-        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 80, 6,  0, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1111)))); // all
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 80, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 80, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1111)))); // all
     }
 
 
@@ -927,6 +935,8 @@ int main() {
 
 
     
+    Vec3<i64> lastCamBlockPos = camera->position;
+    Vec3<i64> lastCamChunkPos = voxelBlockWorld.worldToChunkPos(lastCamBlockPos);
     while (!glfwWindowShouldClose(window)) {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -961,6 +971,34 @@ int main() {
 
             // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
 
+
+
+            Vec3<i64> camBlockPos = camera->position;
+            Vec3<i64> camChunkPos = voxelBlockWorld.worldToChunkPos(camBlockPos);
+
+            if (camBlockPos != lastCamBlockPos) {
+                printf("sort (%i %i %i)\n", camBlockPos.x, camBlockPos.y, camBlockPos.z);
+
+                for (i64 i = 0; i < voxelWorldRenderer.size.volume(); i++) {
+                    VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[i];
+                    if (camChunkPos == chunk.chunk->pos) {
+                        printf("sort within\n");
+                        Vec3<i64> pos = camBlockPos - (camChunkPos * CS);
+                        chunk.sortWithin(pos);
+                    } else {
+                        Vec3<i64> pos = camBlockPos - chunk.chunk->pos;
+                        chunk.sortNeighbor(5);
+                    }
+                }
+
+                if (camChunkPos != lastCamChunkPos) {
+                    voxelWorldRenderer.sortChunks(camChunkPos);
+                }
+            }
+
+            lastCamBlockPos = camBlockPos;
+            lastCamChunkPos = camChunkPos;
+
             
 
 
@@ -972,7 +1010,6 @@ int main() {
             #elif GL_API == 1
             // TODO
             #endif
-            Vec3<i64> cameraChunkPos = camera->position / CS;
 
             // rendering
             f32 proj_mat[16];
@@ -1001,9 +1038,9 @@ int main() {
             // TODO
             #endif
 
-            Vec3<i64> intCamPosition = camera->position;
+
             #if GL_API == 0
-            activeShader->setIVec3("eye_position_int", intCamPosition);
+            activeShader->setIVec3("eye_position_int", camChunkPos);
             #elif GL_API == 1
             // TODO
             #endif

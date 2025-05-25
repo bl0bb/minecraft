@@ -19,7 +19,7 @@ constexpr const char* block_textures[] = {
     "cobblestone",
     "oak_log_top",
     "oak_log",
-    "oak_leaves",
+    "oak_leaves_test", // "oak_leaves",
     "oak_planks",
     "stripped_oak_log_top",
     "stripped_oak_log",

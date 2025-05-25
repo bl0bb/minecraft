@@ -86,6 +86,12 @@
         "map": "cpp",
         "xtree": "cpp",
         "__tree": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "numbers": "cpp",
+        "numeric": "cpp",
+        "span": "cpp",
+        "memory_resource": "cpp",
+        "text_encoding": "cpp",
+        "cinttypes": "cpp"
     }
 }

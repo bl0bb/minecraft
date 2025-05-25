@@ -37,6 +37,14 @@ public:
         i64 chunk_pos_z = (i64(size.z) / 2) + z;
         return chunk_pos_z + (chunk_pos_x * size.z) + (chunk_pos_y * size.x * size.z);
     }
+
+    constexpr Vec3<i64> worldToChunkPos(const Vec3<i64>& pos) const {
+        Vec3<i64> result = pos / CS;
+        if (pos.x < 0) result.x--;
+        if (pos.y < 0) result.y--;
+        if (pos.z < 0) result.z--;
+        return result;
+    }
 };
 
 
