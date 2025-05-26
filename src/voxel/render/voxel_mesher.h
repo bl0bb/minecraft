@@ -11,11 +11,11 @@
 #include "../../blocks/blocks.h"
 #include "../../blocks/mesh/block_mesh.h"
 
-// TODO: remove this and generate mesh at runtime
-#include "../../blocks/mesh/block_meshes.h"
-
-
+#include "../light/voxel_light_world.h"
 #include "../block/voxel_block_world.h"
+#include "../blockstate/voxel_blockstate_world.h"
+
+#include "../../blocks/mesh/block_meshes.h"
 
 #include "voxel_chunk_mesh_common.h"
 

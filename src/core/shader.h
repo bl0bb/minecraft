@@ -27,6 +27,11 @@ public:
       std::stringstream buffer;
       buffer << vertexFile.rdbuf();
       vShaderCode = buffer.str();
+      #if GL_API == 0
+      vShaderCode = "#version 460\n#define OGL_VERSION 46\n" + vShaderCode;
+      #elif GL_API == 1
+      vShaderCode = "#version 410\n#define OGL_VERSION 41\n" + vShaderCode;
+      #endif
     } else {
       std::cout << "COULD NOT OPEN SHADER FILE: " + vertex_name << std::endl;
     }

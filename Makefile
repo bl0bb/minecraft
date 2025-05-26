@@ -1,6 +1,6 @@
 CC = g++
 
-VERSION = 20
+CC_VERSION = 20
 
 ERROR_FLAGS = \
 # -Wall\
@@ -18,20 +18,22 @@ FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp
 
 
 # windows
-LIBS = -Idep/include -Ldep/lib -lglfw3dll -lz
+# LIBS = -Idep/include -Ldep/lib -lglfw3dll -lz
 
 # macos (linux?)
-# GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
-# GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
-# LIBS = -L$(GLFW_LIB_DIR) -lglfw -I$(GLFW_INCLUDE_DIR) -lz
+GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
+GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
+LIBS = -L$(GLFW_LIB_DIR) -lglfw -I$(GLFW_INCLUDE_DIR) -lz
 
 
 
-# 0 = OpenGL
-# 1 = Vulkan
-GL_API = 0
+
+# 0 = OpenGL 4.6
+# 1 = OpenGL 4.1
+# 2 = Vulkan
+GL_API = 1
 
 
 
 all:
-	$(CC) -std=c++$(VERSION) $(ERROR_FLAGS) -DGL_API=$(GL_API) $(FILES) -o main $(LIBS)
+	$(CC) -std=c++$(CC_VERSION) $(ERROR_FLAGS) -DGL_API=$(GL_API) $(FILES) -o main $(LIBS)

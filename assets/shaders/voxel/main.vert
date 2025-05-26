@@ -1,4 +1,15 @@
-#version 460 core
+#if OGL_VERSION == 46
+#define LAYOUT_QUALIFIER std430
+#define DATA_LAYOUT layout(LAYOUT_QUALIFIER, binding = 0) readonly buffer instanceDataBuffer {\
+  QuadData instanceData[];\
+};
+
+#elif OGL_VERSION == 41
+#define LAYOUT_QUALIFIER std140
+#define DATA_LAYOUT layout(LAYOUT_QUALIFIER) uniform instanceDataBuffer {\
+    QuadData instanceData[];\
+};
+#endif
 
 layout(location = 0) in vec3 aPos;
 
@@ -18,9 +29,7 @@ struct QuadData {
   uint data4;
 };
 
-layout(std430, binding = 0) readonly buffer instanceDataBuffer {
-  QuadData instanceData[];
-};
+DATA_LAYOUT
 
 uniform mat4 u_view;
 uniform mat4 u_projection;
@@ -29,22 +38,21 @@ uniform ivec3 eye_position_int;
 
 uniform ivec3 chunk_pos;
 
-const vec3 normalLookup[6] = {
+const vec3 normalLookup[6] = vec3[6](
   vec3( 1,  0,  0 ),
   vec3(-1,  0,  0 ),
   vec3( 0,  1,  0 ),
   vec3( 0, -1,  0 ),
   vec3( 0,  0,  1 ),
-  vec3( 0,  0, -1 ),
-};
+  vec3( 0,  0, -1 )
+);
 
-// TODO: "aoLookup[4]" instead of "aoLookup[]"?
-const float aoLookup[] = {
+const float aoLookup[] = float[](
   1.0,
   0.7,
   0.5,
-  0.15,
-};
+  0.15
+);
 
 
 
@@ -60,11 +68,18 @@ void main() {
     vertex_id = 3;
   }
 
+  #if OGL_VERSION == 46
   QuadData data = instanceData[gl_InstanceID];
   uint data1 = data.data1;
   uint data2 = data.data2;
   uint data3 = data.data3;
   uint data4 = data.data4;
+  #elif OGL_VERSION == 41
+  uint data1 = quadData1;
+  uint data2 = quadData2;
+  uint data3 = quadData3;
+  uint data4 = quadData4;
+  #endif
 
   uint data_x =          (data1 >>         0) & (     32 - 1);
   uint data_y =          (data1 >>         5) & (     32 - 1);

@@ -31,14 +31,14 @@ public:
         return z + (x * size.z) + (y * size.x * size.z);
     }
 
-    constexpr u64 chunkPosToChunkIndex(u64 x, u64 y, u64 z) const {
+    constexpr u64 chunkPosToChunkIndex(i64 x, i64 y, i64 z) const {
         i64 chunk_pos_x = (i64(size.x) / 2) + x;
         i64 chunk_pos_y = (i64(size.y) / 2) + y;
         i64 chunk_pos_z = (i64(size.z) / 2) + z;
         return chunk_pos_z + (chunk_pos_x * size.z) + (chunk_pos_y * size.x * size.z);
     }
 
-    constexpr Vec3<i64> worldToChunkPos(const Vec3<i64>& pos) const {
+    inline Vec3<i64> worldToChunkPos(const Vec3<i64>& pos) const {
         Vec3<i64> result = pos / CS;
         if (pos.x < 0) result.x--;
         if (pos.y < 0) result.y--;

@@ -37,6 +37,8 @@ public:
     GLuint voxel_ssbo;
     #elif GL_API == 1
     // TODO
+    #elif GL_API == 2
+    // TODO
     #endif
 
     VoxelChunkRenderer() : voxel_faces(new VoxelFace[CS_P3]()) {
@@ -84,6 +86,8 @@ public:
         glGenBuffers(1, &voxel_ssbo);
         #elif GL_API == 1
         // TODO
+        #elif GL_API == 2
+        // TODO
         #endif
     }
 
@@ -98,6 +102,8 @@ public:
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, CS_P3 * sizeof(VoxelFace), voxel_faces, GL_STATIC_DRAW);
         #elif GL_API == 1
+        // TODO
+        #elif GL_API == 2
         // TODO
         #endif
     }
@@ -175,6 +181,8 @@ public:
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, voxel_count);
         glBindVertexArray(0);
         #elif GL_API == 1
+        // TODO
+        #elif GL_API == 2
         // TODO
         #endif
     }

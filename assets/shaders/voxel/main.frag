@@ -1,4 +1,8 @@
-#version 460 core
+#if OGL_VERSION == 46
+#define TEX_LAYOUT readonly buffer
+#elif OGL_VERSION == 41
+#define TEX_LAYOUT readonly buffer
+#endif
 
 layout(binding = 0) uniform sampler2DArray texArray;
 
@@ -38,25 +42,7 @@ const float lightLookup[6] = {
   0.9,
 };
 
-// Hardcoded corner colors (could also be uniforms)
-// vec2 c1 = vec2(0.0, 0.5);
-// vec2 c2 = vec2(0.0, 1.0);
-// vec2 c3 = vec2(0.5, 1.0);
-// vec2 c4 = vec2(1.0, 1.0);
-// vec2 c5 = vec2(1.0, 0.5);
-// vec2 c6 = vec2(1.0, 0.0);
-// vec2 c7 = vec2(0.5, 0.0);
-// // vec2 c8 = vec2(0.0, 0.0);
-
-// vec2 c1 = vec2(0.0, 0.0);
-// vec2 c2 = vec2(0.5, 0.0);
-// vec2 c3 = vec2(1.0, 0.0);
-// vec2 c4 = vec2(1.0, 0.5);
-// vec2 c5 = vec2(1.0, 1.0);
-// vec2 c6 = vec2(0.5, 1.0);
-// vec2 c7 = vec2(0.0, 1.0);
-// vec2 c8 = vec2(0.0, 0.5);
-
+// Hardcoded corners
 vec2 c1 = vec2(1.0, 1.0);
 vec2 c2 = vec2(1.0, 0.5);
 vec2 c3 = vec2(1.0, 0.0);

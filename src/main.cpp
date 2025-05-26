@@ -110,15 +110,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-#if GL_API == 0
+#if GL_API == 0 || GL_API == 1
 bool init_opengl() {
-    glEnable(GL_DEBUG_OUTPUT);
-
     // this not working on mac
     // or is it?
+    #if GL_API == 0
+    glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
     glDebugMessageCallback(message_callback, 0);
-
+    #endif
     glEnable(GL_DEPTH_TEST);
 
     glFrontFace(GL_CCW);
@@ -135,7 +135,7 @@ bool init_opengl() {
 
     return true;
 }
-#elif GL_API == 1
+#elif GL_API == 2
 // TODO
 void createVkInstance() {
     VkApplicationInfo appInfo{};
@@ -172,8 +172,13 @@ GLFWwindow* init_window() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     #elif GL_API == 1
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    #elif GL_API == 2
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     #endif
+
     glfwWindowHint(GLFW_SAMPLES, 4);
 
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong", FULLSCREEN ? glfwGetPrimaryMonitor() : nullptr, nullptr);
@@ -189,14 +194,14 @@ GLFWwindow* init_window() {
     
     glfwMakeContextCurrent(window);
 
-    #if GL_API == 0
+    #if GL_API == 0 || GL_API == 1
     if (!gladLoadGL()) {
         fprintf(stderr, "Unable to initialize glad\n");
         glfwDestroyWindow(window);
         glfwTerminate();
         return nullptr;
     }
-    #elif GL_API == 1
+    #elif GL_API == 2
     // TODO
     #endif
 
@@ -245,6 +250,8 @@ int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight, i32& n
     );
     #elif GL_API == 1
     // TODO
+    #elif GL_API == 2
+    // TODO
     #endif
 
     stbi_image_free(data);
@@ -270,19 +277,19 @@ int main() {
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetKeyCallback(window, key_callback);
 
-    #if GL_API == 0
+    #if GL_API == 0 || GL_API == 1
     if (!init_opengl()) {
         fprintf(stderr, "Unable to initialize glad/opengl\n");
         return 1;
     }
-    #elif GL_API == 1
+    #elif GL_API == 2
     // TODO
     #endif
 
-    #if GL_API == 0
+    #if GL_API == 0 || GL_API == 1
     const char *version = (const char*)glGetString(GL_VERSION);
     printf("OpenGL version: %s\n", version);
-    #elif GL_API == 1
+    #elif GL_API == 2
     // TODO: get Vulkan version
     const char *version = "???";
     printf("Vulkan version: %s\n", version);
@@ -295,6 +302,8 @@ int main() {
     glGetIntegerv(GL_SAMPLES, &msaaSamples);
     std::cout << "MSAA Samples: " << msaaSamples << "\n";
     #elif GL_API == 1
+    // TODO
+    #elif GL_API == 2
     // TODO
     int msaaSamples = 6969;
     std::cout << "MSAA Samples: " << msaaSamples << "\n";
@@ -842,10 +851,7 @@ int main() {
 
 
 
-    #if GL_API == 0
-    // texture ssbo
-    GLuint texture_ssbo;
-
+    #if GL_API == 0 || GL_API == 1
     // textures
     GLuint textureArray;
     glGenTextures(1, &textureArray);
@@ -859,8 +865,30 @@ int main() {
     // skip first
     u16 texIdx = 1;
 
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, std::floor(std::log2(std::max(texWidth, texHeight))) + 1, GL_RGBA8, texWidth, texHeight, numTextures);
+    u8 mipLevels = std::floor(std::log2(std::max(texWidth, texHeight))) + 1;
+    #if GL_API == 0
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mipLevels, GL_RGBA8, texWidth, texHeight, numTextures);
+    #elif GL_API == 1
+    for (int level = 0; level < mipLevels; ++level) {
+        int w = texWidth >> level;
+        int h = texHeight >> level;
+        if (w < 1) w = 1;
+        if (h < 1) h = 1;
 
+        glTexImage3D(
+            GL_TEXTURE_2D_ARRAY,
+            level,              // mipmap level
+            GL_RGBA8,           // internal format
+            w,                  // width at this mip level
+            h,                  // height at this mip level
+            numTextures,        // number of layers in the array
+            0,                  // border (must be 0)
+            GL_RGBA,            // format of pixel data (set NULL, so format doesn't matter much here)
+            GL_UNSIGNED_BYTE,   // data type of pixel data
+            NULL                // no initial data, just allocate
+        );
+    }
+    #endif
     
 
     // repeat, only matters on greedy meshing i think (but we dont use that anymore)
@@ -885,11 +913,13 @@ int main() {
         block_textures_data[i] = nrChannels;
     }
 
-    // mipmap does some anti aliasing stuff bluhhh
+    // what does mipmaps do? mipmaps does some anti aliasing stuff bluhhh
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 
     // Create SSBO for texture metadata
+    GLuint texture_ssbo;
+
     glGenBuffers(1, &texture_ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, texture_ssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER, array_size(block_textures) * sizeof(u32), block_textures_data, GL_STATIC_DRAW);
@@ -925,11 +955,7 @@ int main() {
 
         stbi_image_free(data);
     }
-
-
-
-    u32 shaderType = 0;
-    #elif GL_API == 1
+    #elif GL_API == 2
     // TODO
     #endif
 
@@ -952,21 +978,6 @@ int main() {
             else rightMove = 0.0f;
             auto wishdir = (camera->front * forwardMove) + (camera->right * rightMove);
             camera->position = camera->position + wishdir * noclipSpeed * deltaTime;
-
-            #if GL_API == 0
-            if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) shaderType = 0;
-            else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) shaderType = 1;
-            else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) shaderType = 2;
-            else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) shaderType = 3;
-            else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) shaderType = 4;
-            else if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) shaderType = 5;
-            else if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) shaderType = 6;
-            else if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) shaderType = 7;
-            else if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) shaderType = 8;
-            else if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS) shaderType = 9;
-            #elif GL_API == 1
-            // TODO
-            #endif
             
 
             // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
@@ -1009,6 +1020,8 @@ int main() {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             #elif GL_API == 1
             // TODO
+            #elif GL_API == 2
+            // TODO
             #endif
 
             // rendering
@@ -1018,55 +1031,44 @@ int main() {
             f32 view_mat[16];
             camera->getViewMatrix().toGLMatrix(view_mat);
 
-            #if GL_API == 0
-            Shader* activeShader;
-            if (shaderType == 0 || true) {
-                activeShader = &geometryShader;
-            } else if (shaderType == 1) {
-                activeShader = &edgeShader;
-            }
-            activeShader->use();
-            #elif GL_API == 1
+            #if GL_API == 0 || GL_API == 1
+            geometryShader.use();
+            #elif GL_API == 2
             // TODO
             #endif
 
-            #if GL_API == 0
-            activeShader->setMat4("u_projection", proj_mat);
-            activeShader->setMat4("u_view", view_mat);
-            activeShader->setVec3("eye_position", camera->position);
-            #elif GL_API == 1
+            #if GL_API == 0 || GL_API == 1
+            geometryShader.setMat4("u_projection", proj_mat);
+            geometryShader.setMat4("u_view", view_mat);
+            geometryShader.setVec3("eye_position", camera->position);
+            #elif GL_API == 2
             // TODO
             #endif
 
 
-            #if GL_API == 0
-            activeShader->setIVec3("eye_position_int", camChunkPos);
-            #elif GL_API == 1
+            #if GL_API == 0 || GL_API == 1
+            geometryShader.setIVec3("eye_position_int", camChunkPos);
+            #elif GL_API == 2
             // TODO
             #endif
 
-            #if GL_API == 0
-            if (shaderType == 0 || true) {
-                // bind textures
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
-                geometryShader.setInt("texArray", 0);
+            #if GL_API == 0 || GL_API == 1
+            // bind textures
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
+            geometryShader.setInt("texArray", 0);
 
-                // ao
-                geometryShader.setInt("gPosition", 1);
-                geometryShader.setInt("gNormal", 2);
-                geometryShader.setInt("texNoise", 3);
-            } else if (shaderType == 1) {
-                edgeShader.setFloat("texelWidth", 1.0f / WINDOW_WIDTH);
-                edgeShader.setFloat("texelHeight", 1.0f / WINDOW_HEIGHT);
-            }
-            #elif GL_API == 1
+            // ao
+            geometryShader.setInt("gPosition", 1);
+            geometryShader.setInt("gNormal", 2);
+            geometryShader.setInt("texNoise", 3);
+            #elif GL_API == 2
             // TODO
             #endif
 
-            #if GL_API == 0
+            #if GL_API == 0 || GL_API == 1
             voxelWorldRenderer.render(geometryShader);
-            #elif GL_API == 1
+            #elif GL_API == 2
             // TODO
             #endif
 
