@@ -1,9 +1,3 @@
-#if OGL_VERSION == 46
-#define TEX_LAYOUT readonly buffer
-#elif OGL_VERSION == 41
-#define TEX_LAYOUT readonly buffer
-#endif
-
 layout(binding = 0) uniform sampler2DArray texArray;
 
 layout(binding = 1) readonly buffer texDataBuffer {
@@ -16,9 +10,23 @@ layout(location = 2) out vec4 gNormal;
 in flat int texIndex;
 in vec2 texUv;
 in flat uint Axis;
-in vec3 LightColor;
-in float Sunlight;
-in vec2 AoUV;
+in vec2 FaceUV;
+
+
+in flat uint Light0;
+in flat uint Light1;
+in flat uint Light2;
+in flat uint Light3;
+in flat uint Light4;
+in flat uint Light5;
+in flat uint Light6;
+in flat uint Light7;
+in flat uint Light8;
+
+// in vec3 LightColor;
+// in float Sunlight;
+
+
 in flat uint Ao;
 in vec3 FragPos;
 
@@ -54,9 +62,18 @@ vec2 c8 = vec2(0.5, 1.0);
 
 // Function to compute AO at each corner
 float getAO(float side1, float side2, float corner) {
-    if (side1 == 1.0 && side2 == 1.0)
-        return 0.0;
-    return 1.0 - (side1 + side2 + corner) / 3.0;
+  if (side1 == 1.0 && side2 == 1.0)
+      return 0.0;
+  return 1.0 - (side1 + side2 + corner) / 3.0;
+}
+
+vec4 fixLight(uint light) {
+  return vec4(
+    (light >> 0) & 15, // r
+    (light >> 4) & 15, // g
+    (light >> 8) & 15, // b
+    (light >> 16) & 15 // sunlight
+  ) / 15.0;
 }
 
 void main() {
@@ -81,23 +98,75 @@ void main() {
   // directional darkness thingy
   FragColor *= vec4(vec3(lightLookup[Axis]), 1.0);
 
-  // light / sunlight
-  vec3 finalLight = clamp(vec3(Sunlight) + LightColor, 0.0, 1.0);
 
-  FragColor *= vec4(finalLight, 1.0);
+
+
+
+
+  vec2 fixedFaceUV = FaceUV;
+  if (Axis == 1) {
+    fixedFaceUV.x = 1.0f - fixedFaceUV.x;
+  } else if (Axis == 3) {
+    fixedFaceUV.y = 1.0f - fixedFaceUV.y;
+  } else if (Axis == 4) {
+    fixedFaceUV.x = 1.0f - fixedFaceUV.x;
+  }
+
+
+
+
+
+  // light / sunlight
+  // vec3 finalLight = clamp(vec3(Sunlight) + LightColor, 0.0, 1.0);
+  // FragColor *= vec4(finalLight, 1.0);
+
+
+  /*
+  6 7 0
+  5 8 1
+  4 3 2
+
+  7 8 1
+  6 9 2
+  5 4 3
+  */
+  
 
   
+
+  vec4 fixedLight0 = fixLight(Light0);
+  vec4 fixedLight1 = fixLight(Light1);
+  vec4 fixedLight2 = fixLight(Light2);
+  vec4 fixedLight3 = fixLight(Light3);
+  vec4 fixedLight4 = fixLight(Light4);
+  vec4 fixedLight5 = fixLight(Light5);
+  vec4 fixedLight6 = fixLight(Light6);
+  vec4 fixedLight7 = fixLight(Light7);
+  // center
+  vec4 fixedLight8 = fixLight(Light8);
+
+  // Compute light for each corner of the quad
+  vec4 lightTR = fixedLight2; // top-right
+  vec4 lightTL = fixedLight4; // top-left
+  vec4 lightBL = fixedLight6; // bottom-left
+  vec4 lightBR = fixedLight0; // bottom-right
+
+  // Interpolate AO based on UV
+  vec4 lightTop = mix(lightTL, lightTR, fixedFaceUV.x);
+  vec4 lightBottom = mix(lightBL, lightBR, fixedFaceUV.x);
+
+  vec4 mixedLight = mix(lightTop, lightBottom, fixedFaceUV.y) * fixedLight8;
+  FragColor *= vec4(vec3(mixedLight), 1.0);
+
+  // vec4 fixedLight8 = fixLight(Light8);
+  // FragColor *= vec4(vec3(fixedLight8), 1.0);
+
+
 
 
 
 
   // ao
-  
-  /*
-  7 8 1
-  6 9 2
-  5 4 3
-  */
 
   uint ao1 = (Ao >> 0) & 1;
   uint ao2 = (Ao >> 1) & 1;
@@ -110,16 +179,6 @@ void main() {
   // center
   uint ao9 = (Ao >> 8) & 1;
 
-
-  vec2 fixedAoUV = AoUV;
-  if (Axis == 1) {
-    fixedAoUV.x = 1.0f - fixedAoUV.x;
-  } else if (Axis == 3) {
-    fixedAoUV.y = 1.0f - fixedAoUV.y;
-  } else if (Axis == 4) {
-    fixedAoUV.x = 1.0f - fixedAoUV.x;
-  }
-
   // Compute AO for each corner of the quad
   float aoTR = getAO(ao4, ao2, ao3); // top-right
   float aoTL = getAO(ao4, ao6, ao5); // top-left
@@ -127,16 +186,16 @@ void main() {
   float aoBR = getAO(ao8, ao2, ao1); // bottom-right
 
   // Interpolate AO based on UV
-  float top = mix(aoTL, aoTR, fixedAoUV.x);
-  float bottom = mix(aoBL, aoBR, fixedAoUV.x);
+  float aoTop = mix(aoTL, aoTR, fixedFaceUV.x);
+  float aoBottom = mix(aoBL, aoBR, fixedFaceUV.x);
 
-  float ao = mix(top, bottom, fixedAoUV.y);
+  float mixedAo = mix(aoTop, aoBottom, fixedFaceUV.y);
 
   // center
-  // ao *= 1.0 - ao9;
+  // mixedAo *= 1.0 - ao9;
 
   // Apply AO to output color (for example darken by AO)
-  FragColor *= vec4(vec3(mix(0.4, 1.0, ao)), 1.0);
+  FragColor *= vec4(vec3(mix(0.4, 1.0, mixedAo)), 1.0);
 
 
 

@@ -16,9 +16,25 @@ layout(location = 0) in vec3 aPos;
 out flat int texIndex;
 out vec2 texUv;
 out flat uint Axis;
-out vec3 LightColor;
-out float Sunlight;
-out vec2 AoUV;
+out vec2 FaceUV;
+
+
+
+out flat uint Light0;
+out flat uint Light1;
+out flat uint Light2;
+out flat uint Light3;
+out flat uint Light4;
+out flat uint Light5;
+out flat uint Light6;
+out flat uint Light7;
+out flat uint Light8;
+
+// out vec3 LightColor;
+// out float Sunlight;
+
+
+
 out flat uint Ao;
 out vec3 FragPos;
 
@@ -27,6 +43,10 @@ struct QuadData {
   uint data2;
   uint data3;
   uint data4;
+  uint data5;
+  uint data6;
+  uint data7;
+  uint data8;
 };
 
 DATA_LAYOUT
@@ -74,30 +94,48 @@ void main() {
   uint data2 = data.data2;
   uint data3 = data.data3;
   uint data4 = data.data4;
+  uint data5 = data.data5;
+  uint data6 = data.data6;
+  uint data7 = data.data7;
+  uint data8 = data.data8;
   #elif OGL_VERSION == 41
   uint data1 = quadData1;
   uint data2 = quadData2;
   uint data3 = quadData3;
   uint data4 = quadData4;
+  uint data5 = quadData5;
+  uint data6 = quadData6;
+  uint data7 = quadData7;
+  uint data8 = quadData8;
   #endif
 
-  uint data_x =          (data1 >>         0) & (     32 - 1);
-  uint data_y =          (data1 >>         5) & (     32 - 1);
-  uint data_z =          (data1 >>        10) & (     32 - 1);
-  uint data_face_x =     (data1 >>        15) & (     16 - 1);
-  uint data_face_y =     (data1 >>        19) & (     16 - 1);
-  uint data_face_depth = (data1 >>        23) & (     16 - 1);
-  uint data_face_w =     (data1 >>        27) & (     16 - 1);
-  uint data_face_h =     ((data2 & 7) << 1) | ((data1 >> 31) & 1); // (data1 >> 31) & (16 - 1);
-  uint data_uv_x =       (data2 >> (35 - 32)) & (     16 - 1);
-  uint data_uv_y =       (data2 >> (39 - 32)) & (     16 - 1);
-  uint data_uv_w =       (data2 >> (43 - 32)) & (     16 - 1);
-  uint data_uv_h =       (data2 >> (47 - 32)) & (     16 - 1);
-  uint data_uv_rot =     (data2 >> (51 - 32)) & (      4 - 1);
-  uint data_dir =        (data2 >> (53 - 32)) & (      8 - 1);
-  uint data_type =       (data2 >> (56 - 32)) & (    256 - 1);
-  uint data_light =      (data3 >>         0) & (1048576 - 1);
-  uint data_ao =         (data3 >>        20) & (    512 - 1);
+  uint data_x =          (data1 >>         0) & (      32 - 1);
+  uint data_y =          (data1 >>         5) & (      32 - 1);
+  uint data_z =          (data1 >>        10) & (      32 - 1);
+  uint data_face_x =     (data1 >>        15) & (      16 - 1);
+  uint data_face_y =     (data1 >>        19) & (      16 - 1);
+  uint data_face_depth = (data1 >>        23) & (      16 - 1);
+  uint data_face_w =     (data1 >>        27) & (      16 - 1);
+  uint data_face_h =     ((data2 & 7) << 1) | ((data1 >> 31) & 1);
+  uint data_uv_x =       (data2 >> (35 - 32)) & (      16 - 1);
+  uint data_uv_y =       (data2 >> (39 - 32)) & (      16 - 1);
+  uint data_uv_w =       (data2 >> (43 - 32)) & (      16 - 1);
+  uint data_uv_h =       (data2 >> (47 - 32)) & (      16 - 1);
+  uint data_uv_rot =     (data2 >> (51 - 32)) & (       4 - 1);
+  uint data_dir =        (data2 >> (53 - 32)) & (       8 - 1);
+  uint data_type =       (data2 >> (56 - 32)) & (     256 - 1);
+
+  uint data_light0 =     (data3 >>         0) & ( 1048576 - 1);
+  uint data_light1 =     ((data4 & (256 - 1)) << 8) | ((data3 >> 20) & (4096 - 1));
+  uint data_light2 =     (data4 >> (40 - 32)) & (16777216 - 1);
+  uint data_light3 =     ((data5 & (65536 - 1)) << 16) | ((data4 >> (60 - 32)) & (16 - 1));
+  uint data_light4 =     ((data6 & (16 - 1)) << 4) | ((data5 >> 16) & (65536 - 1));
+  uint data_light5 =     (data6 >>         4) & ( 1048576 - 1);
+  uint data_light6 =     ((data7 & (4096 - 1)) << 8) | ((data6 >> (56 - 32)) & (256 - 1));
+  uint data_light7 =     (data7 >>        12) & ( 1048576 - 1);
+  uint data_light8 =     (data8 >> (32 - 32)) & ( 1048576 - 1);
+
+  uint data_ao =         (data8 >> (52 - 32)) & (    512 - 1);
 
   vec3 offset = vec3(data_x, data_y, data_z);
 
@@ -168,30 +206,38 @@ void main() {
   }
 
 
-  // light
-  uint lightR = (data_light >> (4 * 0)) & 15;
-  uint lightG = (data_light >> (4 * 1)) & 15;
-  uint lightB = (data_light >> (4 * 2)) & 15;
-  uint lightI = (data_light >> (4 * 3)) & 15;
-  uint lightS = (data_light >> (4 * 4)) & 15;
 
-  // float lightIFloat = lightI / 16.0;
 
-  LightColor = vec3(lightR, lightG, lightB) / 15.0;
+  // light / sunlight
+  // uint lightR = (data_light8 >> (4 * 0)) & 15;
+  // uint lightG = (data_light8 >> (4 * 1)) & 15;
+  // uint lightB = (data_light8 >> (4 * 2)) & 15;
+  // uint lightI = (data_light8 >> (4 * 3)) & 15;
+  // uint lightS = (data_light8 >> (4 * 4)) & 15;
 
-  Sunlight = lightS / 15.0;
+  // LightColor = vec3(lightR, lightG, lightB) / 15.0;
+
+  // Sunlight = lightS / 15.0;
+
+  Light0 = data_light0;
+  Light1 = data_light1;
+  Light2 = data_light2;
+  Light3 = data_light3;
+  Light4 = data_light4;
+  Light5 = data_light5;
+  Light6 = data_light6;
+  Light7 = data_light7;
+  Light8 = data_light8;
+
+
+
+
 
   // ao
-  // uint ao_fill = 0;
-  // ao_fill += (data_ao >> (((vertex_id * 2) + 0) % 8)) & 1;
-  // ao_fill += (data_ao >> (((vertex_id * 2) + 1) % 8)) & 1;
-  // ao_fill += (data_ao >> (((vertex_id * 2) + 2) % 8)) & 1;
-  // Ao = 1.0 - (ao_fill / 1.0); // aoLookup[ao_fill];
-
   Ao = data_ao;
-  AoUV = vec2(aPos);
 
   // other
+  FaceUV = vec2(aPos);
   Axis = axis;
   FragPos = vec3(gl_Position);
 }

@@ -6,10 +6,20 @@
 
 class VoxelWorldRenderer : public VoxelWorld<VoxelChunkRenderer> {
 public:
+    u64* chunkOrder;
+
+    VoxelWorldRenderer(Vec3<u64>& _size) : VoxelWorld<VoxelChunkRenderer>(_size), chunkOrder((u64*)malloc(sizeof(u64) * size.volume())) {
+        for (u64 i = 0; i < size.volume(); i++) {
+            chunkOrder[i] = i;
+        }
+    }
+
     void sortChunks(const Vec3<i64>& pos) const {
-        std::sort(chunks, chunks + size.volume(), [&pos](const VoxelChunkRenderer& a, const VoxelChunkRenderer& b) {
-            f64 aDist = (pos - a.chunk->pos).abs().magnitude();
-            f64 bDist = (pos - b.chunk->pos).abs().magnitude();
+        std::sort(chunkOrder, chunkOrder + size.volume(), [this, &pos](const u64& aIdx, const u64& bIdx) {
+            const VoxelChunkRenderer& a = chunks[aIdx];
+            const VoxelChunkRenderer& b = chunks[bIdx];
+            f64 aDist = (pos - a.chunk->pos).magnitude();
+            f64 bDist = (pos - b.chunk->pos).magnitude();
             return aDist > bDist;
 
             // Vec3<i64> aPos = pos - a.chunk->pos;
@@ -21,15 +31,19 @@ public:
     }
 
     void render(Shader& shaderProgram) const {
-        for (i64 x = 0; x < size.x; x++) {
-            for (i64 y = 0; y < size.y; y++) {
-                for (i64 z = 0; z < size.z; z++) {
-                    VoxelChunkRenderer& chunk = chunks[getChunkIndex(x, y, z)];
-                    
-                    chunk.render(shaderProgram);
-                }
-            }
+        for (u64 i = 0; i < size.volume(); i++) {
+            u64 idx = chunkOrder[i];
+            chunks[idx].render(shaderProgram);
         }
+        // for (i64 x = 0; x < size.x; x++) {
+        //     for (i64 y = 0; y < size.y; y++) {
+        //         for (i64 z = 0; z < size.z; z++) {
+        //             VoxelChunkRenderer& chunk = chunks[getChunkIndex(x, y, z)];
+                    
+        //             chunk.render(shaderProgram);
+        //         }
+        //     }
+        // }
     }
 };
 

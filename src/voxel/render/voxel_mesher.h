@@ -37,7 +37,7 @@ void printBinary(unsigned int num, u8 count) {
 
 
 
-const Vec2<i8> AO_DIRS[] = {
+const Vec2<i8> NEIGHBOR_DIRS[] = {
     { 1,  1},
     { 1,  0},
     { 1, -1},
@@ -318,37 +318,58 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
 
 
-                        // ao test
+                        // ao / light
                         u16 ao_mask = 0;
-                        for (u8 ao_i = 0; ao_i < array_size(AO_DIRS); ao_i++) {
-                            Vec2<i8> ao_offset = AO_DIRS[ao_i];
-                            Vec3<i64> ao_pos;
+                        RGBIS4 lightSources[9];
+                        for (i8 neighbor_i = 8; neighbor_i >= 0; neighbor_i--) {
+                            Vec2<i8> neighbor_offset = NEIGHBOR_DIRS[neighbor_i];
+                            Vec3<i64> neighbor_pos;
 
-                            if (dir == 0)       ao_pos = { 1, ao_offset.y, ao_offset.x};
-                            else if (dir == 1)  ao_pos = {-1, ao_offset.y, ao_offset.x};
-                            else if (dir == 2)  ao_pos = {ao_offset.x,  1, ao_offset.y};
-                            else if (dir == 3)  ao_pos = {ao_offset.x, -1, ao_offset.y};
-                            else if (dir == 4)  ao_pos = {ao_offset.x, ao_offset.y,  1};
-                            else                ao_pos = {ao_offset.x, ao_offset.y, -1};
+                            if (dir == 0)       neighbor_pos = { 1, neighbor_offset.y, neighbor_offset.x};
+                            else if (dir == 1)  neighbor_pos = {-1, neighbor_offset.y, neighbor_offset.x};
+                            else if (dir == 2)  neighbor_pos = {neighbor_offset.x,  1, neighbor_offset.y};
+                            else if (dir == 3)  neighbor_pos = {neighbor_offset.x, -1, neighbor_offset.y};
+                            else if (dir == 4)  neighbor_pos = {neighbor_offset.x, neighbor_offset.y,  1};
+                            else                neighbor_pos = {neighbor_offset.x, neighbor_offset.y, -1};
 
-                            Vec3<i64> voxel_pos = (chunk.pos * CS) + Vec3<i64>(x, y, z) + ao_pos;
+                            Vec3<i64> voxel_pos = (chunk.pos * CS) + Vec3<i64>(x, y, z) + neighbor_pos;
 
                             EmbeddedVoxel* voxel;
-                            if (!VoxelWorlds::getVoxel(voxelWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &voxel)) {
+                            bool hasBlock = VoxelWorlds::getVoxel(voxelWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &voxel);
+                            
+                            if (!hasBlock) {
+                                RGBIS4* lightPtr;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
                                 continue;
                             }
-
+                            
+                            // ao
                             if (voxel->type == BlockTypes::AIR) {
+                                RGBIS4* lightPtr;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
                                 continue;
                             }
 
                             BlockVoxelData blockData = BLOCK_VOXEL_DATA[voxel->type];
 
                             if (blockData.transparent) {
+                                RGBIS4* lightPtr;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
                                 continue;
                             }
 
-                            ao_mask |= 1 << ao_i;
+
+                            
+                            // light
+                            lightSources[neighbor_i] = lightSources[8];
+
+                            // RGBIS4* lightPtr;
+                            // lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
+
+
+
+                            // ao
+                            ao_mask |= 1 << neighbor_i;
                         }
 
 
@@ -370,22 +391,18 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                         for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
                             BlockFace face = blockMesh.faces[dir][i];
 
-
-                            i64 world_x = x + chunkPos.x * CS;
-                            i64 world_y = y + chunkPos.y * CS;
-                            i64 world_z = z + chunkPos.z * CS;
-                            getFaceOffset(world_x, world_y, world_z, dir);
-
-                            RGBIS4 light;
-                            RGBIS4* lightPtr;
-                            if (VoxelWorlds::getVoxel(voxelLightWorld, world_x, world_y, world_z, &lightPtr)) {
-                                light = *lightPtr;
-                            } else {
-                                light = 0;
-                            }
-
                             // lightChunk.voxels[get_zxy_index(x, y, z)]
-                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture, light, ao_mask);
+                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture, lightSources, ao_mask);
+
+                            // printf("%i ", lightSources[0] == vertices[vertexIdx - 1].getLight0());
+                            // printf("%i ", lightSources[1] == vertices[vertexIdx - 1].getLight1());
+                            // printf("%i ", lightSources[2] == vertices[vertexIdx - 1].getLight2());
+                            // printf("%i ", lightSources[3] == vertices[vertexIdx - 1].getLight3());
+                            // printf("%i ", lightSources[4] == vertices[vertexIdx - 1].getLight4());
+                            // printf("%i ", lightSources[5] == vertices[vertexIdx - 1].getLight5());
+                            // printf("%i ", lightSources[6] == vertices[vertexIdx - 1].getLight6());
+                            // printf("%i ", lightSources[7] == vertices[vertexIdx - 1].getLight7());
+                            // printf("\n");
                         }
                     }
                 }

@@ -27,28 +27,42 @@
 struct VoxelFace {
     u64 data1;
     u64 data2;
+    u64 data3;
+    u64 data4;
 
     VoxelFace() {}
     
-    VoxelFace(u64 x, u64 y, u64 z, u64 face_x, u64 face_y, u64 face_depth, u64 face_w, u64 face_h, u64 uv_x, u64 uv_y, u64 uv_w, u64 uv_h, u64 uv_rot, u64 dir, u64 type, RGBIS4 light, u16 ao) :
-    data1(  (x           <<  0) |
-            (y           <<  5) |
-            (z           << 10) |
-            (face_x      << 15) |
-            (face_y      << 19) |
-            (face_depth  << 23) |
-            (face_w      << 27) |
-            (face_h      << 31) |
-            (uv_x        << 35) |
-            (uv_y        << 39) |
-            (uv_w        << 43) |
-            (uv_h        << 47) |
-            (uv_rot      << 51) |
-            (dir         << 53) |
-            (type        << 56)),
+    VoxelFace(u64 x, u64 y, u64 z, u64 face_x, u64 face_y, u64 face_depth, u64 face_w, u64 face_h, u64 uv_x, u64 uv_y, u64 uv_w, u64 uv_h, u64 uv_rot, u64 dir, u64 type, RGBIS4 light[9], u16 ao) :
+    data1(  (    x           <<  0) |
+            (    y           <<  5) |
+            (    z           << 10) |
+            (    face_x      << 15) |
+            (    face_y      << 19) |
+            (    face_depth  << 23) |
+            (    face_w      << 27) |
+            (    face_h      << 31) |
+            (    uv_x        << 35) |
+            (    uv_y        << 39) |
+            (    uv_w        << 43) |
+            (    uv_h        << 47) |
+            (    uv_rot      << 51) |
+            (    dir         << 53) |
+            (    type        << 56)),
 
-    data2(  (light       <<  0) |
-            (ao          << 20))
+    data2(  (    light[0]    <<  0) |
+            (    light[1]    << 20) |
+            (u64(light[2])   << 40) |
+            (u64(light[3])   << 60)),
+
+    data3(  (    light[3]    >>  4) |
+            (    light[4]    << 16) |
+            (u64(light[5])   << 36) |
+            (u64(light[6])   << 56)),
+
+    data4(  (    light[6]    >>  8) |
+            (    light[7]    << 12) |
+            (u64(light[8])   << 32) |
+            (u64(ao)         << 52))
     {}
 
     inline  u8 getX() const {           return (data1 >>         0) & (     32 - 1); }
@@ -66,8 +80,19 @@ struct VoxelFace {
     inline  u8 getUVRot() const {       return (data1 >>        51) & (      4 - 1); }
     inline  u8 getDir() const {         return (data1 >>        53) & (      8 - 1); }
     inline  u8 getType() const {        return (data1 >>        56) & (    256 - 1); }
-    inline u32 getLight() const {       return (data2 >>         0) & (1048576 - 1); }
-    inline u16 getAo() const {          return (data2 >>        20) & (    512 - 1); }
+
+    // NOT TESTED
+    inline u32 getLight0() const {      return (data2 >>         0) & (1048576 - 1); }
+    inline u32 getLight1() const {      return (data2 >>        20) & (1048576 - 1); }
+    inline u32 getLight2() const {      return (data2 >>        40) & (1048576 - 1); }
+    inline u32 getLight3() const {      return (data2 >>        60) & (1048576 - 1) | ((data3 & ((1048576 - 1) >> 4)) << 4); }
+    inline u32 getLight4() const {      return (data3 >>        16) & (1048576 - 1); }
+    inline u32 getLight5() const {      return (data3 >>        36) & (1048576 - 1); }
+    inline u32 getLight6() const {      return (data3 >>        56) & (1048576 - 1) | ((data4 & ((1048576 - 1) >> 8)) << 8); }
+    inline u32 getLight7() const {      return (data4 >>        12) & (1048576 - 1); }
+    inline u32 getLight8() const {      return (data4 >>        32) & (1048576 - 1); }
+
+    inline u16 getAo() const {          return (data2 >>        52) & (    512 - 1); }
 };
 
 #endif

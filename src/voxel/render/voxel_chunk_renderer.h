@@ -108,32 +108,16 @@ public:
         #endif
     }
 
-    void sortWithin(const Vec3<u8>& pos) {
+    void sortWithin(const Vec3<i8>& pos) {
         ChunkMeshSortFace* faces = new ChunkMeshSortFace[voxel_count];
 
         for (u32 i = 0; i < voxel_count; i++) {
             VoxelFace face = voxel_faces[i];
-
             f64 dist = (Vec3<i64>(pos) - Vec3<i64>(face.getX(), face.getY(), face.getZ())).magnitude();
-
             faces[i] = ChunkMeshSortFace(dist, face);
         }
 
         std::sort(faces, faces + voxel_count, [&pos](const ChunkMeshSortFace& a, const ChunkMeshSortFace& b) {
-            // f64 aDist = (pos - Vec3<u8>(a.getX(), a.getY(), a.getZ())).magnitude();
-            // f64 bDist = (pos - Vec3<u8>(b.getX(), b.getY(), b.getZ())).magnitude();
-            // return aDist > bDist;
-
-            // Vec3<u8> aPos = pos - Vec3<u8>(a.getX(), a.getY(), a.getZ());
-            // Vec3<u8> bPos = pos - Vec3<u8>(b.getX(), b.getY(), b.getZ());
-            // u8 aDist = std::min(std::abs(aPos.x), std::min(std::abs(aPos.y), std::abs(aPos.z)));
-            // u8 bDist = std::min(std::abs(bPos.x), std::min(std::abs(bPos.y), std::abs(bPos.z)));
-            // return aDist > bDist;
-
-            // Vec3<u8> aPos = (pos - Vec3<u8>(a.getX(), a.getY(), a.getZ())).abs();
-            // Vec3<u8> bPos = (pos - Vec3<u8>(b.getX(), b.getY(), b.getZ())).abs();
-            // return bPos.hasSmallerDim(aPos);
-
             return a.dist > b.dist;
         });
 
@@ -141,33 +125,25 @@ public:
             voxel_faces[i] = faces[i].face;
         }
 
+        free(faces);
+
         updateMesh();
     }
 
-    void sortNeighbor(u8 dir) {
-        std::sort(voxel_faces, voxel_faces + voxel_count, [dir](const VoxelFace& a, const VoxelFace& b) {
-            u8 aPos;
-            u8 bPos;
-            if (dir & 0b100) {
-                // z
-                aPos = a.getZ();
-                bPos = b.getZ();
-            } else if (dir & 0b010) {
-                // y
-                aPos = a.getY();
-                bPos = b.getY();
-            } else {
-                // x
-                aPos = a.getX();
-                bPos = b.getX();
-            }
-            return aPos < bPos == (dir & 1);
-            // if (dir & 1) {
-            //     return bPos < aPos;
-            // }
-            // return aPos < bPos;
-        });
-    }
+    // TODO
+    // void sortNeighbor(u8 xSort, u8 ySort, u8 zSort) {
+    //     std::sort(voxel_faces, voxel_faces + voxel_count, [dir](const VoxelFace& a, const VoxelFace& b) {
+    //         u8 aX = a.getX();
+    //         u8 aY = a.getY();
+    //         u8 aZ = a.getZ();
+
+    //         u8 bX = b.getX();
+    //         u8 bY = b.getY();
+    //         u8 bZ = b.getZ();
+
+
+    //     });
+    // }
 
     void render(Shader& shaderProgram) const {
         #if GL_API == 0

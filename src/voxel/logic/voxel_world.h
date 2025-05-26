@@ -24,7 +24,7 @@ public:
     VoxelWorld(Vec3<u64>& _size) :
     size(_size),
     chunks((ChunkType*)malloc(sizeof(ChunkType) * _size.volume())) {
-
+        
     }
 
     constexpr u64 getChunkIndex(u64 x, u64 y, u64 z) const {

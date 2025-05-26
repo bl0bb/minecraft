@@ -15,7 +15,10 @@
 
 
 // util
-
+template <typename T>
+static inline i8 sign(T n) {
+    return n < 0 ? -1 : n > 0 ? 1 : 0;
+}
 
 // deg rad
 template<typename T>

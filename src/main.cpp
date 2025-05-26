@@ -781,18 +781,18 @@ int main() {
 
 
 
-            start = std::chrono::high_resolution_clock::now();
+            // start = std::chrono::high_resolution_clock::now();
 
-            for (u8 cx = 0; cx < CS; cx++) {
-                for (u8 cz = 0; cz < CS; cz++) {
-                    auto worldPos = Vec3<i64>(cx, CS - 1, cz) + Vec3<i64>(chunk.pos.x, 0, chunk.pos.y) * CS;
-                    ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, worldPos);
-                }
-            }
+            // for (u8 cx = 0; cx < CS; cx++) {
+            //     for (u8 cz = 0; cz < CS; cz++) {
+            //         auto worldPos = Vec3<i64>(cx, CS - 1, cz) + Vec3<i64>(chunk.pos.x, 0, chunk.pos.y) * CS;
+            //         ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, worldPos);
+            //     }
+            // }
 
-            end = std::chrono::high_resolution_clock::now();
-            elapsed = end - start;
-            std::cout << "Light gen: " << elapsed.count() << " ms\n";
+            // end = std::chrono::high_resolution_clock::now();
+            // elapsed = end - start;
+            // std::cout << "Light gen: " << elapsed.count() << " ms\n";
         }
     }
 
@@ -931,7 +931,6 @@ int main() {
 
 
     Shader geometryShader = Shader("voxel/main.vert", "voxel/main.frag");
-    Shader edgeShader = Shader("edge/edge.vert", "edge/edge.frag");
 
 
 
@@ -943,18 +942,18 @@ int main() {
 
 
 
-    TextRenderer textRenderer(16, 8, 8, 16 * 8, 16 * 8);
+    // TextRenderer textRenderer(16, 8, 8, 16 * 8, 16 * 8);
 
-    Shader textShader = Shader("text/main.vert", "text/main.frag");
+    // Shader textShader = Shader("text/main.vert", "text/main.frag");
 
-    for (int i = 0; i < 1; i++) {
-        int width, height, nrChannels;
-        u8* data = stbi_load("assets/fonts/ascii.png", &width, &height, &nrChannels, 0);
+    // for (int i = 0; i < 1; i++) {
+    //     int width, height, nrChannels;
+    //     u8* data = stbi_load("assets/fonts/ascii.png", &width, &height, &nrChannels, 0);
         
-        textRenderer.loadFont(data);
+    //     textRenderer.loadFont(data);
 
-        stbi_image_free(data);
-    }
+    //     stbi_image_free(data);
+    // }
     #elif GL_API == 2
     // TODO
     #endif
@@ -993,17 +992,31 @@ int main() {
                 for (i64 i = 0; i < voxelWorldRenderer.size.volume(); i++) {
                     VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[i];
                     if (camChunkPos == chunk.chunk->pos) {
-                        printf("sort within\n");
                         Vec3<i64> pos = camBlockPos - (camChunkPos * CS);
                         chunk.sortWithin(pos);
-                    } else {
-                        Vec3<i64> pos = camBlockPos - chunk.chunk->pos;
-                        chunk.sortNeighbor(5);
+                        break;
                     }
                 }
 
                 if (camChunkPos != lastCamChunkPos) {
+                    printf("sort chunks\n");
                     voxelWorldRenderer.sortChunks(camChunkPos);
+
+                    for (i64 i = 0; i < voxelWorldRenderer.size.volume(); i++) {
+                        VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[i];
+                        if (camChunkPos != chunk.chunk->pos) {
+                            Vec3<i64> pos = camBlockPos - (chunk.chunk->pos * CS);
+                            chunk.sortWithin(pos);
+
+                            // Vec3<i64> pos = camChunkPos - chunk.chunk->pos;
+                            // Vec3<i64> sortPos = Vec3<i64>(pos.x < 0 ? 0 : CS - 1, pos.y < 0 ? 0 : CS - 1, pos.z < 0 ? 0 : CS - 1);
+                            // chunk.sortWithin(sortPos);
+
+                            // TODO
+                            // Vec3<i64> pos = camChunkPos - chunk.chunk->pos;
+                            // chunk.sortNeighbor(sign(pos.x), sign(pos.y), sign(pos.z));
+                        }
+                    }
                 }
             }
 

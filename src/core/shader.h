@@ -49,6 +49,11 @@ public:
       std::stringstream buffer;
       buffer << fragmentFile.rdbuf();
       fShaderCode = buffer.str();
+      #if GL_API == 0
+      fShaderCode = "#version 460\n#define OGL_VERSION 46\n" + fShaderCode;
+      #elif GL_API == 1
+      fShaderCode = "#version 410\n#define OGL_VERSION 41\n" + fShaderCode;
+      #endif
     } else {
       std::cout << "COULD NOT OPEN SHADER FILE: " + fragment_name << std::endl;
     }
