@@ -1,41 +1,43 @@
 #if OGL_VERSION == 46
-#define LAYOUT_QUALIFIER std430
-#define DATA_LAYOUT layout(LAYOUT_QUALIFIER, binding = 0) readonly buffer instanceDataBuffer {\
+#define DATA_LAYOUT layout(std430, binding = 0) readonly buffer instanceDataBuffer {\
   QuadData instanceData[];\
 };
-
 #elif OGL_VERSION == 41
-#define LAYOUT_QUALIFIER std140
-#define DATA_LAYOUT layout(LAYOUT_QUALIFIER) uniform instanceDataBuffer {\
-    QuadData instanceData[];\
-};
+#define DATA_LAYOUT layout(location = 1) in uint quadData1;\
+layout(location = 2) in uint quadData2;\
+layout(location = 3) in uint quadData3;\
+layout(location = 4) in uint quadData4;\
+layout(location = 5) in uint quadData5;\
+layout(location = 6) in uint quadData6;\
+layout(location = 7) in uint quadData7;\
+layout(location = 8) in uint quadData8;
 #endif
 
 layout(location = 0) in vec3 aPos;
 
-out flat int texIndex;
+flat out int texIndex;
 out vec2 texUv;
-out flat uint Axis;
+flat out uint Axis;
 out vec2 FaceUV;
 
 
 
-out flat uint Light0;
-out flat uint Light1;
-out flat uint Light2;
-out flat uint Light3;
-out flat uint Light4;
-out flat uint Light5;
-out flat uint Light6;
-out flat uint Light7;
-out flat uint Light8;
+flat out uint Light0;
+flat out uint Light1;
+flat out uint Light2;
+flat out uint Light3;
+flat out uint Light4;
+flat out uint Light5;
+flat out uint Light6;
+flat out uint Light7;
+flat out uint Light8;
 
 // out vec3 LightColor;
 // out float Sunlight;
 
 
 
-out flat uint Ao;
+flat out uint Ao;
 out vec3 FragPos;
 
 struct QuadData {
@@ -109,33 +111,33 @@ void main() {
   uint data8 = quadData8;
   #endif
 
-  uint data_x =          (data1 >>         0) & (      32 - 1);
-  uint data_y =          (data1 >>         5) & (      32 - 1);
-  uint data_z =          (data1 >>        10) & (      32 - 1);
-  uint data_face_x =     (data1 >>        15) & (      16 - 1);
-  uint data_face_y =     (data1 >>        19) & (      16 - 1);
-  uint data_face_depth = (data1 >>        23) & (      16 - 1);
-  uint data_face_w =     (data1 >>        27) & (      16 - 1);
-  uint data_face_h =     ((data2 & 7) << 1) | ((data1 >> 31) & 1);
-  uint data_uv_x =       (data2 >> (35 - 32)) & (      16 - 1);
-  uint data_uv_y =       (data2 >> (39 - 32)) & (      16 - 1);
-  uint data_uv_w =       (data2 >> (43 - 32)) & (      16 - 1);
-  uint data_uv_h =       (data2 >> (47 - 32)) & (      16 - 1);
-  uint data_uv_rot =     (data2 >> (51 - 32)) & (       4 - 1);
-  uint data_dir =        (data2 >> (53 - 32)) & (       8 - 1);
-  uint data_type =       (data2 >> (56 - 32)) & (     256 - 1);
+  uint data_x =          (data1 >>         0) & (      32u - 1);
+  uint data_y =          (data1 >>         5) & (      32u - 1);
+  uint data_z =          (data1 >>        10) & (      32u - 1);
+  uint data_face_x =     (data1 >>        15) & (      16u - 1);
+  uint data_face_y =     (data1 >>        19) & (      16u - 1);
+  uint data_face_depth = (data1 >>        23) & (      16u - 1);
+  uint data_face_w =     (data1 >>        27) & (      16u - 1);
+  uint data_face_h =     ((data2 & 7u) << 1) | ((data1 >> 31) & 1u);
+  uint data_uv_x =       (data2 >> (35 - 32)) & (      16u - 1);
+  uint data_uv_y =       (data2 >> (39 - 32)) & (      16u - 1);
+  uint data_uv_w =       (data2 >> (43 - 32)) & (      16u - 1);
+  uint data_uv_h =       (data2 >> (47 - 32)) & (      16u - 1);
+  uint data_uv_rot =     (data2 >> (51 - 32)) & (       4u - 1);
+  uint data_dir =        (data2 >> (53 - 32)) & (       8u - 1);
+  uint data_type =       (data2 >> (56 - 32)) & (     256u - 1);
 
-  uint data_light0 =     (data3 >>         0) & ( 1048576 - 1);
-  uint data_light1 =     ((data4 & (256 - 1)) << 8) | ((data3 >> 20) & (4096 - 1));
-  uint data_light2 =     (data4 >> (40 - 32)) & (16777216 - 1);
-  uint data_light3 =     ((data5 & (65536 - 1)) << 16) | ((data4 >> (60 - 32)) & (16 - 1));
-  uint data_light4 =     ((data6 & (16 - 1)) << 4) | ((data5 >> 16) & (65536 - 1));
-  uint data_light5 =     (data6 >>         4) & ( 1048576 - 1);
-  uint data_light6 =     ((data7 & (4096 - 1)) << 8) | ((data6 >> (56 - 32)) & (256 - 1));
-  uint data_light7 =     (data7 >>        12) & ( 1048576 - 1);
-  uint data_light8 =     (data8 >> (32 - 32)) & ( 1048576 - 1);
+  uint data_light0 =     (data3 >>         0) & ( 1048576u - 1);
+  uint data_light1 =     ((data4 & (256u - 1)) << 8) | ((data3 >> 20) & (4096u - 1));
+  uint data_light2 =     (data4 >> (40 - 32)) & (16777216u - 1);
+  uint data_light3 =     ((data5 & (65536u - 1)) << 16) | ((data4 >> (60 - 32)) & (16u - 1));
+  uint data_light4 =     ((data6 & (16u - 1)) << 4) | ((data5 >> 16) & (65536u - 1));
+  uint data_light5 =     (data6 >>         4) & ( 1048576u - 1);
+  uint data_light6 =     ((data7 & (4096u - 1)) << 8) | ((data6 >> (56 - 32)) & (256u - 1));
+  uint data_light7 =     (data7 >>        12) & ( 1048576u - 1);
+  uint data_light8 =     (data8 >> (32 - 32)) & ( 1048576u - 1);
 
-  uint data_ao =         (data8 >> (52 - 32)) & (    512 - 1);
+  uint data_ao =         (data8 >> (52 - 32)) & (    512u - 1);
 
   vec3 offset = vec3(data_x, data_y, data_z);
 
@@ -147,7 +149,7 @@ void main() {
   vec2 uvSize = (vec2(data_uv_w, data_uv_h) + 1) / 16.0;
 
   uint axis = data_dir;
-  uint isNegative = axis & 1;
+  uint isNegative = axis & 1u;
 
   vec2 fixedPos = face_offset + (face_size * vec2(aPos));
 

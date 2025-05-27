@@ -30,9 +30,6 @@
 #include "core/array.h"
 #include "blocks/block.h"
 
-#include "shading/ambient_occlusion.h"
-#include "quad.h"
-
 #include "terrain_gen/terrain_gen.h"
 
 #include "text/text_renderer.h"
@@ -917,6 +914,8 @@ int main() {
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
 
+
+    #if GL_API == 0
     // Create SSBO for texture metadata
     GLuint texture_ssbo;
 
@@ -924,6 +923,15 @@ int main() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, texture_ssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER, array_size(block_textures) * sizeof(u32), block_textures_data, GL_STATIC_DRAW);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, texture_ssbo);
+    #elif GL_API == 1
+    // Create array buffer for texture metadata
+    GLuint texture_ubo;
+
+    glGenBuffers(1, &texture_ubo);
+    glBindBuffer(GL_UNIFORM_BUFFER, texture_ubo);
+    glBufferData(GL_UNIFORM_BUFFER, array_size(block_textures) * sizeof(u32), block_textures, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, texture_ubo);
+    #endif
 
 
 
@@ -1028,11 +1036,9 @@ int main() {
 
             // --------------------------------------
             // GEOMETRY PASS
-            #if GL_API == 0
+            #if GL_API == 0 || GL_API == 1
             // glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            #elif GL_API == 1
-            // TODO
             #elif GL_API == 2
             // TODO
             #endif

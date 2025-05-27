@@ -36,7 +36,8 @@ public:
     GLuint vao, vbo, ebo;
     GLuint voxel_ssbo;
     #elif GL_API == 1
-    // TODO
+    // Create array buffer for texture metadata
+    GLuint texture_ubo;
     #elif GL_API == 2
     // TODO
     #endif
@@ -46,17 +47,17 @@ public:
     }
 
     void init() {
-        #if GL_API == 0
-        // Define your cube vertices (positions only for simplicity)
-        f32 cubeVertices[] = {
+        #if GL_API == 0 || GL_API == 1
+        // Define your quad vertices (positions only for simplicity)
+        f32 quadVertices[] = {
             0, 0, 0,
             1, 0, 0,
             1, 1, 0,
             0, 1, 0,
         };
 
-        // Define indices for the cube (using an IBO)
-        unsigned int cubeIndices[] = {
+        // Define indices for the quad (using an IBO)
+        unsigned int quadIndices[] = {
             2, 1, 0,
             0, 3, 2,
         };
@@ -65,15 +66,15 @@ public:
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
 
-        // Create VBO for cube vertices
+        // Create VBO for quad vertices
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
 
-        // Create EBO for cube indices
+        // Create EBO for quad indices
         glGenBuffers(1, &ebo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
 
         // Setup vertex attribute for positions
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(f32), (void*)0);
@@ -82,10 +83,23 @@ public:
         // Unbind VAO
         glBindVertexArray(0);
 
-        // Create SSBO for instance positions
+        // Create SSBO for quad data
+        #if GL_API == 0
         glGenBuffers(1, &voxel_ssbo);
         #elif GL_API == 1
-        // TODO
+        auto loadDataUBO = [](GLuint ubo) {
+            glGenBuffers(1, &ubo);
+        }
+
+        loadDataUBO(voxel_data1_ubo);
+        loadDataUBO(voxel_data2_ubo);
+        loadDataUBO(voxel_data3_ubo);
+        loadDataUBO(voxel_data4_ubo);
+        loadDataUBO(voxel_data5_ubo);
+        loadDataUBO(voxel_data6_ubo);
+        loadDataUBO(voxel_data7_ubo);
+        loadDataUBO(voxel_data8_ubo);
+        #endif
         #elif GL_API == 2
         // TODO
         #endif
@@ -102,7 +116,39 @@ public:
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, CS_P3 * sizeof(VoxelFace), voxel_faces, GL_STATIC_DRAW);
         #elif GL_API == 1
-        // TODO
+        // data1,2,3,4 is 64 bits, split into 2 u32
+        u32 data[8][voxel_count];
+        for (u8 i = 0; i < voxel_count; i++) {
+            VoxelFace face = voxel_faces[i];
+            for (u8 j = 0; j < 8; j++) {
+                u8 shift = (j & 1) ? 32 : 0;
+                u8 data_i = j >> 1;
+
+                u64 dataBlock;
+                if (data_i == 0) dataBlock = face.data1;
+                else if (data_i == 1) dataBlock = face.data2;
+                else if (data_i == 2) dataBlock = face.data3;
+                else dataBlock = face.data4;
+
+                dataBlock = (dataBlock >> shift) & ((1 << 32) - 1);
+                data[j][i] = dataBlock;
+            }
+        }
+
+        auto loadDataUBO = [data](u8 i, GLuint ubo) {
+            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+            glBufferData(GL_UNIFORM_BUFFER, CS_P3 * sizeof(VoxelFace), data[i], GL_STATIC_DRAW);
+            glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
+        }
+
+        loadDataUBO(0, voxel_data1_ubo);
+        loadDataUBO(1, voxel_data2_ubo);
+        loadDataUBO(2, voxel_data3_ubo);
+        loadDataUBO(3, voxel_data4_ubo);
+        loadDataUBO(4, voxel_data5_ubo);
+        loadDataUBO(5, voxel_data6_ubo);
+        loadDataUBO(6, voxel_data7_ubo);
+        loadDataUBO(7, voxel_data8_ubo);
         #elif GL_API == 2
         // TODO
         #endif
@@ -146,18 +192,27 @@ public:
     // }
 
     void render(Shader& shaderProgram) const {
-        #if GL_API == 0
+        #if GL_API == 0 || GL_API == 1
         // Bind VAO and draw
         glBindVertexArray(vao);
 
+        #if GL_API == 0
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
+        #elif GL_API == 1
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, voxel_data1_ubo);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 1, voxel_data2_ubo);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 2, voxel_data3_ubo);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 3, voxel_data4_ubo);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 4, voxel_data5_ubo);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 5, voxel_data6_ubo);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 6, voxel_data7_ubo);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 7, voxel_data8_ubo);
+        #endif
 
         shaderProgram.setIVec3("chunk_pos", chunk->pos);
 
         glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, voxel_count);
         glBindVertexArray(0);
-        #elif GL_API == 1
-        // TODO
         #elif GL_API == 2
         // TODO
         #endif

@@ -1,54 +1,63 @@
-layout(binding = 0) uniform sampler2DArray texArray;
 
-layout(binding = 1) readonly buffer texDataBuffer {
-  uint texData[];
+#if OGL_VERSION == 46
+layout(binding = 0) uniform sampler2DArray texArray;
+#define TEX_LAYOUT layout(binding = 1) readonly buffer texDataBuffer {\
+  uint texData[];\
 };
+#elif OGL_VERSION == 41
+uniform sampler2DArray texArray;
+#define TEX_LAYOUT layout(std140) uniform texDataBuffer {\
+    uint texData[69];\
+};
+#endif
 
 layout(location = 1) out vec4 gPosition;
 layout(location = 2) out vec4 gNormal;
 
-in flat int texIndex;
+flat in int texIndex;
 in vec2 texUv;
-in flat uint Axis;
+flat in uint Axis;
 in vec2 FaceUV;
 
 
-in flat uint Light0;
-in flat uint Light1;
-in flat uint Light2;
-in flat uint Light3;
-in flat uint Light4;
-in flat uint Light5;
-in flat uint Light6;
-in flat uint Light7;
-in flat uint Light8;
+flat in uint Light0;
+flat in uint Light1;
+flat in uint Light2;
+flat in uint Light3;
+flat in uint Light4;
+flat in uint Light5;
+flat in uint Light6;
+flat in uint Light7;
+flat in uint Light8;
 
 // in vec3 LightColor;
 // in float Sunlight;
 
 
-in flat uint Ao;
+flat in uint Ao;
 in vec3 FragPos;
 
 out vec4 FragColor;
 
-const vec3 normalLookup[6] = {
+TEX_LAYOUT
+
+const vec3 normalLookup[6] = vec3[6](
   vec3( 1,  0,  0 ),
   vec3(-1,  0,  0 ),
   vec3( 0,  1,  0 ),
   vec3( 0, -1,  0 ),
   vec3( 0,  0,  1 ),
-  vec3( 0,  0, -1 ),
-};
+  vec3( 0,  0, -1 )
+);
 
-const float lightLookup[6] = {
+const float lightLookup[6] = float[6](
   0.9,
   0.6,
   1.0,
   0.4,
   0.6,
-  0.9,
-};
+  0.9
+);
 
 // Hardcoded corners
 vec2 c1 = vec2(1.0, 1.0);
@@ -69,15 +78,15 @@ float getAO(float side1, float side2, float corner) {
 
 vec4 fixLight(uint light) {
   return vec4(
-    (light >> 0) & 15, // r
-    (light >> 4) & 15, // g
-    (light >> 8) & 15, // b
-    (light >> 16) & 15 // sunlight
+    (light >> 0) & 15u, // r
+    (light >> 4) & 15u, // g
+    (light >> 8) & 15u, // b
+    (light >> 16) & 15u // sunlight
   ) / 15.0;
 }
 
 void main() {
-  bool isNegative = (Axis & 1) == 1;
+  bool isNegative = (Axis & 1u) == 1;
 
   // texIndex selects the layer of the array
   vec4 sampled = texture(texArray, vec3(texUv, texIndex));
@@ -168,16 +177,16 @@ void main() {
 
   // ao
 
-  uint ao1 = (Ao >> 0) & 1;
-  uint ao2 = (Ao >> 1) & 1;
-  uint ao3 = (Ao >> 2) & 1;
-  uint ao4 = (Ao >> 3) & 1;
-  uint ao5 = (Ao >> 4) & 1;
-  uint ao6 = (Ao >> 5) & 1;
-  uint ao7 = (Ao >> 6) & 1;
-  uint ao8 = (Ao >> 7) & 1;
+  uint ao1 = (Ao >> 0) & 1u;
+  uint ao2 = (Ao >> 1) & 1u;
+  uint ao3 = (Ao >> 2) & 1u;
+  uint ao4 = (Ao >> 3) & 1u;
+  uint ao5 = (Ao >> 4) & 1u;
+  uint ao6 = (Ao >> 5) & 1u;
+  uint ao7 = (Ao >> 6) & 1u;
+  uint ao8 = (Ao >> 7) & 1u;
   // center
-  uint ao9 = (Ao >> 8) & 1;
+  uint ao9 = (Ao >> 8) & 1u;
 
   // Compute AO for each corner of the quad
   float aoTR = getAO(ao4, ao2, ao3); // top-right
