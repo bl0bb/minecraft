@@ -363,16 +363,11 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                             // light
                             lightSources[neighbor_i] = lightSources[8];
 
-                            // RGBIS4* lightPtr;
-                            // lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
-
 
 
                             // ao
                             ao_mask |= 1 << neighbor_i;
                         }
-
-
 
 
 
@@ -393,16 +388,6 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
                             // lightChunk.voxels[get_zxy_index(x, y, z)]
                             vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture, lightSources, ao_mask);
-
-                            // printf("%i ", lightSources[0] == vertices[vertexIdx - 1].getLight0());
-                            // printf("%i ", lightSources[1] == vertices[vertexIdx - 1].getLight1());
-                            // printf("%i ", lightSources[2] == vertices[vertexIdx - 1].getLight2());
-                            // printf("%i ", lightSources[3] == vertices[vertexIdx - 1].getLight3());
-                            // printf("%i ", lightSources[4] == vertices[vertexIdx - 1].getLight4());
-                            // printf("%i ", lightSources[5] == vertices[vertexIdx - 1].getLight5());
-                            // printf("%i ", lightSources[6] == vertices[vertexIdx - 1].getLight6());
-                            // printf("%i ", lightSources[7] == vertices[vertexIdx - 1].getLight7());
-                            // printf("\n");
                         }
                     }
                 }

@@ -128,11 +128,11 @@ void main() {
   uint data_type =       (data2 >> (56 - 32)) & (     256u - 1);
 
   uint data_light0 =     (data3 >>         0) & ( 1048576u - 1);
-  uint data_light1 =     ((data4 & (256u - 1)) << 8) | ((data3 >> 20) & (4096u - 1));
+  uint data_light1 =     ((data4 & (256u - 1)) << 12) | ((data3 >> 20) & (4096u - 1));
   uint data_light2 =     (data4 >> (40 - 32)) & (16777216u - 1);
-  uint data_light3 =     ((data5 & (65536u - 1)) << 16) | ((data4 >> (60 - 32)) & (16u - 1));
-  uint data_light4 =     ((data6 & (16u - 1)) << 4) | ((data5 >> 16) & (65536u - 1));
-  uint data_light5 =     (data6 >>         4) & ( 1048576u - 1);
+  uint data_light3 =     ((data5 & (65536u - 1)) << 4) | ((data4 >> (60 - 32)) & (16u - 1));
+  uint data_light4 =     ((data6 & (16u - 1)) << 16) | ((data5 >> 16) & (65536u - 1));
+  uint data_light5 =     (data6 >>    (36 - 32)) & ( 1048576u - 1);
   uint data_light6 =     ((data7 & (4096u - 1)) << 8) | ((data6 >> (56 - 32)) & (256u - 1));
   uint data_light7 =     (data7 >>        12) & ( 1048576u - 1);
   uint data_light8 =     (data8 >> (32 - 32)) & ( 1048576u - 1);

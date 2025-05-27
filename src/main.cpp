@@ -778,18 +778,18 @@ int main() {
 
 
 
-            // start = std::chrono::high_resolution_clock::now();
+            start = std::chrono::high_resolution_clock::now();
 
-            // for (u8 cx = 0; cx < CS; cx++) {
-            //     for (u8 cz = 0; cz < CS; cz++) {
-            //         auto worldPos = Vec3<i64>(cx, CS - 1, cz) + Vec3<i64>(chunk.pos.x, 0, chunk.pos.y) * CS;
-            //         ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, worldPos);
-            //     }
-            // }
+            for (u8 cx = 0; cx < CS; cx++) {
+                for (u8 cz = 0; cz < CS; cz++) {
+                    auto worldPos = Vec3<i64>(cx, CS - 1, cz) + Vec3<i64>(chunk.pos.x, 0, chunk.pos.y) * CS;
+                    ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, worldPos);
+                }
+            }
 
-            // end = std::chrono::high_resolution_clock::now();
-            // elapsed = end - start;
-            // std::cout << "Light gen: " << elapsed.count() << " ms\n";
+            end = std::chrono::high_resolution_clock::now();
+            elapsed = end - start;
+            std::cout << "Light gen: " << elapsed.count() << " ms\n";
         }
     }
 
@@ -950,18 +950,18 @@ int main() {
 
 
 
-    // TextRenderer textRenderer(16, 8, 8, 16 * 8, 16 * 8);
+    TextRenderer textRenderer(16, 8, 8, 16 * 8, 16 * 8);
 
-    // Shader textShader = Shader("text/main.vert", "text/main.frag");
+    Shader textShader = Shader("text/main.vert", "text/main.frag");
 
-    // for (int i = 0; i < 1; i++) {
-    //     int width, height, nrChannels;
-    //     u8* data = stbi_load("assets/fonts/ascii.png", &width, &height, &nrChannels, 0);
+    for (int i = 0; i < 1; i++) {
+        int width, height, nrChannels;
+        u8* data = stbi_load("assets/fonts/ascii.png", &width, &height, &nrChannels, 0);
         
-    //     textRenderer.loadFont(data);
+        textRenderer.loadFont(data);
 
-    //     stbi_image_free(data);
-    // }
+        stbi_image_free(data);
+    }
     #elif GL_API == 2
     // TODO
     #endif
@@ -1087,20 +1087,26 @@ int main() {
 
             #if GL_API == 0 || GL_API == 1
             voxelWorldRenderer.render(geometryShader);
+
+            // text
+            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 0, 0, 20, textShader.ID);
+            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 0.5, 0.5, 20, textShader.ID);
+            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 0.5, -0.5, 20, textShader.ID);
+            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", -0.5, 0.5, 20, textShader.ID);
+            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", -0.5, -0.5, 20, textShader.ID);
+            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 50, 50, 20, textShader.ID);
+            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", -50, -50, 20, textShader.ID);
+            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 50, -50, 20, textShader.ID);
+
+            // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            // --------------------------------------
             #elif GL_API == 2
             // TODO
             #endif
 
-            // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            // --------------------------------------
 
 
 
-
-
-
-            // text
-            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 50, 50, 100, textShader.ID);
 
 
 

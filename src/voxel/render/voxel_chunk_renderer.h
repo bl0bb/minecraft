@@ -31,13 +31,25 @@ public:
     VoxelFace* voxel_faces;
     u32 voxel_count;
 
-    #if GL_API == 0
+    #if GL_API == 0 || GL_API == 1
     // voxel faces
     GLuint vao, vbo, ebo;
+
+    #if GL_API == 0
     GLuint voxel_ssbo;
     #elif GL_API == 1
-    // Create array buffer for texture metadata
     GLuint texture_ubo;
+
+    GLuint voxel_data1_ubo;
+    GLuint voxel_data2_ubo;
+    GLuint voxel_data3_ubo;
+    GLuint voxel_data4_ubo;
+    GLuint voxel_data5_ubo;
+    GLuint voxel_data6_ubo;
+    GLuint voxel_data7_ubo;
+    GLuint voxel_data8_ubo;
+    #endif
+
     #elif GL_API == 2
     // TODO
     #endif
@@ -87,18 +99,18 @@ public:
         #if GL_API == 0
         glGenBuffers(1, &voxel_ssbo);
         #elif GL_API == 1
-        auto loadDataUBO = [](GLuint ubo) {
+        auto loadData = [](GLuint ubo) {
             glGenBuffers(1, &ubo);
-        }
+        };
 
-        loadDataUBO(voxel_data1_ubo);
-        loadDataUBO(voxel_data2_ubo);
-        loadDataUBO(voxel_data3_ubo);
-        loadDataUBO(voxel_data4_ubo);
-        loadDataUBO(voxel_data5_ubo);
-        loadDataUBO(voxel_data6_ubo);
-        loadDataUBO(voxel_data7_ubo);
-        loadDataUBO(voxel_data8_ubo);
+        loadData(voxel_data1_ubo);
+        loadData(voxel_data2_ubo);
+        loadData(voxel_data3_ubo);
+        loadData(voxel_data4_ubo);
+        loadData(voxel_data5_ubo);
+        loadData(voxel_data6_ubo);
+        loadData(voxel_data7_ubo);
+        loadData(voxel_data8_ubo);
         #endif
         #elif GL_API == 2
         // TODO
@@ -117,8 +129,17 @@ public:
         glBufferData(GL_SHADER_STORAGE_BUFFER, CS_P3 * sizeof(VoxelFace), voxel_faces, GL_STATIC_DRAW);
         #elif GL_API == 1
         // data1,2,3,4 is 64 bits, split into 2 u32
-        u32 data[8][voxel_count];
-        for (u8 i = 0; i < voxel_count; i++) {
+        // u32 data[8][voxel_count];
+        u32** data = (u32**)malloc(sizeof(u32*) * 8);
+        for (u8 i = 0; i < 8; i++) {
+            data[i] = (u32*)malloc(sizeof(u32) * voxel_count);
+        }
+        printf("fluh 1 %i\n", voxel_count);
+        for (u32 i = 0; i < voxel_count; i++) {
+            if (i == 2372) {
+                printf("BREAK %i %i\n", voxel_count, voxel_count - 1);
+                break;
+            }
             VoxelFace face = voxel_faces[i];
             for (u8 j = 0; j < 8; j++) {
                 u8 shift = (j & 1) ? 32 : 0;
@@ -130,25 +151,33 @@ public:
                 else if (data_i == 2) dataBlock = face.data3;
                 else dataBlock = face.data4;
 
-                dataBlock = (dataBlock >> shift) & ((1 << 32) - 1);
+                dataBlock = (dataBlock >> shift) & ((u64(1) << 32) - 1);
                 data[j][i] = dataBlock;
             }
         }
+        printf("fluh 2\n");
 
-        auto loadDataUBO = [data](u8 i, GLuint ubo) {
+        printf("fluh 3 %i\n", sizeof(VoxelFace));
+        auto loadData = [this, data](u8 i, GLuint ubo) {
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-            glBufferData(GL_UNIFORM_BUFFER, CS_P3 * sizeof(VoxelFace), data[i], GL_STATIC_DRAW);
+            glBufferData(GL_UNIFORM_BUFFER, voxel_count * sizeof(VoxelFace), data[i], GL_STATIC_DRAW);
             glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
-        }
+        };
 
-        loadDataUBO(0, voxel_data1_ubo);
-        loadDataUBO(1, voxel_data2_ubo);
-        loadDataUBO(2, voxel_data3_ubo);
-        loadDataUBO(3, voxel_data4_ubo);
-        loadDataUBO(4, voxel_data5_ubo);
-        loadDataUBO(5, voxel_data6_ubo);
-        loadDataUBO(6, voxel_data7_ubo);
-        loadDataUBO(7, voxel_data8_ubo);
+        loadData(0, voxel_data1_ubo);
+        loadData(1, voxel_data2_ubo);
+        loadData(2, voxel_data3_ubo);
+        loadData(3, voxel_data4_ubo);
+        loadData(4, voxel_data5_ubo);
+        loadData(5, voxel_data6_ubo);
+        loadData(6, voxel_data7_ubo);
+        loadData(7, voxel_data8_ubo);
+        printf("fluh 4\n");
+
+        for (u8 i = 0; i < 8; i++) {
+            free(data[i]);
+        }
+        free(data);
         #elif GL_API == 2
         // TODO
         #endif

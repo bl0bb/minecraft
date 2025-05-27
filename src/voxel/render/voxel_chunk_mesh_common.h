@@ -49,18 +49,18 @@ struct VoxelFace {
             (    dir         << 53) |
             (    type        << 56)),
 
-    data2(  (    light[0]    <<  0) |
-            (    light[1]    << 20) |
+    data2(  (u64(light[0])   <<  0) |
+            (u64(light[1])   << 20) |
             (u64(light[2])   << 40) |
             (u64(light[3])   << 60)),
 
-    data3(  (    light[3]    >>  4) |
-            (    light[4]    << 16) |
+    data3(  (u64(light[3])   >>  4) |
+            (u64(light[4])   << 16) |
             (u64(light[5])   << 36) |
             (u64(light[6])   << 56)),
 
-    data4(  (    light[6]    >>  8) |
-            (    light[7]    << 12) |
+    data4(  (u64(light[6])   >>  8) |
+            (u64(light[7])   << 12) |
             (u64(light[8])   << 32) |
             (u64(ao)         << 52))
     {}

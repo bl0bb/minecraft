@@ -85,6 +85,12 @@ vec4 fixLight(uint light) {
   ) / 15.0;
 }
 
+// Function to compute light at each corner
+vec4 getLight(vec4 side1, vec4 side2, vec4 corner, vec4 center) {
+  // return (side1 + side2 + corner) / 3.0;
+  return (side1 + side2 + corner + center) / 4.0;
+}
+
 void main() {
   bool isNegative = (Axis & 1u) == 1;
 
@@ -143,6 +149,7 @@ void main() {
 
   
 
+  // neighbors
   vec4 fixedLight0 = fixLight(Light0);
   vec4 fixedLight1 = fixLight(Light1);
   vec4 fixedLight2 = fixLight(Light2);
@@ -155,20 +162,17 @@ void main() {
   vec4 fixedLight8 = fixLight(Light8);
 
   // Compute light for each corner of the quad
-  vec4 lightTR = fixedLight2; // top-right
-  vec4 lightTL = fixedLight4; // top-left
-  vec4 lightBL = fixedLight6; // bottom-left
-  vec4 lightBR = fixedLight0; // bottom-right
+  vec4 lightTR = getLight(fixedLight3, fixedLight1, fixedLight2, fixedLight8); // top-right
+  vec4 lightTL = getLight(fixedLight3, fixedLight5, fixedLight4, fixedLight8); // top-left
+  vec4 lightBL = getLight(fixedLight7, fixedLight5, fixedLight6, fixedLight8); // bottom-left
+  vec4 lightBR = getLight(fixedLight7, fixedLight1, fixedLight0, fixedLight8); // bottom-right
 
   // Interpolate AO based on UV
   vec4 lightTop = mix(lightTL, lightTR, fixedFaceUV.x);
   vec4 lightBottom = mix(lightBL, lightBR, fixedFaceUV.x);
 
-  vec4 mixedLight = mix(lightTop, lightBottom, fixedFaceUV.y) * fixedLight8;
-  FragColor *= vec4(vec3(mixedLight), 1.0);
-
-  // vec4 fixedLight8 = fixLight(Light8);
-  // FragColor *= vec4(vec3(fixedLight8), 1.0);
+  vec4 mixedLight = mix(lightTop, lightBottom, fixedFaceUV.y);
+  FragColor *= vec4(clamp(vec3(mixedLight) + mixedLight.w, 0.0, 1.0), 1.0);
 
 
 
