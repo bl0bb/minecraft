@@ -137,8 +137,8 @@ public:
         printf("fluh 1 %i\n", voxel_count);
         for (u32 i = 0; i < voxel_count; i++) {
             if (i == 2372) {
-                printf("BREAK %i %i\n", voxel_count, voxel_count - 1);
-                break;
+                // printf("BREAK %i %i\n", voxel_count, voxel_count - 1);
+                // break;
             }
             VoxelFace face = voxel_faces[i];
             for (u8 j = 0; j < 8; j++) {
@@ -157,7 +157,6 @@ public:
         }
         printf("fluh 2\n");
 
-        printf("fluh 3 %i\n", sizeof(VoxelFace));
         auto loadData = [this, data](u8 i, GLuint ubo) {
             glBindBuffer(GL_UNIFORM_BUFFER, ubo);
             glBufferData(GL_UNIFORM_BUFFER, voxel_count * sizeof(VoxelFace), data[i], GL_STATIC_DRAW);
@@ -172,7 +171,7 @@ public:
         loadData(5, voxel_data6_ubo);
         loadData(6, voxel_data7_ubo);
         loadData(7, voxel_data8_ubo);
-        printf("fluh 4\n");
+        printf("fluh 3\n");
 
         for (u8 i = 0; i < 8; i++) {
             free(data[i]);
@@ -228,14 +227,7 @@ public:
         #if GL_API == 0
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
         #elif GL_API == 1
-        glBindBufferBase(GL_UNIFORM_BUFFER, 0, voxel_data1_ubo);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 1, voxel_data2_ubo);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 2, voxel_data3_ubo);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 3, voxel_data4_ubo);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 4, voxel_data5_ubo);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 5, voxel_data6_ubo);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 6, voxel_data7_ubo);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 7, voxel_data8_ubo);
+        
         #endif
 
         shaderProgram.setIVec3("chunk_pos", chunk->pos);
