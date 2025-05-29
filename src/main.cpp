@@ -34,8 +34,10 @@
 
 #include "text/text_renderer.h"
 
-#include "file_parsers/nbt_parser.h"
 #include "nbt/nbt.h"
+
+#include "file_parsers/nbt_parser.h"
+#include "file_parsers/mca_parser.h"
 
 // TODO: add quad support for rendering and for obj importing??
 
@@ -520,6 +522,16 @@ int main() {
 
 
 
+    {
+        for (u64 x = 0; x < 16; x++) {
+            for (u64 z = 0; z < 16; z++) {
+                VoxelWorlds::placeVoxel(voxelBlockWorld, 20 + x, 10, -40 + z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+                VoxelWorlds::placeVoxel(voxelBlockWorld, -20 + x, 7, -40 + z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+            }
+        }
+    }
+
+
 
 
 
@@ -761,46 +773,53 @@ int main() {
         ChunkLight::add_light(voxelBlockWorld, voxelLightWorld, pos, Colors::createRGBIS4(15, 15, 15, 0, 0));
     }
 
+    {
+        // parse .mca
+        // parseMCA("assets/maps/notre_dame_medieval_city/region/r.1.0.mca");
+    }
+
     // light
     for (i64 x = 0; x < world_size.x; x++) {
         for (i64 z = 0; z < world_size.z; z++) {
-            VoxelHeightChunk& chunk = voxelHeightWorld.chunks[voxelHeightWorld.getChunkIndex(x, z)];
-            chunk.pos = Vec2<i64>(x, z) - world_chunk_height_center;
+            VoxelHeightChunk& heightChunk = voxelHeightWorld.chunks[voxelHeightWorld.getChunkIndex(x, z)];
+            heightChunk.pos = Vec2<i64>(x, z) - world_chunk_height_center;
 
 
             auto start = std::chrono::high_resolution_clock::now();
 
-            chunk.calculateHeightmap(voxelBlockWorld, voxelBlockStateWorld);
+            heightChunk.calculateHeightmap(voxelBlockWorld, voxelBlockStateWorld);
 
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::milli> elapsed = end - start;
             std::cout << "Heightmap gen: " << elapsed.count() << " ms\n";
+        }
+    }
 
+    // light
+    for (i64 x = 0; x < world_size.x; x++) {
+        for (i64 z = 0; z < world_size.z; z++) {
+            VoxelHeightChunk& heightChunk = voxelHeightWorld.chunks[voxelHeightWorld.getChunkIndex(x, z)];
+            for (i64 y = 0; y < world_size.y; y++) {
+                VoxelBlockChunk& blockChunk = voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)];
+                VoxelLightChunk& lightChunk = voxelLightWorld.chunks[voxelLightWorld.getChunkIndex(x, y, z)];
 
+                auto start = std::chrono::high_resolution_clock::now();
 
-            start = std::chrono::high_resolution_clock::now();
+                ChunkLight::apply_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, blockChunk, heightChunk, lightChunk);
 
-            for (u8 cx = 0; cx < CS; cx++) {
-                for (u8 cz = 0; cz < CS; cz++) {
-                    auto worldPos = Vec3<i64>(cx, CS - 1, cz) + Vec3<i64>(chunk.pos.x, 0, chunk.pos.y) * CS;
-                    ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, worldPos);
-                }
+                auto end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double, std::milli> elapsed = end - start;
+                std::cout << "Light gen: " << elapsed.count() << " ms\n";
             }
-
-            end = std::chrono::high_resolution_clock::now();
-            elapsed = end - start;
-            std::cout << "Light gen: " << elapsed.count() << " ms\n";
         }
     }
 
 
-    // mesh / light
+    // mesh
     for (i64 x = 0; x < world_size.x; x++) {
         for (i64 y = 0; y < world_size.y; y++) {
             for (i64 z = 0; z < world_size.z; z++) {
-                // render
                 VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[voxelWorldRenderer.getChunkIndex(x, y, z)];
-
 
                 auto start = std::chrono::high_resolution_clock::now();
 

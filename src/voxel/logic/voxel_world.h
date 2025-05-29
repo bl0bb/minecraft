@@ -32,9 +32,9 @@ public:
     }
 
     constexpr u64 chunkPosToChunkIndex(i64 x, i64 y, i64 z) const {
-        i64 chunk_pos_x = (i64(size.x) / 2) + x;
-        i64 chunk_pos_y = (i64(size.y) / 2) + y;
-        i64 chunk_pos_z = (i64(size.z) / 2) + z;
+        i64 chunk_pos_x = (size.x / 2) + x;
+        i64 chunk_pos_y = (size.y / 2) + y;
+        i64 chunk_pos_z = (size.z / 2) + z;
         return chunk_pos_z + (chunk_pos_x * size.z) + (chunk_pos_y * size.x * size.z);
     }
 
@@ -45,11 +45,24 @@ public:
         if (pos.z < 0) result.z--;
         return result;
     }
+
+    constexpr bool isChunkPosIndexInWorld(const Vec3<i64>& pos) {
+        return (pos.x >= 0 && pos.x < size.x) && (pos.y >= 0 && pos.y < size.y) && (pos.z >= 0 && pos.z < size.z);
+    }
+
+    constexpr bool isChunkPosInWorld(const Vec3<i64>& pos) {
+        return isChunkPosIndexInWorld(chunkPosToChunkIndex(pos.x, pos.y, pos.z));
+    }
 };
 
 
 
 namespace VoxelWorlds {
+
+template<typename T>
+constexpr bool isInChunkBounds(const Vec3<T>& pos) {
+    return (pos.x >= 0 && pos.x < CS) && (pos.y >= 0 && pos.y < CS) && (pos.z >= 0 && pos.z < CS);
+}
 
 template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type, typename ChunkType = VoxelWorldType::chunk_type>
 constexpr bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxel_ptr) {

@@ -73,16 +73,19 @@ public:
         return z + (x * size.y);
     }
 
+    inline Vec2<u64> chunkPosToChunkPosIndex(i64 x, i64 z) const {
+        u64 chunk_pos_x = (size.x / 2) + x;
+        u64 chunk_pos_z = (size.y / 2) + z;
+        return {chunk_pos_x, chunk_pos_z};
+    }
+
     inline u64 chunkPosToChunkIndex(u64 x, u64 z) const {
-        i64 chunk_pos_x = (i64(size.x) / 2) + x;
-        i64 chunk_pos_z = (i64(size.y) / 2) + z;
-        return getChunkIndex(chunk_pos_x, chunk_pos_z);
+        Vec2<u64> pos = chunkPosToChunkPosIndex(x, z);
+        return getChunkIndex(pos.x, pos.y);
     }
 
     inline Vec2<i64> worldToChunkPos(i64 x, i64 z) const {
-        i64 chunk_pos_x = (i64(size.x) / 2) + floor(f64(x) / f64(CS));
-        i64 chunk_pos_z = (i64(size.y) / 2) + floor(f64(z) / f64(CS));
-        return {chunk_pos_x, chunk_pos_z};
+        return chunkPosToChunkPosIndex(floor(f64(x) / f64(CS)), floor(f64(z) / f64(CS)));
     }
 
     inline u64 worldToChunkIndex(i64 x, i64 z) const {
@@ -93,6 +96,14 @@ public:
     inline i64 heightAt(i64 x, i64 z) const {
         Vec2<i64> chunkPos = worldToChunkPos(x, z);
         return chunks[getChunkIndex(chunkPos.x, chunkPos.y)].heightAt(((x % CS) + CS) % CS, ((z % CS) + CS) % CS);
+    }
+
+    inline bool isChunkPosIndexInWorld(const Vec2<i64>& pos) const {
+        return (pos.x >= 0 && pos.x < size.x) && (pos.y >= 0 && pos.y < size.y);
+    }
+
+    inline bool isChunkPosInWorld(const Vec2<i64>& pos) const {
+        return isChunkPosIndexInWorld(chunkPosToChunkPosIndex(pos.x, pos.y));
     }
 };
 

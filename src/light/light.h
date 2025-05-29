@@ -9,6 +9,25 @@
 #include "../voxel/height/voxel_height_world.h"
 #include "../voxel/light/voxel_light_world.h"
 
+
+
+
+
+
+// TODO: ugly ahh way of getting element at index in queue
+template <typename T>
+T getElementAt(std::queue<T> q, size_t index) {
+    if (index >= q.size()) {
+        throw std::out_of_range("Index out of range");
+    }
+    for (size_t i = 0; i < index; ++i) {
+        q.pop();
+    }
+    return q.front();
+}
+
+
+
 // Directions
 // Start with DOWN because it makes sunlight propagate faster
 const Vec3<i8> directions[6] = {
@@ -30,7 +49,6 @@ const Vec3<i8> directions[6] = {
 template<typename LightType>
 using LightQueue = std::queue<std::tuple<Vec3<i64>, LightType>>;
 
-typedef LightQueue<RGBIS4> BlockLightQueue;
 typedef LightQueue<RGBIS4> AllLightQueue;
 
 namespace ChunkLight {
@@ -193,8 +211,6 @@ namespace ChunkLight {
                 lightQueue.push({newPos, 0});
             }
 
-            // printf("fluh 1 %i %i\n", pos.x, pos.y);
-            // printf("fluh 2 %i\n", heightWorld.heightAt(pos.x, pos.z));
             if (sunlight && pos.y > heightWorld.heightAt(pos.x, pos.z)) {
                 RGBIS4* light;
                 if (VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
@@ -204,6 +220,138 @@ namespace ChunkLight {
             }
 
             add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, SUN_LIGHT);
+        }
+    }
+
+    static void apply_light(const VoxelBlockWorld& voxelWorld, const VoxelHeightWorld& heightWorld, VoxelLightWorld& lightWorld, const VoxelBlockChunk& chunk, const VoxelHeightChunk& heightChunk, VoxelLightChunk& voxelLightChunk) {
+        AllLightQueue sunlightQueue;
+        AllLightQueue lightQueue;
+
+        for (u8 x = 0; x < CS; x++) {
+            for (u8 z = 0; z < CS; z++) {
+                u8 height = heightChunk.heightAt(x, z);
+
+                // dont change to u8
+                // keep signed
+                // always signed
+                // not u8, u16, u32 or u64
+                // because on the last iteration (when y is 0)
+                // it subtracts one and checks if we should continue the loop
+                // which causes it to underflow into highest possible value
+                // (e.g. with u8: 0 - 1 = 255)
+                for (i8 y = CS - 1; y >= 0; y--) {
+                    Vec3<i8> pos_chunk = Vec3<i8>(x, y, z);
+                    Vec3<i64> pos_world = chunk.pos * CS + pos_chunk;
+                    if (pos_world.y > height) {
+                        voxelLightChunk.voxels[get_zxy_index(x, y, z)] = Colors::setSunlight(voxelLightChunk.voxels[get_zxy_index(x, y, z)], Colors::COLOR4_MAX);
+
+                        // try to propagate: right left back front
+                        for (u8 d = 2; d < 6; d++) {
+                            Vec3<i8> dir_pos_chunk = pos_chunk + directions[d];
+                            Vec3<i64> dir_pos_world = pos_world + directions[d];
+
+                            // printf("%i\n", VoxelWorlds::isInChunkBounds(dir_pos_chunk));
+
+                            bool hasY = false;
+                            u8 foundY;
+                            if (VoxelWorlds::isInChunkBounds(dir_pos_chunk)) {
+                                hasY = true;
+                                foundY = heightChunk.heightAt(dir_pos_chunk.x, dir_pos_chunk.z);
+                            } else {
+                                Vec2<i64> heightChunkPos = Vec2<i64>(dir_pos_world.x, dir_pos_world.y);
+                                if (heightWorld.isChunkPosInWorld(heightChunkPos)) {
+                                    hasY = true;
+                                    foundY = heightWorld.heightAt(dir_pos_world.x, dir_pos_world.z);
+                                }
+                            }
+
+                            if (hasY && pos_world.y < foundY) {
+                                sunlightQueue.push({pos_world, 0}); // TODO: dir_pos_world?
+                            }
+                        }
+                    }
+
+                    EmbeddedVoxel block = chunk.voxels[get_zxy_index(pos_chunk.x, pos_chunk.y, pos_chunk.z)];
+                    BlockVoxelData blockData = BLOCK_VOXEL_DATA[block.type];
+                    if (blockData.can_emit_light) {
+                        RGBIS4 blockLight = blockData.get_light();
+                        voxelLightChunk.voxels[get_zxy_index(pos_chunk.x, pos_chunk.y, pos_chunk.z)] = blockLight;
+                        lightQueue.push({pos_world, blockLight});
+                    }
+                }
+            }
+        }
+
+        add_propagate(voxelWorld, lightWorld, sunlightQueue, Colors::COLOR4_MAX << 16, 16, SUN_LIGHT);
+
+
+
+
+
+        // // wattesigma
+        // Vec3<i64> pos;
+        // RGBIS4* light;
+
+        // for (u8 x = 0; x < CS; x++) {
+        //     for (u8 z = 0; z < CS; z++) {
+        //         pos = chunk.pos * CS + Vec3<i64>(x, -1, z);
+        //         if (VoxelWorlds::getVoxel(lightWorld, pos.x, pos.y, pos.z, &light)) {
+        //             lightQueue.push({pos, *light});
+        //         }
+
+        //         pos = chunk.pos * CS + Vec3<i64>(x, CS, z);
+        //         if (VoxelWorlds::getVoxel(lightWorld, pos.x, pos.y, pos.z, &light)) {
+        //             lightQueue.push({pos, *light});
+        //         }
+        //     }
+        // }
+
+        // for (u8 x = 0; x < CS; x++) {
+        //     for (u8 y = 0; y < CS; y++) {
+        //         pos = chunk.pos * CS + Vec3<i64>(x, y, -1);
+        //         if (VoxelWorlds::getVoxel(lightWorld, pos.x, pos.y, pos.z, &light)) {
+        //             lightQueue.push({pos, *light});
+        //         }
+
+        //         pos = chunk.pos * CS + Vec3<i64>(x, y, CS);
+        //         if (VoxelWorlds::getVoxel(lightWorld, pos.x, pos.y, pos.z, &light)) {
+        //             lightQueue.push({pos, *light});
+        //         }
+        //     }
+        // }
+
+        // for (u8 y = 0; y < CS; y++) {
+        //     for (u8 z = 0; z < CS; z++) {
+        //         pos = chunk.pos * CS + Vec3<i64>(-1, y, z);
+        //         if (VoxelWorlds::getVoxel(lightWorld, pos.x, pos.y, pos.z, &light)) {
+        //             lightQueue.push({pos, *light});
+        //         }
+
+        //         pos = chunk.pos * CS + Vec3<i64>(CS, y, z);
+        //         if (VoxelWorlds::getVoxel(lightWorld, pos.x, pos.y, pos.z, &light)) {
+        //             lightQueue.push({pos, *light});
+        //         }
+        //     }
+        // }
+
+
+        
+        // do the silly
+        AllLightQueue queue;
+        for (i32 i = 0; i < 4; i++) {
+            u32 offset = i * 4;
+            u32 mask = Colors::COLOR4_MAX << offset;
+
+            queue = AllLightQueue();
+
+            for (i32 j = 0; j < lightQueue.size(); j++) {
+                auto [pos, light] = getElementAt(lightQueue, j);
+                if (light & mask) {
+                    queue.push({pos, 0});
+                }
+            }
+
+            add_propagate(voxelWorld, lightWorld, queue, mask, offset, DEFAULT_LIGHT);
         }
     }
 };

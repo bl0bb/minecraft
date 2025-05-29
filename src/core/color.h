@@ -56,6 +56,11 @@ namespace Colors {
                (reduceChannel(color >> 8 & 0xFF) << 8) |
                reduceChannel(color & 0xFF);
     }
+
+    constexpr inline RGBIS4 setSunlight(RGBIS4 color, u8 sunlight) {
+        // TODO: typecast COLOR4_MAX to u32 here? (maybe even sunlight as well?)
+        return (color & ~(COLOR4_MAX << 16)) | (sunlight << 16);
+    }
 };
 
 #endif
