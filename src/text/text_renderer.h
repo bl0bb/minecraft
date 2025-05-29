@@ -8,21 +8,38 @@
 
 class TextRenderer {
 public:
+    u16 windowWidth;
+    u16 windowHeight;
+
     u8 charsPerRow;
+
     u8 charWidth;
     u8 charHeight;
+
     u8 width;
     u8 height;
 
+    u8* charSizes;
+
+    // private
     GLuint VBO, VAO;
     GLuint textureID;
-        
-    TextRenderer(u8 _charsPerRow, u8 _charWidth, u8 _charHeight, u8 _width, u8 _height) :
+    
+    TextRenderer() {};
+
+    TextRenderer(u16 _windowWidth, u16 _windowHeight, u8 _charsPerRow, u8 _charWidth, u8 _charHeight, u8 _width, u8 _height, u8* _charSizes) :
+        windowWidth(_windowWidth),
+        windowHeight(_windowHeight),
+
         charsPerRow(_charsPerRow),
+
         charWidth(_charHeight),
         charHeight(_charHeight),
+
         width(_width),
-        height(_height)
+        height(_height),
+
+        charSizes(_charSizes)
     {
         f32 quadVertices[] = {
             // pos      // tex
@@ -33,6 +50,16 @@ public:
             0.0f, 1.0f,  0.0f, 1.0f,
             1.0f, 1.0f,  1.0f, 1.0f,
             1.0f, 0.0f,  1.0f, 0.0f,
+
+            
+            // 1.0f, 0.0f,  1.0f, 0.0f,
+            // 1.0f, 1.0f,  1.0f, 1.0f,
+            // 0.0f, 1.0f,  0.0f, 1.0f,
+            
+            // 0.0f, 0.0f,  0.0f, 0.0f,
+            // 1.0f, 0.0f,  1.0f, 0.0f,
+            // 0.0f, 1.0f,  0.0f, 1.0f,
+        
         };
         
         glGenVertexArrays(1, &VAO);
@@ -65,46 +92,64 @@ public:
         // Set texture parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
-    void renderChar(char c, f32 x, f32 y, f32 scale, GLuint shaderProgram) {
+    void renderChar(char c, f32 x, f32 y, f32 scale, const Shader& shader) {
         // int asciiIndex = c - 32;
         int asciiIndex = c;
         int row = asciiIndex / charsPerRow;
         int col = asciiIndex % charsPerRow;
 
-        f32 u0 = col * (charWidth / (f32)width);
-        f32 v0 = row * (charHeight / (f32)height);
-        // f32 u1 = (col + 1) * (charWidth / (f32)width);
-        // f32 v1 = (row + 1) * (charHeight / (f32)height);
+        f32 deltaWidth = charWidth / (f32)width;
+        f32 deltaHeight = charHeight / (f32)height;
+
+        f32 u0 = col * deltaWidth;
+        f32 v0 = row * deltaHeight;
+        // f32 u1 = (col + 1) * deltaWidth;
+        // f32 v1 = (row + 1) * deltaHeight;
     
-        // f32 w = charWidth * scale;
-        // f32 h = charHeight * scale;
-    
+
         // Set uniforms
-        glUseProgram(shaderProgram);
-        glUniform2f(glGetUniformLocation(shaderProgram, "uOffset"), x, y);
-        glUniform2f(glGetUniformLocation(shaderProgram, "uScale"), scale, scale);
-    
+        shader.setVec2("uOffset", x, y);
+        shader.setVec2("uScale", scale, scale);
+
+        shader.setVec2("uTexOffset", u0, v0);
+        shader.setVec2("uTexSize", deltaWidth, deltaHeight);
+
+
         // Set texture transform using a texture matrix or use texcoord manipulation in shader if needed
-    
-        // Bind texture
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glUniform1i(glGetUniformLocation(shaderProgram, "fontTexture"), 0);
+
     
         // Bind and draw
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
-    void renderText(const char* str, f32 x, f32 y, f32 scale, GLuint shaderProgram) {
+    void renderText(const char* str, f32 x, f32 y, f32 scale, const Shader& shader, RGB4 color) {
+        glDisable(GL_DEPTH_TEST);
+
+        shader.use();
+
+        // color
+        shader.setInt("uColor", color);
+
+        // projection
+        Mat4<f32> ortho = Mat4<f32>::ortho(-(float)windowWidth / 2, (float)windowWidth / 2, (float)windowHeight / 2, -(float)windowHeight / 2);
+        f32 proj_mat[16];
+        ortho.toGLMatrix(proj_mat);
+        shader.setMat4("uProjection", proj_mat);
+
+        // Bind texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        shader.setInt("fontTexture", 0);
+
         f32 origX = x;
         while (*str) {
-            renderChar(*str, x, y, scale, shaderProgram);
-            x += scale;
+            renderChar(*str, x, y, scale, shader);
+            x += scale * ((charSizes[*str] + 1) / (f32)charWidth);
             str++;
         }
     }

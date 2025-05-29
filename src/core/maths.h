@@ -354,6 +354,20 @@ struct Mat4 {
         return result;
     }
 
+    static Mat4<T> ortho(T left, T right, T bottom, T top, T z_near = static_cast<T>(-1), T z_far = static_cast<T>(1)) {
+        Mat4<T> result = identity();
+
+        result.m[0][0] = static_cast<T>(2) / (right - left);
+        result.m[1][1] = static_cast<T>(2) / (top - bottom);
+        result.m[2][2] = static_cast<T>(-2) / (z_far - z_near);
+
+        result.m[0][3] = -(right + left) / (right - left);
+        result.m[1][3] = -(top + bottom) / (top - bottom);
+        result.m[2][3] = -(z_far + z_near) / (z_far - z_near);
+        
+        return result;
+    }
+
     static Mat4<T> lookAt(Vec3<T> const& eye, Vec3<T> const& center, Vec3<T> const& up) {
         const Vec3<T> f((center - eye).normalized());
 		const Vec3<T> s(f.cross(up).normalized());

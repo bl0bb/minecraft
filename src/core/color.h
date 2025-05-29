@@ -6,6 +6,11 @@
 // 0-3 (4) (16) r
 // 4-7 (4) (16) g
 // 8-11 (4) (16) b
+typedef u16 RGB4;
+
+// 0-3 (4) (16) r
+// 4-7 (4) (16) g
+// 8-11 (4) (16) b
 // 12-15 (4) (16) intensity
 typedef u16 RGBI4;
 
@@ -25,6 +30,10 @@ typedef u32 RGBI8;
 namespace Colors {
     constexpr u8 COLOR4_MAX = 15;
     constexpr u8 COLOR8_MAX = 255;
+
+    constexpr inline RGB4 createRGB4(u8 r, u8 g, u8 b) {
+        return (b << 8) | (g << 4) | r;
+    }
 
     constexpr inline RGBI4 createRGBI4(u8 r, u8 g, u8 b, u8 i) {
         return (i << 12) | (b << 8) | (g << 4) | r;

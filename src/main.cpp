@@ -118,8 +118,6 @@ bool init_opengl() {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
     glDebugMessageCallback(message_callback, 0);
     #endif
-    glEnable(GL_DEPTH_TEST);
-
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
@@ -969,21 +967,45 @@ int main() {
 
 
 
-    TextRenderer textRenderer(16, 8, 8, 16 * 8, 16 * 8);
 
-    Shader textShader = Shader("text/main.vert", "text/main.frag");
+    TextRenderer textRenderer;
+    Shader textShader;
 
-    for (int i = 0; i < 1; i++) {
-        int width, height, nrChannels;
-        u8* data = stbi_load("assets/fonts/ascii.png", &width, &height, &nrChannels, 0);
-        
-        textRenderer.loadFont(data);
+    {
+        u8* charSizes = new u8[256]{
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 1, 3, 5, 5, 5, 5, 1, 3, 3, 3, 5, 1, 5, 1, 5,
+            5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 1, 4, 5, 4, 5,
+            6, 5, 5, 5, 5, 5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5,
+            5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 5, 3, 5, 5,
+            2, 5, 5, 5, 5, 5, 5, 5, 5, 1, 5, 4, 2, 5, 5, 5,
+            5, 5, 5, 5, 3, 5, 5, 5, 5, 5, 5, 3, 1, 3, 6, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 5,
+            0, 0, 0, 0, 0, 0, 4, 4, 0, 0, 5, 0, 0, 0, 6, 6,
+            8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+            8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+            8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 5, 0,
+            6, 5, 5, 5, 4, 4, 5, 6, 4, 2, 0, 6, 4, 4, 5, 0
+        };
 
-        stbi_image_free(data);
+        textRenderer = TextRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 16, 8, 8, 16 * 8, 16 * 8, charSizes);
+        textShader = Shader("text/main.vert", "text/main.frag");
+
+        for (int i = 0; i < 1; i++) {
+            int width, height, nrChannels;
+            u8* data = stbi_load("assets/fonts/ascii.png", &width, &height, &nrChannels, 0);
+            
+            textRenderer.loadFont(data);
+
+            stbi_image_free(data);
+        }
+        #elif GL_API == 2
+        // TODO
+        #endif
     }
-    #elif GL_API == 2
-    // TODO
-    #endif
 
 
     
@@ -1058,6 +1080,8 @@ int main() {
             #if GL_API == 0 || GL_API == 1
             // glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glEnable(GL_DEPTH_TEST);
             #elif GL_API == 2
             // TODO
             #endif
@@ -1108,14 +1132,10 @@ int main() {
             voxelWorldRenderer.render(geometryShader);
 
             // text
-            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 0, 0, 20, textShader.ID);
-            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 0.5, 0.5, 20, textShader.ID);
-            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 0.5, -0.5, 20, textShader.ID);
-            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", -0.5, 0.5, 20, textShader.ID);
-            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", -0.5, -0.5, 20, textShader.ID);
-            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 50, 50, 20, textShader.ID);
-            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", -50, -50, 20, textShader.ID);
-            // textRenderer.renderText("linganguliguliguli gwata lingangu lingangu", 50, -50, 20, textShader.ID);
+            f32 x = -f32(WINDOW_WIDTH) / 2 * 0.6;
+            f32 y = -f32(WINDOW_HEIGHT) / 2 * 0.6;
+            textRenderer.renderText("abcdefghijklmnopqrstuvwxyz", x + 1, y + 1, 20.0f, textShader, Colors::createRGB4(8, 8, 8));
+            textRenderer.renderText("abcdefghijklmnopqrstuvwxyz", x, y, 20.0f, textShader, Colors::createRGB4(15, 15, 15));
 
             // glBindFramebuffer(GL_FRAMEBUFFER, 0);
             // --------------------------------------
