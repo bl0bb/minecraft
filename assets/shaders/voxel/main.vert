@@ -13,7 +13,6 @@ layout(location = 7) in uint quadData7;\
 layout(location = 8) in uint quadData8;
 #endif
 
-layout(location = 0) in vec3 aPos;
 
 flat out int texIndex;
 out vec2 texUv;
@@ -60,6 +59,13 @@ uniform ivec3 eye_position_int;
 
 uniform ivec3 chunk_pos;
 
+const vec2 vertexLookup[4] = vec2[4](
+  vec2(0,  0),
+  vec2(1,  0),
+  vec2(1,  1),
+  vec2(0,  1)
+);
+
 const vec3 normalLookup[6] = vec3[6](
   vec3( 1,  0,  0 ),
   vec3(-1,  0,  0 ),
@@ -79,19 +85,21 @@ const float aoLookup[] = float[](
 
 
 void main() {
-  uint vertex_id;
-  if (gl_VertexID == 0) {
-    vertex_id = 0;
-  } else if (gl_VertexID == 1) {
-    vertex_id = 1;
-  } else if (gl_VertexID == 2) {
-    vertex_id = 2;
+  uint vertexId = gl_VertexID % 6;
+  uint faceId = gl_VertexID / 6;
+  vec2 aPos;
+  if (vertexId == 0 || vertexId == 5) {
+    aPos = vertexLookup[2];
+  } else if (vertexId == 1) {
+    aPos = vertexLookup[1];
+  } else if (vertexId == 2 || vertexId == 3) {
+    aPos = vertexLookup[0];
   } else {
-    vertex_id = 3;
+    aPos = vertexLookup[3];
   }
 
   #if OGL_VERSION == 46
-  QuadData data = instanceData[gl_InstanceID];
+  QuadData data = instanceData[faceId];
   uint data1 = data.data1;
   uint data2 = data.data2;
   uint data3 = data.data3;
@@ -151,7 +159,7 @@ void main() {
   uint axis = data_dir;
   uint isNegative = axis & 1u;
 
-  vec2 fixedPos = face_offset + (face_size * vec2(aPos));
+  vec2 fixedPos = face_offset + (face_size * aPos);
 
   vec3 vertexPos;
 
@@ -195,7 +203,7 @@ void main() {
 
   texIndex = int(data_type);
 
-  texUv = uvOffset + vec2(aPos) * uvSize;
+  texUv = uvOffset + aPos * uvSize;
   texUv.y = 1 - texUv.y;
 
   uint uvRot = data_uv_rot;
@@ -239,7 +247,7 @@ void main() {
   Ao = data_ao;
 
   // other
-  FaceUV = vec2(aPos);
+  FaceUV = aPos;
   Axis = axis;
   FragPos = vec3(gl_Position);
 }

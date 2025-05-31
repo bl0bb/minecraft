@@ -32,8 +32,6 @@ public:
     u32 voxel_count;
 
     #if GL_API == 0 || GL_API == 1
-    // voxel faces
-    GLuint vao, vbo, ebo;
 
     #if GL_API == 0
     GLuint voxel_ssbo;
@@ -60,40 +58,6 @@ public:
 
     void init() {
         #if GL_API == 0 || GL_API == 1
-        // Define your quad vertices (positions only for simplicity)
-        f32 quadVertices[] = {
-            0, 0, 0,
-            1, 0, 0,
-            1, 1, 0,
-            0, 1, 0,
-        };
-
-        // Define indices for the quad (using an IBO)
-        unsigned int quadIndices[] = {
-            2, 1, 0,
-            0, 3, 2,
-        };
-
-        // Create VAO
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
-        // Create VBO for quad vertices
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-
-        // Create EBO for quad indices
-        glGenBuffers(1, &ebo);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
-
-        // Setup vertex attribute for positions
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(f32), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        // Unbind VAO
-        glBindVertexArray(0);
 
         // Create SSBO for quad data
         #if GL_API == 0
@@ -221,9 +185,7 @@ public:
 
     void render(Shader& shaderProgram) const {
         #if GL_API == 0 || GL_API == 1
-        // Bind VAO and draw
-        glBindVertexArray(vao);
-
+        // draw
         #if GL_API == 0
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
         #elif GL_API == 1
@@ -232,8 +194,7 @@ public:
 
         shaderProgram.setIVec3("chunk_pos", chunk->pos);
 
-        glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, voxel_count);
-        glBindVertexArray(0);
+        glDrawArrays(GL_TRIANGLES, 0, voxel_count * 6);
         #elif GL_API == 2
         // TODO
         #endif
