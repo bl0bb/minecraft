@@ -1,10 +1,10 @@
-#ifndef TEXT_RENDERER_H
-#define TEXT_RENDERER_H
+#ifndef TEXT_RENDERER_UI_H
+#define TEXT_RENDERER_UI_H
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "../core/types.h"
+#include "../../core/types.h"
 
 class TextRenderer {
 public:
@@ -21,13 +21,15 @@ public:
 
     u8* charSizes;
 
+    Shader shader;
+
     // private
     GLuint VBO, VAO;
     GLuint textureID;
     
     TextRenderer() {};
 
-    TextRenderer(u16 _windowWidth, u16 _windowHeight, u8 _charsPerRow, u8 _charWidth, u8 _charHeight, u8 _width, u8 _height, u8* _charSizes) :
+    TextRenderer(u16 _windowWidth, u16 _windowHeight, u8 _charsPerRow, u8 _charWidth, u8 _charHeight, u8 _width, u8 _height, u8* _charSizes, Shader _shader) :
         windowWidth(_windowWidth),
         windowHeight(_windowHeight),
 
@@ -39,7 +41,9 @@ public:
         width(_width),
         height(_height),
 
-        charSizes(_charSizes)
+        charSizes(_charSizes),
+
+        shader(_shader)
     {
         f32 quadVertices[] = {
             // pos      // tex
@@ -96,7 +100,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
-    void renderChar(char c, f32 x, f32 y, f32 scale, const Shader& shader) {
+    void renderChar(char c, f32 x, f32 y, f32 scale) {
         // int asciiIndex = c - 32;
         int asciiIndex = c;
         int row = asciiIndex / charsPerRow;
@@ -127,7 +131,7 @@ public:
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
-    void renderText(const char* str, f32 x, f32 y, f32 scale, const Shader& shader, RGB4 color) {
+    void renderText(const char* str, f32 x, f32 y, f32 scale, RGB4 color) {
         shader.use();
 
         // color
@@ -146,7 +150,7 @@ public:
 
         f32 origX = x;
         while (*str) {
-            renderChar(*str, x, y, scale, shader);
+            renderChar(*str, x, y, scale);
             x += scale * ((charSizes[*str] + 1) / (f32)charWidth);
             str++;
         }

@@ -32,7 +32,11 @@
 
 #include "terrain_gen/terrain_gen.h"
 
-#include "text/text_renderer.h"
+#include "gui/text/text_renderer.h"
+
+#include "gui_elements/crosshair/crosshair.h"
+#include "gui_elements/fps_counter/fps_counter.h"
+#include "gui_elements/hotbar/hotbar.h"
 
 #include "nbt/nbt.h"
 
@@ -960,55 +964,7 @@ int main() {
 
 
     // crosshair
-    Shader crosshairShader = Shader("crosshair/main.vert", "crosshair/main.frag");
-
-    #if GL_API == 0 || GL_API == 1
-    f32 crossHairSize = 40;
-    f32 crosshairVertices[] = {
-         1.0f * (crossHairSize / 2), -1.0f * (crossHairSize / 2), 0.0f, 0.0f,
-        -1.0f * (crossHairSize / 2), -1.0f * (crossHairSize / 2), 1.0f, 0.0f,
-         1.0f * (crossHairSize / 2),  1.0f * (crossHairSize / 2), 0.0f, 1.0f,
-        -1.0f * (crossHairSize / 2),  1.0f * (crossHairSize / 2), 1.0f, 1.0f,
-    };
-
-    GLuint crosshairVao, crosshairVbo;
-    glGenVertexArrays(1, &crosshairVao);
-    glGenBuffers(1, &crosshairVbo);
-    glBindVertexArray(crosshairVao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, crosshairVbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*)(2 * sizeof(f32)));
-    glEnableVertexAttribArray(1);
-
-
-
-    GLuint crosshairTexture;
-    glGenTextures(1, &crosshairTexture);
-    glBindTexture(GL_TEXTURE_2D, crosshairTexture);
-
-    // Set wrapping and filtering options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    for (int i = 0; i < 1; i++) {
-        int width, height, nrChannels;
-        u8* data = stbi_load("assets/textures/gui/crosshair.png", &width, &height, &nrChannels, 0);
-
-        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        stbi_image_free(data);
-    }
-    #elif GL_API == 2
-    // TODO
-    #endif
+    CrosshairUI crosshairUI = CrosshairUI(40);
 
 
 
@@ -1021,9 +977,7 @@ int main() {
 
 
 
-    TextRenderer textRenderer;
-    Shader textShader;
-
+    FpsCounterUI fpsUI;
     {
         u8* charSizes = new u8[256]{
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1044,27 +998,23 @@ int main() {
             6, 5, 5, 5, 4, 4, 5, 6, 4, 2, 0, 6, 4, 4, 5, 0
         };
 
-        textRenderer = TextRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 16, 8, 8, 16 * 8, 16 * 8, charSizes);
-        textShader = Shader("text/main.vert", "text/main.frag");
+        TextRenderer textRenderer = TextRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 16, 8, 8, 16 * 8, 16 * 8, charSizes, Shader("text/main.vert", "text/main.frag"));
 
-        for (int i = 0; i < 1; i++) {
-            int width, height, nrChannels;
-            u8* data = stbi_load("assets/fonts/ascii.png", &width, &height, &nrChannels, 0);
-            
-            textRenderer.loadFont(data);
+        int width, height, nrChannels;
+        u8* data = stbi_load("assets/fonts/ascii.png", &width, &height, &nrChannels, 0);
+        textRenderer.loadFont(data);
+        stbi_image_free(data);
 
-            stbi_image_free(data);
-        }
-        #elif GL_API == 2
-        // TODO
-        #endif
+        fpsUI = FpsCounterUI(60, textRenderer);
     }
 
+    #elif GL_API == 2
+    // TODO
+    #endif
 
 
-    u16 renderFramesCount = 60;
-    u16 populatedRenderFrames = 0;
-    f64* renderTimes = new f64[renderFramesCount];
+
+    
 
     
     Vec3<i64> lastCamBlockPos = camera->position;
@@ -1208,55 +1158,18 @@ int main() {
 
 
             // crosshair
-            #if GL_API == 0 || GL_API == 1
-            crosshairShader.use();
-
-            Mat4<f32> ortho = Mat4<f32>::ortho(-(f32)WINDOW_WIDTH / 2, (f32)WINDOW_WIDTH / 2, (f32)WINDOW_HEIGHT / 2, -(f32)WINDOW_HEIGHT / 2);
-            ortho.toGLMatrix(proj_mat);
-            crosshairShader.setMat4("uProjection", proj_mat);
-
-            glBindVertexArray(crosshairVao);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, crosshairTexture);
-
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            #elif GL_API == 2
-            // TODO
-            #endif
-
-
-
-
-
+            crosshairUI.render(WINDOW_WIDTH, WINDOW_HEIGHT);
+            
 
             // text
             
             // fps
+            fpsUI.addFrame(renderEnd - renderStart);
+            fpsUI.render(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-            // same thing
-            // memmove(&renderTimes[index + 1], &renderTimes[index], (populatedRenderFrames - index) * sizeof(f64));
-            memmove(&renderTimes[1], renderTimes, std::min(populatedRenderFrames, u16(renderFramesCount - 1)) * sizeof(f64));
 
-            renderTimes[0] = renderEnd - renderStart;
-            if (populatedRenderFrames < renderFramesCount) {
-                populatedRenderFrames++;
-            }
 
-            f64 fps = 0;
-            for (u16 i = 0; i < populatedRenderFrames; i++) {
-                fps += renderTimes[i];
-            }
-            fps /= populatedRenderFrames;
-            fps = 1 / fps;
-            fps = std::floor(fps);
-
-            f32 x = -f32(WINDOW_WIDTH) / 2 * 0.6;
-            f32 y = -f32(WINDOW_HEIGHT) / 2 * 0.6;
-            std::string fpsStr = "FPS: " + std::to_string(u32(fps));
-            textRenderer.renderText(fpsStr.c_str(), x + 2.5f, y + 2.5f, 20.0f, textShader, Colors::createRGB4(8, 8, 8));
-            textRenderer.renderText(fpsStr.c_str(), x, y, 20.0f, textShader, Colors::createRGB4(15, 15, 15));
-
+            // hotbar
 
 
 
