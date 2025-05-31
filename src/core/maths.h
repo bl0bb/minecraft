@@ -117,6 +117,18 @@ struct Vec2 {
         return x * y;
     }
 
+    Vec2<T> abs() const {
+        return Vec2<T>(std::abs(x), std::abs(y));
+    }
+
+    T max() const {
+        return std::max(x, y);
+    }
+
+    T min() const {
+        return std::min(x, y);
+    }
+
     // Index
     const T& operator[](size_t index) const {
         switch(index) {
@@ -222,6 +234,14 @@ struct Vec3 {
 
     Vec3<T> abs() const {
         return Vec3<T>(std::abs(x), std::abs(y), std::abs(z));
+    }
+
+    T max() const {
+        return std::max(std::max(x, y), z);
+    }
+
+    T min() const {
+        return std::min(std::min(x, y), z);
     }
 
     // Has smaller dim

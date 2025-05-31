@@ -919,7 +919,7 @@ int main() {
     u32* block_textures_data = new u32[array_size(block_textures)]{0};
 
     for (u16 i = 1; i < array_size(block_textures); i++) {
-        std::string path = "assets/textures/";
+        std::string path = "assets/textures/block/";
         path += block_textures[i];
         path += ".png";
         i32 nrChannels;
@@ -956,6 +956,59 @@ int main() {
 
 
     Shader geometryShader = Shader("voxel/main.vert", "voxel/main.frag");
+
+
+
+    // crosshair
+    Shader crosshairShader = Shader("crosshair/main.vert", "crosshair/main.frag");
+
+    #if GL_API == 0 || GL_API == 1
+    f32 crossHairSize = 40;
+    f32 crosshairVertices[] = {
+         1.0f * (crossHairSize / 2), -1.0f * (crossHairSize / 2), 0.0f, 0.0f,
+        -1.0f * (crossHairSize / 2), -1.0f * (crossHairSize / 2), 1.0f, 0.0f,
+         1.0f * (crossHairSize / 2),  1.0f * (crossHairSize / 2), 0.0f, 1.0f,
+        -1.0f * (crossHairSize / 2),  1.0f * (crossHairSize / 2), 1.0f, 1.0f,
+    };
+
+    GLuint crosshairVao, crosshairVbo;
+    glGenVertexArrays(1, &crosshairVao);
+    glGenBuffers(1, &crosshairVbo);
+    glBindVertexArray(crosshairVao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, crosshairVbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(f32), (void*)(2 * sizeof(f32)));
+    glEnableVertexAttribArray(1);
+
+
+
+    GLuint crosshairTexture;
+    glGenTextures(1, &crosshairTexture);
+    glBindTexture(GL_TEXTURE_2D, crosshairTexture);
+
+    // Set wrapping and filtering options
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    for (int i = 0; i < 1; i++) {
+        int width, height, nrChannels;
+        u8* data = stbi_load("assets/textures/gui/crosshair.png", &width, &height, &nrChannels, 0);
+
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        stbi_image_free(data);
+    }
+    #elif GL_API == 2
+    // TODO
+    #endif
 
 
 
@@ -1008,6 +1061,11 @@ int main() {
     }
 
 
+
+    u16 renderFramesCount = 60;
+    u16 populatedRenderFrames = 0;
+    f64* renderTimes = new f64[renderFramesCount];
+
     
     Vec3<i64> lastCamBlockPos = camera->position;
     Vec3<i64> lastCamChunkPos = voxelBlockWorld.worldToChunkPos(lastCamBlockPos);
@@ -1036,7 +1094,7 @@ int main() {
             Vec3<i64> camChunkPos = voxelBlockWorld.worldToChunkPos(camBlockPos);
 
             if (camBlockPos != lastCamBlockPos) {
-                printf("sort (%i %i %i)\n", camBlockPos.x, camBlockPos.y, camBlockPos.z);
+                // printf("sort (%i %i %i)\n", camBlockPos.x, camBlockPos.y, camBlockPos.z);
 
                 for (i64 i = 0; i < voxelWorldRenderer.size.volume(); i++) {
                     VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[i];
@@ -1048,12 +1106,14 @@ int main() {
                 }
 
                 if (camChunkPos != lastCamChunkPos) {
-                    printf("sort chunks\n");
+                    // printf("sort chunks\n");
                     voxelWorldRenderer.sortChunks(camChunkPos);
 
                     for (i64 i = 0; i < voxelWorldRenderer.size.volume(); i++) {
                         VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[i];
-                        if (camChunkPos != chunk.chunk->pos) {
+
+                        // only rerender chunks that are NOT the new chunk AND are directly next to the new chunk
+                        if (camChunkPos != chunk.chunk->pos && (chunk.chunk->pos - camChunkPos).abs().max() == 1) {
                             Vec3<i64> pos = camBlockPos - (chunk.chunk->pos * CS);
                             chunk.sortWithin(pos);
 
@@ -1075,6 +1135,7 @@ int main() {
             
 
 
+            auto renderStart = glfwGetTime();
             // --------------------------------------
             // GEOMETRY PASS
             #if GL_API == 0 || GL_API == 1
@@ -1131,17 +1192,70 @@ int main() {
             #if GL_API == 0 || GL_API == 1
             voxelWorldRenderer.render(geometryShader);
 
-            // text
-            f32 x = -f32(WINDOW_WIDTH) / 2 * 0.6;
-            f32 y = -f32(WINDOW_HEIGHT) / 2 * 0.6;
-            textRenderer.renderText("abcdefghijklmnopqrstuvwxyz", x + 1, y + 1, 20.0f, textShader, Colors::createRGB4(8, 8, 8));
-            textRenderer.renderText("abcdefghijklmnopqrstuvwxyz", x, y, 20.0f, textShader, Colors::createRGB4(15, 15, 15));
-
             // glBindFramebuffer(GL_FRAMEBUFFER, 0);
             // --------------------------------------
             #elif GL_API == 2
             // TODO
             #endif
+
+
+            auto renderEnd = glfwGetTime();
+
+
+            // ui
+            glDisable(GL_DEPTH_TEST);
+
+
+
+            // crosshair
+            #if GL_API == 0 || GL_API == 1
+            crosshairShader.use();
+
+            Mat4<f32> ortho = Mat4<f32>::ortho(-(f32)WINDOW_WIDTH / 2, (f32)WINDOW_WIDTH / 2, (f32)WINDOW_HEIGHT / 2, -(f32)WINDOW_HEIGHT / 2);
+            ortho.toGLMatrix(proj_mat);
+            crosshairShader.setMat4("uProjection", proj_mat);
+
+            glBindVertexArray(crosshairVao);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, crosshairTexture);
+
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            #elif GL_API == 2
+            // TODO
+            #endif
+
+
+
+
+
+
+            // text
+            
+            // fps
+
+            // same thing
+            // memmove(&renderTimes[index + 1], &renderTimes[index], (populatedRenderFrames - index) * sizeof(f64));
+            memmove(&renderTimes[1], renderTimes, std::min(populatedRenderFrames, u16(renderFramesCount - 1)) * sizeof(f64));
+
+            renderTimes[0] = renderEnd - renderStart;
+            if (populatedRenderFrames < renderFramesCount) {
+                populatedRenderFrames++;
+            }
+
+            f64 fps = 0;
+            for (u16 i = 0; i < populatedRenderFrames; i++) {
+                fps += renderTimes[i];
+            }
+            fps /= populatedRenderFrames;
+            fps = 1 / fps;
+            fps = std::floor(fps);
+
+            f32 x = -f32(WINDOW_WIDTH) / 2 * 0.6;
+            f32 y = -f32(WINDOW_HEIGHT) / 2 * 0.6;
+            std::string fpsStr = "FPS: " + std::to_string(u32(fps));
+            textRenderer.renderText(fpsStr.c_str(), x + 2.5f, y + 2.5f, 20.0f, textShader, Colors::createRGB4(8, 8, 8));
+            textRenderer.renderText(fpsStr.c_str(), x, y, 20.0f, textShader, Colors::createRGB4(15, 15, 15));
 
 
 

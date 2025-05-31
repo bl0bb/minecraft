@@ -128,8 +128,6 @@ public:
     }
 
     void renderText(const char* str, f32 x, f32 y, f32 scale, const Shader& shader, RGB4 color) {
-        glDisable(GL_DEPTH_TEST);
-
         shader.use();
 
         // color
