@@ -48,16 +48,14 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        for (int i = 0; i < 1; i++) {
-            int width, height, nrChannels;
-            u8* data = stbi_load("assets/textures/gui/crosshair.png", &width, &height, &nrChannels, 0);
+        int width, height, nrChannels;
+        u8* data = stbi_load("assets/textures/gui/crosshair.png", &width, &height, &nrChannels, 0);
 
-            GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
-            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
+        GLenum format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
 
-            stbi_image_free(data);
-        }
+        stbi_image_free(data);
         #elif GL_API == 2
         // TODO
         #endif

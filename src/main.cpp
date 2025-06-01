@@ -963,20 +963,16 @@ int main() {
 
 
 
+    // ui
+
+    // image shader
+    Shader imageShader = Shader("image/main.vert", "image/main.frag");
+
     // crosshair
     CrosshairUI crosshairUI = CrosshairUI(40);
 
 
-
-
-
-
-
-
-
-
-
-
+    // fps
     FpsCounterUI fpsUI;
     {
         u8* charSizes = new u8[256]{
@@ -1008,6 +1004,12 @@ int main() {
         fpsUI = FpsCounterUI(60, textRenderer);
     }
 
+
+
+    // hotbar
+    HotbarUI hotbarUI(Vec2<f32>(0.0f, WINDOW_HEIGHT / 2 - 20.0f), 0, 40.0f, imageShader);
+
+
     #elif GL_API == 2
     // TODO
     #endif
@@ -1037,6 +1039,20 @@ int main() {
             
 
             // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
+
+
+
+            if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) hotbarUI.setSlot(0);
+            else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) hotbarUI.setSlot(1);
+            else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) hotbarUI.setSlot(2);
+            else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) hotbarUI.setSlot(3);
+            else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) hotbarUI.setSlot(4);
+            else if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) hotbarUI.setSlot(5);
+            else if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) hotbarUI.setSlot(6);
+            else if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) hotbarUI.setSlot(7);
+            else if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) hotbarUI.setSlot(8);
+
+
 
 
 
@@ -1170,7 +1186,7 @@ int main() {
 
 
             // hotbar
-
+            hotbarUI.render(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
 
