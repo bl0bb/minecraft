@@ -30,6 +30,8 @@
 #include "core/array.h"
 #include "blocks/block.h"
 
+#include "physics/raycast/raycast.h"
+
 #include "terrain_gen/terrain_gen.h"
 
 #include "gui/text/text_renderer.h"
@@ -392,7 +394,9 @@ int main() {
     // flat grass
     for (i64 cx = -i64(world_size.x) / 2; cx < i64(world_size.x) / 2; cx++) {
         for (i64 cz = -i64(world_size.z) / 2; cz < i64(world_size.z) / 2; cz++) {
-            if (cx == -2 && cz == 1) {
+            if (cx == 0 && cz == 0) {
+                VoxelWorlds::placeVoxel(voxelBlockWorld, cx * CS, 5, cz * CS, EmbeddedVoxel(BlockTypes::SNOW));
+            } else if (cx == -2 && cz == 1) {
                 VoxelWorlds::placeVoxel(voxelBlockWorld, cx * CS, 5, cz * CS, EmbeddedVoxel(BlockTypes::COBBLESTONE));
             } else {
                 VoxelWorlds::placeVoxel(voxelBlockWorld, cx * CS, 5, cz * CS, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
@@ -848,7 +852,7 @@ int main() {
   
     float forwardMove = 0.0f;
     float rightMove = 0.0f;
-    float noclipSpeed = 50.0f;
+    float noclipSpeed = 10.0f;
   
     float deltaTime = 0.0f;
   
@@ -1068,6 +1072,8 @@ int main() {
 
 
 
+
+            // block / chunk sorting
             Vec3<i64> camBlockPos = camera->position;
             Vec3<i64> camChunkPos = voxelBlockWorld.worldToChunkPos(camBlockPos);
 
@@ -1109,6 +1115,20 @@ int main() {
 
             lastCamBlockPos = camBlockPos;
             lastCamChunkPos = camChunkPos;
+
+
+
+
+            // block outline
+            {
+                RaycastResult raycastResult = raycast(voxelBlockWorld, camera->position, camera->front * 16);
+                if (raycastResult.success) {
+                    blockOutline.pos = raycastResult.blockPos;
+                } else {
+                    blockOutline.pos = Vec3<i64>(0, 6, 0);
+                }
+            }
+
 
             
 
@@ -1170,7 +1190,6 @@ int main() {
             #if GL_API == 0 || GL_API == 1
             voxelWorldRenderer.render(geometryShader);
 
-            blockOutline.pos = Vec3<i64>(-63, 5, 5);
             blockOutline.render(proj_mat, view_mat);
 
             // glBindFramebuffer(GL_FRAMEBUFFER, 0);

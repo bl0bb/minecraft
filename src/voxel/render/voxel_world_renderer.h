@@ -35,15 +35,6 @@ public:
             u64 idx = chunkOrder[i];
             chunks[idx].render(shaderProgram);
         }
-        // for (i64 x = 0; x < size.x; x++) {
-        //     for (i64 y = 0; y < size.y; y++) {
-        //         for (i64 z = 0; z < size.z; z++) {
-        //             VoxelChunkRenderer& chunk = chunks[getChunkIndex(x, y, z)];
-                    
-        //             chunk.render(shaderProgram);
-        //         }
-        //     }
-        // }
     }
 };
 

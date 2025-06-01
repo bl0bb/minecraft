@@ -6,7 +6,6 @@
 
 #include "../../blocks/blocks.h"
 
-// embedded voxel
 struct EmbeddedVoxel {
     BlockType type;
 

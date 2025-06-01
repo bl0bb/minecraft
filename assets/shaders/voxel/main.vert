@@ -167,32 +167,32 @@ void main() {
     // right (+X)
     vertexPos.x = 1.0 - depth;
     vertexPos.y = fixedPos.y;
-    vertexPos.z = fixedPos.x - 1.0; // 1.0 - fixedPos.x;
+    vertexPos.z = fixedPos.x; // fixedPos.x - 1.0; // 1.0 - fixedPos.x;
   } else if (axis == 1) {
     // left (-X)
     vertexPos.x = depth;
     vertexPos.y = fixedPos.y;
-    vertexPos.z = -fixedPos.x; // fixedPos.x;
+    vertexPos.z = 1.0 - fixedPos.x; // -fixedPos.x; // fixedPos.x;
   } else if (axis == 2) {
     // top (+Y)
     vertexPos.x = fixedPos.x;
     vertexPos.y = 1.0 - depth;
-    vertexPos.z = fixedPos.y - 1.0; // 1.0 - fixedPos.y;
+    vertexPos.z = fixedPos.y; // fixedPos.y - 1.0; // 1.0 - fixedPos.y;
   } else if (axis == 3) {
     // bottom (-Y)
     vertexPos.x = fixedPos.x;
     vertexPos.y = depth;
-    vertexPos.z = -fixedPos.y; // fixedPos.y;
+    vertexPos.z = 1.0 - fixedPos.y; // -fixedPos.y; // fixedPos.y;
   } else if (axis == 4) {
     // back (+Z)
     vertexPos.x = 1.0 - fixedPos.x;
     vertexPos.y = fixedPos.y;
-    vertexPos.z = -depth; // 0.0;
+    vertexPos.z = 1.0 - depth; // -depth; // depth;
   } else {
     // front (-Z)
     vertexPos.x = fixedPos.x;
     vertexPos.y = fixedPos.y;
-    vertexPos.z = -1.0 + depth; // 1.0;
+    vertexPos.z = depth; // -1.0 + depth; // 1.0 - depth;
   }
 
   gl_Position = u_projection * u_view * vec4(chunk_pos * 32 + offset + vertexPos, 1.0);
