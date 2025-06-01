@@ -358,6 +358,11 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                                 continue;
                             }
 
+                            // BlockStateStruct* state = VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z)->state;
+                            // BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
+                            // if (!blockMesh.cullFlag) {
+                            //     continue;
+                            // }
 
                             
                             // light

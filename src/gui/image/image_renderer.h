@@ -15,6 +15,7 @@ public:
     Shader shader;
 
     // empty constructor
+    // TODO: turn this into an "init" function instead
     static ImageRendererUI empty() {
         ImageRendererUI imageRenderer;
         

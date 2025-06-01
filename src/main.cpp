@@ -38,6 +38,8 @@
 #include "gui_elements/fps_counter/fps_counter.h"
 #include "gui_elements/hotbar/hotbar.h"
 
+#include "renderers/block_outline/block_outline_renderer.h"
+
 #include "nbt/nbt.h"
 
 #include "file_parsers/nbt_parser.h"
@@ -963,6 +965,16 @@ int main() {
 
 
 
+    // block outline
+    Shader blockOutlineShader = Shader("block_outline/main.vert", "block_outline/main.frag");
+
+    BlockOutlineRenderer blockOutline;
+    blockOutline.shader = blockOutlineShader;
+    blockOutline.init();
+
+
+
+
     // ui
 
     // image shader
@@ -1157,6 +1169,9 @@ int main() {
 
             #if GL_API == 0 || GL_API == 1
             voxelWorldRenderer.render(geometryShader);
+
+            blockOutline.pos = Vec3<i64>(-63, 5, 5);
+            blockOutline.render(proj_mat, view_mat);
 
             // glBindFramebuffer(GL_FRAMEBUFFER, 0);
             // --------------------------------------
