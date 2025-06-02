@@ -11,6 +11,7 @@ uniform sampler2DArray texArray;
 };
 #endif
 
+layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 gPosition;
 layout(location = 2) out vec4 gNormal;
 
@@ -37,7 +38,6 @@ flat in uint Light8;
 flat in uint Ao;
 in vec3 FragPos;
 
-out vec4 FragColor;
 
 TEX_LAYOUT
 
@@ -109,6 +109,7 @@ void main() {
   } else if (nrChannels == 4) {
       FragColor = sampled;
   }
+
 
   // directional darkness thingy
   FragColor *= vec4(vec3(lightLookup[Axis]), 1.0);

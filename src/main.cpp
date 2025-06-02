@@ -180,6 +180,10 @@ GLFWwindow* init_window() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
+    #ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Required on macOS
+    #endif
     #elif GL_API == 2
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     #endif
@@ -227,7 +231,7 @@ int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight, i32& n
         return 1;
     }
 
-    #if GL_API == 0
+    #if GL_API == 0 || GL_API == 1
     GLuint format;
     switch (nrChannels) {
         case 1:
@@ -253,8 +257,7 @@ int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight, i32& n
         texWidth, texHeight, 1, // width, height, depth
         format, GL_UNSIGNED_BYTE, data // format, type, pixels
     );
-    #elif GL_API == 1
-    // TODO
+
     #elif GL_API == 2
     // TODO
     #endif
@@ -356,8 +359,8 @@ int main() {
 
                 // render
                 VoxelChunkRenderer chunkRenderer = VoxelChunkRenderer();
-                chunkRenderer.init();
                 chunkRenderer.chunk = &voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)];
+                chunkRenderer.init();
 
                 voxelWorldRenderer.chunks[voxelBlockWorld.getChunkIndex(x, y, z)] = chunkRenderer;
             }
@@ -956,8 +959,8 @@ int main() {
 
     glGenBuffers(1, &texture_ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, texture_ubo);
-    glBufferData(GL_UNIFORM_BUFFER, array_size(block_textures) * sizeof(u32), block_textures, GL_STATIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, texture_ubo);
+    glBufferData(GL_UNIFORM_BUFFER, array_size(block_textures) * sizeof(u32), block_textures_data, GL_STATIC_DRAW);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, texture_ubo);
     #endif
 
 

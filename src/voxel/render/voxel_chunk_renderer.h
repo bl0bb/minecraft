@@ -36,16 +36,8 @@ public:
     #if GL_API == 0
     GLuint voxel_ssbo;
     #elif GL_API == 1
-    GLuint texture_ubo;
-
-    GLuint voxel_data1_ubo;
-    GLuint voxel_data2_ubo;
-    GLuint voxel_data3_ubo;
-    GLuint voxel_data4_ubo;
-    GLuint voxel_data5_ubo;
-    GLuint voxel_data6_ubo;
-    GLuint voxel_data7_ubo;
-    GLuint voxel_data8_ubo;
+    GLuint voxel_data_vao;
+    GLuint voxel_data_vbo;
     #endif
 
     #elif GL_API == 2
@@ -63,19 +55,10 @@ public:
         #if GL_API == 0
         glGenBuffers(1, &voxel_ssbo);
         #elif GL_API == 1
-        auto loadData = [](GLuint ubo) {
-            glGenBuffers(1, &ubo);
-        };
-
-        loadData(voxel_data1_ubo);
-        loadData(voxel_data2_ubo);
-        loadData(voxel_data3_ubo);
-        loadData(voxel_data4_ubo);
-        loadData(voxel_data5_ubo);
-        loadData(voxel_data6_ubo);
-        loadData(voxel_data7_ubo);
-        loadData(voxel_data8_ubo);
+        glGenVertexArrays(1, &voxel_data_vao);
+        glGenBuffers(1, &voxel_data_vbo);
         #endif
+
         #elif GL_API == 2
         // TODO
         #endif
@@ -92,54 +75,35 @@ public:
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, CS_P3 * sizeof(VoxelFace), voxel_faces, GL_STATIC_DRAW);
         #elif GL_API == 1
-        // data1,2,3,4 is 64 bits, split into 2 u32
-        // u32 data[8][voxel_count];
-        u32** data = (u32**)malloc(sizeof(u32*) * 8);
-        for (u8 i = 0; i < 8; i++) {
-            data[i] = (u32*)malloc(sizeof(u32) * voxel_count);
-        }
-        printf("fluh 1 %i\n", voxel_count);
+        glBindVertexArray(voxel_data_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, voxel_data_vbo);
+
+        VoxelFace* data = new VoxelFace[voxel_count * 6];
         for (u32 i = 0; i < voxel_count; i++) {
-            if (i == 2372) {
-                // printf("BREAK %i %i\n", voxel_count, voxel_count - 1);
-                // break;
-            }
-            VoxelFace face = voxel_faces[i];
-            for (u8 j = 0; j < 8; j++) {
-                u8 shift = (j & 1) ? 32 : 0;
-                u8 data_i = j >> 1;
-
-                u64 dataBlock;
-                if (data_i == 0) dataBlock = face.data1;
-                else if (data_i == 1) dataBlock = face.data2;
-                else if (data_i == 2) dataBlock = face.data3;
-                else dataBlock = face.data4;
-
-                dataBlock = (dataBlock >> shift) & ((u64(1) << 32) - 1);
-                data[j][i] = dataBlock;
+            for (u32 j = 0; j < 6; j++) {
+                data[i * 6 + j] = voxel_faces[i];
             }
         }
-        printf("fluh 2\n");
 
-        auto loadData = [this, data](u8 i, GLuint ubo) {
-            glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-            glBufferData(GL_UNIFORM_BUFFER, voxel_count * sizeof(VoxelFace), data[i], GL_STATIC_DRAW);
-            glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo);
-        };
+        glBufferData(GL_ARRAY_BUFFER, voxel_count * 6 * 8 * sizeof(u32), data, GL_STATIC_DRAW);
 
-        loadData(0, voxel_data1_ubo);
-        loadData(1, voxel_data2_ubo);
-        loadData(2, voxel_data3_ubo);
-        loadData(3, voxel_data4_ubo);
-        loadData(4, voxel_data5_ubo);
-        loadData(5, voxel_data6_ubo);
-        loadData(6, voxel_data7_ubo);
-        loadData(7, voxel_data8_ubo);
-        printf("fluh 3\n");
+        glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(0 * sizeof(u32)));
+        glEnableVertexAttribArray(0);
+        glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(1 * sizeof(u32)));
+        glEnableVertexAttribArray(1);
+        glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(2 * sizeof(u32)));
+        glEnableVertexAttribArray(2);
+        glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(3 * sizeof(u32)));
+        glEnableVertexAttribArray(3);
+        glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(4 * sizeof(u32)));
+        glEnableVertexAttribArray(4);
+        glVertexAttribIPointer(5, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(5 * sizeof(u32)));
+        glEnableVertexAttribArray(5);
+        glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(6 * sizeof(u32)));
+        glEnableVertexAttribArray(6);
+        glVertexAttribIPointer(7, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(7 * sizeof(u32)));
+        glEnableVertexAttribArray(7);
 
-        for (u8 i = 0; i < 8; i++) {
-            free(data[i]);
-        }
         free(data);
         #elif GL_API == 2
         // TODO
@@ -189,7 +153,8 @@ public:
         #if GL_API == 0
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
         #elif GL_API == 1
-        
+        glBindVertexArray(voxel_data_vao);
+        glBindBuffer(GL_ARRAY_BUFFER, voxel_data_vbo);
         #endif
 
         shaderProgram.setIVec3("chunk_pos", chunk->pos);

@@ -16,8 +16,8 @@ public:
         // mesh
         glGenVertexArrays(1, &vao);
         glGenBuffers(1, &vbo);
+        
         glBindVertexArray(vao);
-
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
         f32 vertices[] = {

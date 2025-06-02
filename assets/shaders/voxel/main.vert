@@ -1,16 +1,28 @@
 #if OGL_VERSION == 46
-#define DATA_LAYOUT layout(std430, binding = 0) readonly buffer instanceDataBuffer {\
+#define DATA_LAYOUT \
+struct QuadData {\
+  uint data1;\
+  uint data2;\
+  uint data3;\
+  uint data4;\
+  uint data5;\
+  uint data6;\
+  uint data7;\
+  uint data8;\
+};\
+layout(std430, binding = 0) readonly buffer instanceDataBuffer {\
   QuadData instanceData[];\
 };
 #elif OGL_VERSION == 41
-#define DATA_LAYOUT layout(location = 1) in uint quadData1;\
-layout(location = 2) in uint quadData2;\
-layout(location = 3) in uint quadData3;\
-layout(location = 4) in uint quadData4;\
-layout(location = 5) in uint quadData5;\
-layout(location = 6) in uint quadData6;\
-layout(location = 7) in uint quadData7;\
-layout(location = 8) in uint quadData8;
+#define DATA_LAYOUT \
+layout(location = 0) in uint quadData1;\
+layout(location = 1) in uint quadData2;\
+layout(location = 2) in uint quadData3;\
+layout(location = 3) in uint quadData4;\
+layout(location = 4) in uint quadData5;\
+layout(location = 5) in uint quadData6;\
+layout(location = 6) in uint quadData7;\
+layout(location = 7) in uint quadData8;
 #endif
 
 
@@ -38,17 +50,6 @@ flat out uint Light8;
 
 flat out uint Ao;
 out vec3 FragPos;
-
-struct QuadData {
-  uint data1;
-  uint data2;
-  uint data3;
-  uint data4;
-  uint data5;
-  uint data6;
-  uint data7;
-  uint data8;
-};
 
 DATA_LAYOUT
 

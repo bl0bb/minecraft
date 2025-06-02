@@ -94,15 +94,17 @@ class NBTReader {
 public:
     explicit NBTReader(const std::vector<char>& data)
         : buffer(data), pos(0) {}
-    explicit NBTReader(const std::string& data)
-        : buffer(std::vector<char>(data.begin(), data.end())), pos(0) {}
+    NBTReader(const std::string& data)
+        : pos(0) {
+            buffer = std::vector<char>(data.begin(), data.end());
+        }
 
     NBT* parse() {
         return readTag(true);
     }
 
 private:
-    const std::vector<char>& buffer;
+    std::vector<char> buffer;
     size_t pos;
 
     uint8_t readByte() {

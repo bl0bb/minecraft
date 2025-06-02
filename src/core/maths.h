@@ -11,7 +11,7 @@
 #include "types.h"
 
 // math.h stuff C++ in MS doesnt work properly or something so define pi manually
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846264338327950288
 
 
 // util
