@@ -31,6 +31,7 @@
 #include "blocks/block.h"
 
 #include "physics/raycast/raycast.h"
+#include "physics/aabb/aabb.h"
 
 #include "terrain_gen/terrain_gen.h"
 
@@ -1035,7 +1036,18 @@ int main() {
 
 
 
+    Vec3<f32> playerCamOffset(0.0f, 0.6f, 0.0f);
+
+    AABB playerAABB(Vec3<f32>(0.0f, 10.0f, 0.0f), Vec3<f32>(0.6f, 1.8f, 0.6f));
+
+    // 0 = creative (flying)
+    // 1 = survival (moving with physics)
+    u8 gamemode = 0;
     
+
+    // wonky solution
+    // TODO: fix
+    bool isTPressed = false;
 
     
     Vec3<i64> lastCamBlockPos = camera->position;
@@ -1046,6 +1058,18 @@ int main() {
         if (deltaTime >= (f32)1 / 60) {
             lastFrame = currentFrame;
 
+            if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+                if (!isTPressed) {
+                    isTPressed = true;
+                    gamemode = (gamemode + 1) % 2;
+                    if (gamemode == 1) {
+                        playerAABB.pos = camera->position - playerCamOffset;
+                    }
+                }
+            } else {
+                isTPressed = false;
+            }
+            
             if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) forwardMove = 1.0f;
             else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) forwardMove = -1.0f;
             else forwardMove = 0.0f;
@@ -1054,7 +1078,17 @@ int main() {
             else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) rightMove = -1.0f;
             else rightMove = 0.0f;
             auto wishdir = (camera->front * forwardMove) + (camera->right * rightMove);
-            camera->position = camera->position + wishdir * noclipSpeed * deltaTime;
+
+            if (gamemode == 0) {
+                camera->position = camera->position + wishdir * noclipSpeed * deltaTime;
+            } else {
+                playerAABB.pos = playerAABB.pos + (wishdir + Vec3<f32>(0.0f, -9.807f, 0.0f)) * deltaTime;
+
+                Intersection intersection = playerAABB.getIntersection(voxelBlockWorld);
+                playerAABB.solveCollision(intersection);
+
+                camera->position = playerAABB.pos + playerCamOffset;
+            }
             
 
             // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);

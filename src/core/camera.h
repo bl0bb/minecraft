@@ -39,7 +39,7 @@ public:
     void handleResolution(int width, int height) {
         ratio = (f32)width / (f32)height;
 
-        projection = Mat4<f32>::perspective(deg_to_rad(fov), ratio, nearD, farD);
+        projection = Mat4<f32>::perspective(Math::deg_to_rad(fov), ratio, nearD, farD);
     }
 
     void updatePosition(Vec3<f32> pos) {
@@ -67,9 +67,9 @@ public:
 private:
     void updateCameraVectors() {
         Vec3<f32> f;
-        f.x = cos(deg_to_rad(yaw)) * cos(deg_to_rad(pitch));
-        f.y = sin(deg_to_rad(pitch));
-        f.z = sin(deg_to_rad(yaw)) * cos(deg_to_rad(pitch));
+        f.x = cos(Math::deg_to_rad(yaw)) * cos(Math::deg_to_rad(pitch));
+        f.y = sin(Math::deg_to_rad(pitch));
+        f.z = sin(Math::deg_to_rad(yaw)) * cos(Math::deg_to_rad(pitch));
         front = f.normalized();
         right = front.cross(worldUp).normalized();
         up    = right.cross(front).normalized();

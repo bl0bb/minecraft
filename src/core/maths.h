@@ -13,29 +13,32 @@
 // math.h stuff C++ in MS doesnt work properly or something so define pi manually
 #define M_PI 3.14159265358979323846264338327950288
 
+namespace Math {
 
 // util
 template <typename T>
-static inline i8 sign(T n) {
+static constexpr inline i8 sign(T n) {
     return n < 0 ? -1 : n > 0 ? 1 : 0;
 }
 
 // deg rad
 template<typename T>
-static inline T deg_to_rad(T deg) {
+static constexpr inline T deg_to_rad(T deg) {
     return deg * (M_PI / 180.0);
 }
 
 template<typename T>
-static inline T rad_to_deg(T rad) {
+static constexpr inline T rad_to_deg(T rad) {
     return rad * (180.0 / M_PI);
 }
 
 
 // lerp
 template<typename T>
-static inline T lerp(T a, T b, T t) {
+static constexpr inline T lerp(T a, T b, T t) {
     return a + (b - a) * t;
+}
+
 }
 
 
@@ -155,6 +158,22 @@ template<typename T>
 struct Vec3 {
     T x, y, z;
 
+    static Vec3<T> min(const Vec3<T>& a, const Vec3<T>& b) {
+        return Vec3<T>(
+            std::min(a.x, b.x),
+            std::min(a.y, b.y),
+            std::min(a.z, b.z)
+        );
+    }
+
+    static Vec3<T> max(const Vec3<T>& a, const Vec3<T>& b) {
+        return Vec3<T>(
+            std::max(a.x, b.x),
+            std::max(a.y, b.y),
+            std::max(a.z, b.z)
+        );
+    }
+
     // Constructors
     Vec3() : x(T(0)), y(T(0)), z(T(0)) {}
     Vec3(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
@@ -219,6 +238,15 @@ struct Vec3 {
             std::floor(x),
             std::floor(y),
             std::floor(z)
+        );
+    }
+
+    // Sign
+    Vec3<T> sign() const {
+        return Vec3<T>(
+            Math::sign(x),
+            Math::sign(y),
+            Math::sign(z)
         );
     }
 
