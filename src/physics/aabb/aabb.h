@@ -53,7 +53,7 @@ public:
 
             // If there's no overlap, return zero vector
             if (overlap.x <= 0 || overlap.y <= 0 || overlap.z <= 0) {
-                intersection.intersectPos = Vec3<f32>(0.0f, 0.0f, 0.0f);
+                intersection.intersectPos = Vec3<f32>(0.0f);
             } else {
                 // Compute direction for minimal displacement
                 Vec3<f32> centerA = (aMin + aMax) * 0.5f;
@@ -93,12 +93,26 @@ public:
         i64 endY = aMax.y >= 0 ? aMax.y : aMax.y - 1;
         i64 endZ = aMax.z >= 0 ? aMax.z : aMax.z - 1;
 
-        Intersection intersection;
+        Intersection intersection(false, Vec3<f32>(0.0f));
 
         for (i64 x = startX; x <= endX; x++) {
             for (i64 y = startY; y <= endY; y++) {
                 for (i64 z = startZ; z <= endZ; z++) {
-                    
+                    EmbeddedVoxel* voxel;
+                    if (!VoxelWorlds::getVoxel(blockWorld, x, y, z, &voxel)) {
+                        continue;
+                    }
+
+                    if (voxel->type == BlockTypes::AIR) {
+                        continue;
+                    }
+
+                    AABB blockAABB(Vec3<f32>(x, y, z), Vec3<f32>(1.0f));
+
+                    Intersection newIntersection = getIntersection(blockAABB);
+                    if (!intersection.intersects || (newIntersection.intersects && newIntersection.intersectPos.max() < intersection.intersectPos.max())) {
+                        intersection = newIntersection;
+                    }
                 }
             }
         }
@@ -111,7 +125,7 @@ public:
             return;
         }
 
-        // TODO
+        pos = pos + intersection.intersectPos;
     }
 };
 

@@ -58,11 +58,42 @@ const bool FULLSCREEN = false;
 Shader* shader;
 Camera* camera;
 
-float last_x = 0.0f;
-float last_y = 0.0f;
+
+// mouse
+f32 lastMouseX = 0.0f;
+f32 lastMouseY = 0.0f;
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    camera->processMouseMovement(xpos - lastMouseX, lastMouseY - ypos);
+    lastMouseX = xpos;
+    lastMouseY = ypos;
+}
+
+// keys
+std::unordered_map<int, bool> currentKeyStates;
+std::unordered_map<int, bool> lastKeyStates;
+
+// Callback to track key events
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (key != GLFW_KEY_UNKNOWN) {
+        if (action == GLFW_PRESS) {
+            currentKeyStates[key] = true;
+        } else if (action == GLFW_RELEASE) {
+            currentKeyStates[key] = false;
+        }
+    }
+}
+
+// Call this once per frame to update last frame key states
+void updateLastKeyStates() {
+    lastKeyStates = currentKeyStates;
+}
 
 
 
+
+
+// debugging
 void glfw_error_callback(int error, const char* description) {
     fprintf(stderr, "GLFW error %d: %s\n", error, description);
 }
@@ -94,28 +125,6 @@ void GLAPIENTRY message_callback(
     fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = %s, message = %s\n",
     type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "",
     type, SEVERITY.c_str(), message);
-}
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-    camera->processMouseMovement(xpos - last_x, last_y - ypos);
-    last_x = xpos;
-    last_y = ypos;
-}
-
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-        glfwSetWindowShouldClose(window, true);
-    } else if (key == GLFW_KEY_X && action == GLFW_RELEASE) {
-        GLint lastPolyMode;
-        glGetIntegerv(GL_POLYGON_MODE, &lastPolyMode);
-        if (lastPolyMode == GL_FILL) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        } else if (lastPolyMode == GL_LINE) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-        } else {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
-    }
 }
 
 #if GL_API == 0 || GL_API == 1
@@ -1039,17 +1048,15 @@ int main() {
     Vec3<f32> playerCamOffset(0.0f, 0.6f, 0.0f);
 
     AABB playerAABB(Vec3<f32>(0.0f, 10.0f, 0.0f), Vec3<f32>(0.6f, 1.8f, 0.6f));
+    Vec3<f32> playerVel(0.0f, 0.0f, 0.0f);
 
     // 0 = creative (flying)
     // 1 = survival (moving with physics)
     u8 gamemode = 0;
-    
 
-    // wonky solution
-    // TODO: fix
-    bool isTPressed = false;
+    bool isInChat = false;
 
-    
+
     Vec3<i64> lastCamBlockPos = camera->position;
     Vec3<i64> lastCamChunkPos = voxelBlockWorld.worldToChunkPos(lastCamBlockPos);
     while (!glfwWindowShouldClose(window)) {
@@ -1058,31 +1065,54 @@ int main() {
         if (deltaTime >= (f32)1 / 60) {
             lastFrame = currentFrame;
 
-            if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
-                if (!isTPressed) {
-                    isTPressed = true;
+            // debugging / actions
+            if (currentKeyStates[GLFW_KEY_ESCAPE] == true) {
+                glfwSetWindowShouldClose(window, true);
+            } else if (currentKeyStates[GLFW_KEY_X] == true) {
+                GLint lastPolyMode;
+                glGetIntegerv(GL_POLYGON_MODE, &lastPolyMode);
+                if (lastPolyMode == GL_FILL) {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                } else if (lastPolyMode == GL_LINE) {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+                } else {
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                }
+            }
+
+
+
+            if (currentKeyStates[GLFW_KEY_T] == GLFW_PRESS) {
+                isInChat = true;
+            }
+
+            if (currentKeyStates[GLFW_KEY_F] == GLFW_PRESS) {
+                if (!isGameModeKeyPressed) {
+                    isGameModeKeyPressed = true;
                     gamemode = (gamemode + 1) % 2;
                     if (gamemode == 1) {
                         playerAABB.pos = camera->position - playerCamOffset;
+                        playerVel = Vec3<f32>(0.0f);
                     }
                 }
             } else {
-                isTPressed = false;
+                isGameModeKeyPressed = false;
             }
             
-            if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) forwardMove = 1.0f;
-            else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) forwardMove = -1.0f;
+            if (currentKeyStates[GLFW_KEY_W] == GLFW_PRESS) forwardMove = 1.0f;
+            else if (currentKeyStates[GLFW_KEY_S] == GLFW_PRESS) forwardMove = -1.0f;
             else forwardMove = 0.0f;
 
-            if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) rightMove = 1.0f;
-            else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) rightMove = -1.0f;
+            if (currentKeyStates[GLFW_KEY_D] == GLFW_PRESS) rightMove = 1.0f;
+            else if (currentKeyStates[GLFW_KEY_A] == GLFW_PRESS) rightMove = -1.0f;
             else rightMove = 0.0f;
             auto wishdir = (camera->front * forwardMove) + (camera->right * rightMove);
 
             if (gamemode == 0) {
                 camera->position = camera->position + wishdir * noclipSpeed * deltaTime;
             } else {
-                playerAABB.pos = playerAABB.pos + (wishdir + Vec3<f32>(0.0f, -9.807f, 0.0f)) * deltaTime;
+                playerVel = playerVel + Vec3<f32>(0.0f, -9.807f, 0.0f) * deltaTime;
+                playerAABB.pos = playerAABB.pos + ((wishdir * 10.0f) + playerVel) * deltaTime;
 
                 Intersection intersection = playerAABB.getIntersection(voxelBlockWorld);
                 playerAABB.solveCollision(intersection);
@@ -1095,15 +1125,15 @@ int main() {
 
 
 
-            if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) hotbarUI.setSlot(0);
-            else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) hotbarUI.setSlot(1);
-            else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) hotbarUI.setSlot(2);
-            else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) hotbarUI.setSlot(3);
-            else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS) hotbarUI.setSlot(4);
-            else if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS) hotbarUI.setSlot(5);
-            else if (glfwGetKey(window, GLFW_KEY_7) == GLFW_PRESS) hotbarUI.setSlot(6);
-            else if (glfwGetKey(window, GLFW_KEY_8) == GLFW_PRESS) hotbarUI.setSlot(7);
-            else if (glfwGetKey(window, GLFW_KEY_9) == GLFW_PRESS) hotbarUI.setSlot(8);
+            if (currentKeyStates[GLFW_KEY_1] == GLFW_PRESS) hotbarUI.setSlot(0);
+            else if (currentKeyStates[GLFW_KEY_2] == GLFW_PRESS) hotbarUI.setSlot(1);
+            else if (currentKeyStates[GLFW_KEY_3] == GLFW_PRESS) hotbarUI.setSlot(2);
+            else if (currentKeyStates[GLFW_KEY_4] == GLFW_PRESS) hotbarUI.setSlot(3);
+            else if (currentKeyStates[GLFW_KEY_5] == GLFW_PRESS) hotbarUI.setSlot(4);
+            else if (currentKeyStates[GLFW_KEY_6] == GLFW_PRESS) hotbarUI.setSlot(5);
+            else if (currentKeyStates[GLFW_KEY_7] == GLFW_PRESS) hotbarUI.setSlot(6);
+            else if (currentKeyStates[GLFW_KEY_8] == GLFW_PRESS) hotbarUI.setSlot(7);
+            else if (currentKeyStates[GLFW_KEY_9] == GLFW_PRESS) hotbarUI.setSlot(8);
 
 
 

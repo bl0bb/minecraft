@@ -52,6 +52,7 @@ struct Vec2 {
     // Constructors
     Vec2() : x(T(0)), y(T(0)) {}
     Vec2(T x_, T y_) : x(x_), y(y_) {}
+    Vec2(T val) : x(val), y(val) {}
 
     // Type-casting constructor
     template<typename U>
@@ -177,6 +178,7 @@ struct Vec3 {
     // Constructors
     Vec3() : x(T(0)), y(T(0)), z(T(0)) {}
     Vec3(T x_, T y_, T z_) : x(x_), y(y_), z(z_) {}
+    Vec3(T val) : x(val), y(val), z(val) {}
 
     // Type-casting constructor
     template<typename U>
@@ -516,76 +518,6 @@ private:
         return mat;
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// rgba
-#define RGBA_R_MASK 0xff000000
-#define RGBA_G_MASK 0x00ff0000
-#define RGBA_B_MASK 0x0000ff00
-#define RGBA_A_MASK 0x000000ff
-
-#define RGBA_R_SHIFT 24
-#define RGBA_G_SHIFT 16
-#define RGBA_B_SHIFT 8
-#define RGBA_A_SHIFT 0
-
-typedef u32 rgba;
-
-static inline rgba rgba_create(const u8 r, const u8 g, const u8 b, const u8 a) {
-    return  (r << RGBA_R_SHIFT) |
-            (g << RGBA_G_SHIFT) |
-            (b << RGBA_B_SHIFT) |
-            (a << RGBA_A_SHIFT);
-}
-
-static inline rgba rgba_r(const rgba rgba) {
-    return rgba & RGBA_R_MASK >> RGBA_R_SHIFT;
-}
-
-static inline rgba rgba_g(const rgba rgba) {
-    return rgba & RGBA_G_MASK >> RGBA_G_SHIFT;
-}
-
-static inline rgba rgba_b(const rgba rgba) {
-    return rgba & RGBA_B_MASK >> RGBA_B_SHIFT;
-}
-
-static inline rgba rgba_a(const rgba rgba) {
-    return rgba & RGBA_A_MASK >> RGBA_A_SHIFT;
-}
-
-static inline rgba rgba_mul(const rgba rgba1, const f64 v) {
-    return  ((rgba)(rgba_r(rgba1) * v) << RGBA_R_SHIFT) |
-            ((rgba)(rgba_g(rgba1) * v) << RGBA_G_SHIFT) |
-            ((rgba)(rgba_b(rgba1) * v) << RGBA_B_SHIFT) |
-            ((rgba)(rgba_a(rgba1) * v) << RGBA_A_SHIFT);
-}
-
-static inline rgba rgba_lerp(const rgba rgba1, const rgba rgba2, f64 t) {
-    return  ((rgba)lerp((f64)rgba_r(rgba1), (f64)rgba_r(rgba2), t) << RGBA_R_SHIFT) |
-            ((rgba)lerp((f64)rgba_g(rgba1), (f64)rgba_g(rgba2), t) << RGBA_G_SHIFT) |
-            ((rgba)lerp((f64)rgba_b(rgba1), (f64)rgba_b(rgba2), t) << RGBA_B_SHIFT) |
-            ((rgba)lerp((f64)rgba_a(rgba1), (f64)rgba_a(rgba2), t) << RGBA_A_SHIFT);
-}
-
-static inline rgba rgba_lerp_color(const rgba rgba1, const rgba rgba2, f64 t) {
-    return  ((rgba)lerp((f64)rgba_r(rgba1), (f64)rgba_r(rgba2), t) << RGBA_R_SHIFT) |
-            ((rgba)lerp((f64)rgba_g(rgba1), (f64)rgba_g(rgba2), t) << RGBA_G_SHIFT) |
-            ((rgba)lerp((f64)rgba_b(rgba1), (f64)rgba_b(rgba2), t) << RGBA_B_SHIFT) |
-            (rgba1 & RGBA_A_MASK);
-}
 
 
 
