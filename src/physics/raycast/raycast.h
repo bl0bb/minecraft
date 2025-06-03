@@ -42,13 +42,13 @@ RaycastResult raycast(const VoxelBlockWorld& voxelWorld, const Vec3<f64>& origin
         u8 face;
         if (distX < distY && distX < distZ) {
             stepAmount = distX;
-            face = dir.x >= 0 ? 0 : 1;
+            face = dir.x < 0 ? 0 : 1;
         } else if (distY < distX && distY < distZ) {
             stepAmount = distY;
-            face = dir.y >= 0 ? 2 : 3;
+            face = dir.y < 0 ? 2 : 3;
         } else {
             stepAmount = distZ;
-            face = dir.z >= 0 ? 4 : 5;
+            face = dir.z < 0 ? 4 : 5;
         }
 
         distTraveled += stepAmount;
@@ -60,17 +60,17 @@ RaycastResult raycast(const VoxelBlockWorld& voxelWorld, const Vec3<f64>& origin
         }
 
         if (face == 0) {
-            blockX++;
-        } else if (face == 1) {
             blockX--;
+        } else if (face == 1) {
+            blockX++;
         } else if (face == 2) {
-            blockY++;
-        } else if (face == 3) {
             blockY--;
+        } else if (face == 3) {
+            blockY++;
         } else if (face == 4) {
-            blockZ++;
-        } else {
             blockZ--;
+        } else {
+            blockZ++;
         }
 
         EmbeddedVoxel* voxel;
@@ -80,6 +80,7 @@ RaycastResult raycast(const VoxelBlockWorld& voxelWorld, const Vec3<f64>& origin
                 raycastResult.block = *voxel;
                 raycastResult.pos = pos;
                 raycastResult.blockPos = Vec3<i64>(blockX, blockY, blockZ);
+                raycastResult.dir = face;
                 return raycastResult;
             }
         }

@@ -7,12 +7,14 @@ class Intersection {
 public:
     bool intersects;
     Vec3<f32> intersectPos;
+    Vec3<f32> intersectDir;
 
     Intersection() {}
 
-    Intersection(bool _intersects, Vec3<f32> _intersectPos) :
+    Intersection(bool _intersects, Vec3<f32> _intersectPos, Vec3<f32> _intersectDir) :
     intersects(_intersects),
-    intersectPos(_intersectPos) {}
+    intersectPos(_intersectPos),
+    intersectDir(_intersectDir) {}
 };
 
 class AABB {
@@ -81,7 +83,7 @@ public:
         return intersection;
     }
 
-    Intersection getIntersection(const VoxelBlockWorld& blockWorld) const {
+    Intersection getIntersection(const VoxelBlockWorld& blockWorld) {
         Vec3<f32> aMin = worldMin();
         Vec3<f32> aMax = worldMax();
 
@@ -93,7 +95,7 @@ public:
         i64 endY = aMax.y >= 0 ? aMax.y : aMax.y - 1;
         i64 endZ = aMax.z >= 0 ? aMax.z : aMax.z - 1;
 
-        Intersection intersection(false, Vec3<f32>(0.0f));
+        Intersection intersection(false, Vec3<f32>(0.0f), Vec3<f32>(0.0f));
 
         for (i64 x = startX; x <= endX; x++) {
             for (i64 y = startY; y <= endY; y++) {

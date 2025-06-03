@@ -111,6 +111,18 @@ constexpr bool placeVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, Voxe
     return true;
 }
 
+template<typename T>
+constexpr Vec3<T> addDirToVec(Vec3<T> vec, u8 dir) {
+    Vec3<T> newVec = vec;
+    if (dir == 0) newVec.x++;
+    else if (dir == 1) newVec.x--;
+    else if (dir == 2) newVec.y++;
+    else if (dir == 3) newVec.y--;
+    else if (dir == 4) newVec.z++;
+    else if (dir == 5) newVec.z--;
+    return newVec;
+}
+
 }
 
 

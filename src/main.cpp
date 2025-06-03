@@ -1079,6 +1079,7 @@ int main() {
 
     bool hasLookBlock = false;
     Vec3<i64> lookBlockPos;
+    u8 lookBlockDir;
 
     Vec3<f32> playerCamOffset(0.0f, 0.6f, 0.0f);
 
@@ -1099,6 +1100,17 @@ int main() {
         deltaTime = currentFrame - lastFrame;
         if (deltaTime >= (f32)1 / 60) {
             lastFrame = currentFrame;
+
+            // look block
+            {
+                RaycastResult raycastResult = raycast(voxelBlockWorld, camera->position, camera->front * 16);
+                hasLookBlock = raycastResult.success;
+                if (hasLookBlock) {
+                    lookBlockPos = raycastResult.blockPos;
+                    blockOutline.pos = lookBlockPos;
+                    lookBlockDir = raycastResult.dir;
+                }
+            }
 
             // debugging / actions
             if (currentKeyStates[GLFW_KEY_ESCAPE] && wasKeyStateChanged(GLFW_KEY_ESCAPE)) {
@@ -1133,12 +1145,14 @@ int main() {
             if (currentMouseButtonStates[GLFW_MOUSE_BUTTON_RIGHT] && wasMouseButtonStateChanged(GLFW_MOUSE_BUTTON_RIGHT)) {
                 // place block
                 if (hasLookBlock) {
-                    VoxelWorlds::placeVoxel(voxelBlockWorld, lookBlockPos.x, lookBlockPos.y, lookBlockPos.z, EmbeddedVoxel(BlockTypes::COBBLESTONE));
-                    *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, lookBlockPos.x, lookBlockPos.y, lookBlockPos.z)->state = BlockBlockState();
+                    Vec3<i64> modifyPos = VoxelWorlds::addDirToVec(lookBlockPos, lookBlockDir);
 
-                    ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, lookBlockPos);
+                    VoxelWorlds::placeVoxel(voxelBlockWorld, modifyPos.x, modifyPos.y, modifyPos.z, EmbeddedVoxel(BlockTypes::COBBLESTONE));
+                    *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, modifyPos.x, modifyPos.y, modifyPos.z)->state = BlockBlockState();
 
-                    Vec3<i64> blockChunkPos = voxelWorldRenderer.worldToChunkPos(lookBlockPos);
+                    ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, modifyPos);
+
+                    Vec3<i64> blockChunkPos = voxelWorldRenderer.worldToChunkPos(modifyPos);
                     VoxelChunkRenderer& blockChunk = voxelWorldRenderer.chunks[voxelWorldRenderer.chunkPosToChunkIndex(blockChunkPos)];
                     blockChunk.generateMesh(voxelBlockWorld, voxelBlockStateWorld, voxelLightWorld);
                 }
@@ -1174,10 +1188,10 @@ int main() {
                 wishdir = wishdir.normalized();
 
                 if (currentKeyStates[GLFW_KEY_SPACE] && wasKeyStateChanged(GLFW_KEY_SPACE)) {
-                    playerVel = playerVel + Vec3<f32>(0.0f, 10.0f, 0.0f);
+                    playerVel.y += 12.0f;
                 }
 
-                playerVel = playerVel + Vec3<f32>(0.0f, -9.807f, 0.0f) * deltaTime;
+                playerVel = playerVel + Vec3<f32>(0.0f, -32.656f, 0.0f) * deltaTime;
                 playerAABB.pos = playerAABB.pos + ((wishdir * 10.0f) + playerVel) * deltaTime;
 
                 Intersection intersection = playerAABB.getIntersection(voxelBlockWorld);
@@ -1256,17 +1270,6 @@ int main() {
 
 
 
-            // look block
-            {
-                RaycastResult raycastResult = raycast(voxelBlockWorld, camera->position, camera->front * 16);
-                hasLookBlock = raycastResult.success;
-                if (hasLookBlock) {
-                    lookBlockPos = raycastResult.blockPos;
-                    blockOutline.pos = lookBlockPos;
-                } else {
-                    blockOutline.pos = Vec3<i64>(0, 6, 0);
-                }
-            }
 
 
             
@@ -1329,7 +1332,9 @@ int main() {
             #if GL_API == 0 || GL_API == 1
             voxelWorldRenderer.render(geometryShader);
 
-            blockOutline.render(proj_mat, view_mat);
+            if (hasLookBlock) {
+                blockOutline.render(proj_mat, view_mat);
+            }
 
             // glBindFramebuffer(GL_FRAMEBUFFER, 0);
             // --------------------------------------
