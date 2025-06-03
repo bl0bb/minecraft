@@ -63,15 +63,43 @@ Camera* camera;
 f32 lastMouseX = 0.0f;
 f32 lastMouseY = 0.0f;
 
+std::unordered_map<int, bool> currentMouseButtonStates;
+std::unordered_map<int, bool> lastMouseButtonStates;
+
+bool wasMouseButtonStateChanged(int button) {
+    return currentMouseButtonStates[button] != lastMouseButtonStates[button];
+}
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     camera->processMouseMovement(xpos - lastMouseX, lastMouseY - ypos);
     lastMouseX = xpos;
     lastMouseY = ypos;
 }
 
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT || button == GLFW_MOUSE_BUTTON_MIDDLE) {
+        if (action == GLFW_PRESS) {
+            currentMouseButtonStates[button] = true;
+        } else if (action == GLFW_RELEASE) {
+            currentMouseButtonStates[button] = false;
+        }
+    } else {
+        std::cout << "Unknown mouse button: " << button << "\n";
+    }
+}
+
+// Call this once per frame to update last frame key states
+void updateLastMouseButtonStates() {
+    lastMouseButtonStates = currentMouseButtonStates;
+}
+
 // keys
 std::unordered_map<int, bool> currentKeyStates;
 std::unordered_map<int, bool> lastKeyStates;
+
+bool wasKeyStateChanged(int key) {
+    return currentKeyStates[key] != lastKeyStates[key];
+}
 
 // Callback to track key events
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -81,6 +109,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         } else if (action == GLFW_RELEASE) {
             currentKeyStates[key] = false;
         }
+    } else {
+        std::cout << "Unknown key: " << key << "\n";
     }
 }
 
@@ -292,7 +322,11 @@ int main() {
     glfwSetWindowPos(window, 0, 31);
     glfwSwapInterval(0);
 
+    // mouse input
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+
+    // keyboard input
     glfwSetKeyCallback(window, key_callback);
 
     #if GL_API == 0 || GL_API == 1
@@ -1043,7 +1077,8 @@ int main() {
     // TODO
     #endif
 
-
+    bool hasLookBlock = false;
+    Vec3<i64> lookBlockPos;
 
     Vec3<f32> playerCamOffset(0.0f, 0.6f, 0.0f);
 
@@ -1066,9 +1101,9 @@ int main() {
             lastFrame = currentFrame;
 
             // debugging / actions
-            if (currentKeyStates[GLFW_KEY_ESCAPE] == true) {
+            if (currentKeyStates[GLFW_KEY_ESCAPE] && wasKeyStateChanged(GLFW_KEY_ESCAPE)) {
                 glfwSetWindowShouldClose(window, true);
-            } else if (currentKeyStates[GLFW_KEY_X] == true) {
+            } else if (currentKeyStates[GLFW_KEY_X] && wasKeyStateChanged(GLFW_KEY_X)) {
                 GLint lastPolyMode;
                 glGetIntegerv(GL_POLYGON_MODE, &lastPolyMode);
                 if (lastPolyMode == GL_FILL) {
@@ -1082,40 +1117,75 @@ int main() {
 
 
 
-            if (currentKeyStates[GLFW_KEY_T] == GLFW_PRESS) {
+            if (currentMouseButtonStates[GLFW_MOUSE_BUTTON_LEFT] && wasMouseButtonStateChanged(GLFW_MOUSE_BUTTON_LEFT)) {
+                // break block
+                if (hasLookBlock) {
+                    VoxelWorlds::placeVoxel(voxelBlockWorld, lookBlockPos.x, lookBlockPos.y, lookBlockPos.z, EmbeddedVoxel(BlockTypes::AIR));
+                    *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, lookBlockPos.x, lookBlockPos.y, lookBlockPos.z)->state = BlockBlockState();
+
+                    ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, lookBlockPos);
+                    
+                    Vec3<i64> blockChunkPos = voxelWorldRenderer.worldToChunkPos(lookBlockPos);
+                    VoxelChunkRenderer& blockChunk = voxelWorldRenderer.chunks[voxelWorldRenderer.chunkPosToChunkIndex(blockChunkPos)];
+                    blockChunk.generateMesh(voxelBlockWorld, voxelBlockStateWorld, voxelLightWorld);
+                }
+            }
+            if (currentMouseButtonStates[GLFW_MOUSE_BUTTON_RIGHT] && wasMouseButtonStateChanged(GLFW_MOUSE_BUTTON_RIGHT)) {
+                // place block
+                if (hasLookBlock) {
+                    VoxelWorlds::placeVoxel(voxelBlockWorld, lookBlockPos.x, lookBlockPos.y, lookBlockPos.z, EmbeddedVoxel(BlockTypes::COBBLESTONE));
+                    *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, lookBlockPos.x, lookBlockPos.y, lookBlockPos.z)->state = BlockBlockState();
+
+                    ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, lookBlockPos);
+
+                    Vec3<i64> blockChunkPos = voxelWorldRenderer.worldToChunkPos(lookBlockPos);
+                    VoxelChunkRenderer& blockChunk = voxelWorldRenderer.chunks[voxelWorldRenderer.chunkPosToChunkIndex(blockChunkPos)];
+                    blockChunk.generateMesh(voxelBlockWorld, voxelBlockStateWorld, voxelLightWorld);
+                }
+            }
+
+            if (currentKeyStates[GLFW_KEY_T] && wasKeyStateChanged(GLFW_KEY_T)) {
                 isInChat = true;
             }
 
-            if (currentKeyStates[GLFW_KEY_F] == GLFW_PRESS) {
-                if (!isGameModeKeyPressed) {
-                    isGameModeKeyPressed = true;
-                    gamemode = (gamemode + 1) % 2;
-                    if (gamemode == 1) {
-                        playerAABB.pos = camera->position - playerCamOffset;
-                        playerVel = Vec3<f32>(0.0f);
-                    }
+            if (currentKeyStates[GLFW_KEY_F] && wasKeyStateChanged(GLFW_KEY_F)) {
+                gamemode = (gamemode + 1) % 2;
+                if (gamemode == 1) {
+                    playerAABB.pos = camera->position - playerCamOffset;
+                    playerVel = Vec3<f32>(0.0f);
                 }
-            } else {
-                isGameModeKeyPressed = false;
             }
             
-            if (currentKeyStates[GLFW_KEY_W] == GLFW_PRESS) forwardMove = 1.0f;
-            else if (currentKeyStates[GLFW_KEY_S] == GLFW_PRESS) forwardMove = -1.0f;
+            if (currentKeyStates[GLFW_KEY_W]) forwardMove = 1.0f;
+            else if (currentKeyStates[GLFW_KEY_S]) forwardMove = -1.0f;
             else forwardMove = 0.0f;
 
-            if (currentKeyStates[GLFW_KEY_D] == GLFW_PRESS) rightMove = 1.0f;
-            else if (currentKeyStates[GLFW_KEY_A] == GLFW_PRESS) rightMove = -1.0f;
+            if (currentKeyStates[GLFW_KEY_D]) rightMove = 1.0f;
+            else if (currentKeyStates[GLFW_KEY_A]) rightMove = -1.0f;
             else rightMove = 0.0f;
-            auto wishdir = (camera->front * forwardMove) + (camera->right * rightMove);
 
             if (gamemode == 0) {
+                auto wishdir = (camera->front * forwardMove) + (camera->right * rightMove);
+
                 camera->position = camera->position + wishdir * noclipSpeed * deltaTime;
             } else {
+                auto wishdir = (camera->front * forwardMove) + (camera->right * rightMove);
+                wishdir.y = 0.0f;
+                wishdir = wishdir.normalized();
+
+                if (currentKeyStates[GLFW_KEY_SPACE] && wasKeyStateChanged(GLFW_KEY_SPACE)) {
+                    playerVel = playerVel + Vec3<f32>(0.0f, 10.0f, 0.0f);
+                }
+
                 playerVel = playerVel + Vec3<f32>(0.0f, -9.807f, 0.0f) * deltaTime;
                 playerAABB.pos = playerAABB.pos + ((wishdir * 10.0f) + playerVel) * deltaTime;
 
                 Intersection intersection = playerAABB.getIntersection(voxelBlockWorld);
                 playerAABB.solveCollision(intersection);
+
+                if (intersection.intersects) {
+                    playerVel = Vec3<f32>(0.0f);
+                }
 
                 camera->position = playerAABB.pos + playerCamOffset;
             }
@@ -1125,15 +1195,15 @@ int main() {
 
 
 
-            if (currentKeyStates[GLFW_KEY_1] == GLFW_PRESS) hotbarUI.setSlot(0);
-            else if (currentKeyStates[GLFW_KEY_2] == GLFW_PRESS) hotbarUI.setSlot(1);
-            else if (currentKeyStates[GLFW_KEY_3] == GLFW_PRESS) hotbarUI.setSlot(2);
-            else if (currentKeyStates[GLFW_KEY_4] == GLFW_PRESS) hotbarUI.setSlot(3);
-            else if (currentKeyStates[GLFW_KEY_5] == GLFW_PRESS) hotbarUI.setSlot(4);
-            else if (currentKeyStates[GLFW_KEY_6] == GLFW_PRESS) hotbarUI.setSlot(5);
-            else if (currentKeyStates[GLFW_KEY_7] == GLFW_PRESS) hotbarUI.setSlot(6);
-            else if (currentKeyStates[GLFW_KEY_8] == GLFW_PRESS) hotbarUI.setSlot(7);
-            else if (currentKeyStates[GLFW_KEY_9] == GLFW_PRESS) hotbarUI.setSlot(8);
+            if (currentKeyStates[GLFW_KEY_1] && wasKeyStateChanged(GLFW_KEY_1)) hotbarUI.setSlot(0);
+            else if (currentKeyStates[GLFW_KEY_2] && wasKeyStateChanged(GLFW_KEY_2)) hotbarUI.setSlot(1);
+            else if (currentKeyStates[GLFW_KEY_3] && wasKeyStateChanged(GLFW_KEY_3)) hotbarUI.setSlot(2);
+            else if (currentKeyStates[GLFW_KEY_4] && wasKeyStateChanged(GLFW_KEY_4)) hotbarUI.setSlot(3);
+            else if (currentKeyStates[GLFW_KEY_5] && wasKeyStateChanged(GLFW_KEY_5)) hotbarUI.setSlot(4);
+            else if (currentKeyStates[GLFW_KEY_6] && wasKeyStateChanged(GLFW_KEY_6)) hotbarUI.setSlot(5);
+            else if (currentKeyStates[GLFW_KEY_7] && wasKeyStateChanged(GLFW_KEY_7)) hotbarUI.setSlot(6);
+            else if (currentKeyStates[GLFW_KEY_8] && wasKeyStateChanged(GLFW_KEY_8)) hotbarUI.setSlot(7);
+            else if (currentKeyStates[GLFW_KEY_9] && wasKeyStateChanged(GLFW_KEY_9)) hotbarUI.setSlot(8);
 
 
 
@@ -1186,11 +1256,13 @@ int main() {
 
 
 
-            // block outline
+            // look block
             {
                 RaycastResult raycastResult = raycast(voxelBlockWorld, camera->position, camera->front * 16);
-                if (raycastResult.success) {
-                    blockOutline.pos = raycastResult.blockPos;
+                hasLookBlock = raycastResult.success;
+                if (hasLookBlock) {
+                    lookBlockPos = raycastResult.blockPos;
+                    blockOutline.pos = lookBlockPos;
                 } else {
                     blockOutline.pos = Vec3<i64>(0, 6, 0);
                 }
@@ -1297,6 +1369,9 @@ int main() {
 
         
             glfwSwapBuffers(window);
+
+            updateLastMouseButtonStates();
+            updateLastKeyStates();
         }
         
         glfwPollEvents();

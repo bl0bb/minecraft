@@ -38,6 +38,10 @@ public:
         return chunk_pos_z + (chunk_pos_x * size.z) + (chunk_pos_y * size.x * size.z);
     }
 
+    constexpr u64 chunkPosToChunkIndex(const Vec3<i64>& pos) const {
+        return chunkPosToChunkIndex(pos.x, pos.y, pos.z);
+    }
+
     inline Vec3<i64> worldToChunkPos(const Vec3<i64>& pos) const {
         Vec3<i64> result = pos / CS;
         if (pos.x < 0) result.x--;
