@@ -112,7 +112,7 @@ public:
                     AABB blockAABB(Vec3<f32>(x, y, z), Vec3<f32>(1.0f));
 
                     Intersection newIntersection = getIntersection(blockAABB);
-                    if (!intersection.intersects || (newIntersection.intersects && newIntersection.intersectPos.max() < intersection.intersectPos.max())) {
+                    if (!intersection.intersects || (newIntersection.intersects && newIntersection.intersectPos.abs().max() < intersection.intersectPos.abs().max())) {
                         intersection = newIntersection;
                     }
                 }

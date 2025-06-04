@@ -25,6 +25,10 @@ public:
         return heightmap[getXZIndex(x, z)];
     }
 
+    inline void setHeightAt(u8 x, u8 z, i64 height) const {
+        heightmap[getXZIndex(x, z)] = height;
+    }
+
     void calculateHeightmap(const VoxelBlockWorld& world, const VoxelBlockStateWorld& stateWorld) {
         const auto& chunk = world.chunks[world.chunkPosToChunkIndex(pos.x, 0, pos.y)];
         const auto& stateChunk = stateWorld.chunks[stateWorld.chunkPosToChunkIndex(pos.x, 0, pos.y)];
@@ -84,17 +88,25 @@ public:
         return getChunkIndex(pos.x, pos.y);
     }
 
+    inline Vec2<i64> worldToChunkPosIndex(i64 x, i64 z) const {
+        Vec2<i64> chunkPos = worldToChunkPos(x, z);
+        return chunkPosToChunkPosIndex(chunkPos.x, chunkPos.y);
+    }
+
     inline Vec2<i64> worldToChunkPos(i64 x, i64 z) const {
-        return chunkPosToChunkPosIndex(floor(f64(x) / f64(CS)), floor(f64(z) / f64(CS)));
+        Vec2<i64> result = Vec2<i64>(x, z) / CS;
+        if (x < 0) result.x--;
+        if (z < 0) result.y--;
+        return result;
     }
 
     inline u64 worldToChunkIndex(i64 x, i64 z) const {
-        Vec2<i64> chunkPos = worldToChunkPos(x, z);
+        Vec2<i64> chunkPos = worldToChunkPosIndex(x, z);
         return getChunkIndex(chunkPos.x, chunkPos.y);
     }
 
     inline i64 heightAt(i64 x, i64 z) const {
-        Vec2<i64> chunkPos = worldToChunkPos(x, z);
+        Vec2<i64> chunkPos = worldToChunkPosIndex(x, z);
         return chunks[getChunkIndex(chunkPos.x, chunkPos.y)].heightAt(((x % CS) + CS) % CS, ((z % CS) + CS) % CS);
     }
 
@@ -104,6 +116,37 @@ public:
 
     inline bool isChunkPosInWorld(const Vec2<i64>& pos) const {
         return isChunkPosIndexInWorld(chunkPosToChunkPosIndex(pos.x, pos.y));
+    }
+
+    void updateHeightAtPos(const Vec3<i64>& modifyPos, const EmbeddedVoxel& block, const BlockStateVoxel& stateVoxel) {
+        Vec2<i64> chunkPos = worldToChunkPos(modifyPos.x, modifyPos.z);
+        Vec2<i64> chunkPosIndex = chunkPosToChunkPosIndex(chunkPos.x, chunkPos.y);
+        if (!isChunkPosIndexInWorld(chunkPosIndex)) {
+            return;
+        }
+
+        Vec2<i64> chunkBlockPos = Vec2<i64>(modifyPos.x, modifyPos.z) - chunkPos * CS;
+
+        const auto& chunk = chunks[getChunkIndex(chunkPosIndex.x, chunkPosIndex.y)];
+
+        i64 height = chunk.heightAt(chunkBlockPos.x, chunkBlockPos.y);
+        if (modifyPos.y < height) {
+            return;
+        }
+
+        // check if block blocks light
+        BlockVoxelData blockData = BLOCK_VOXEL_DATA[block.type];
+        if (blockData.transparent) {
+            return;
+        }
+
+        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*stateVoxel.state);
+
+        chunk.setHeightAt(chunkBlockPos.x, chunkBlockPos.y, modifyPos.y);
+        
+        // if (blockMesh.culls(2) || blockMesh.culls(3)) {
+        //     chunk.setHeightAt(chunkBlockPos.x, chunkBlockPos.y, modifyPos.y);
+        // }
     }
 };
 

@@ -138,7 +138,7 @@ namespace ChunkLight {
         }
     }
 
-    static void add_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, u8 value, u32 mask, u32 offset, LightPropagationType type) {
+    static void add_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, u8 value, u32 mask, u32 offset, LightPropagationType type) {
         AllLightQueue lightQueue;
 
         RGBIS4* light;
@@ -153,7 +153,7 @@ namespace ChunkLight {
         add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, type);
     }
 
-    static void remove_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, u32 mask, u32 offset, LightPropagationType type) {
+    static void remove_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, u32 mask, u32 offset, LightPropagationType type) {
         AllLightQueue lightQueue;
         AllLightQueue propQueue;
 
@@ -169,7 +169,7 @@ namespace ChunkLight {
         add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, type);
     }
 
-    static void add_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
+    static void add_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, RGBIS4 light) {
         for (u8 i = 0; i < 4; i++) {
             u8 offset = i * 4;
             u32 mask = 0xF << offset;
@@ -177,15 +177,17 @@ namespace ChunkLight {
         }
     }
 
-    static void remove_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos, RGBIS4 light) {
-        for (u8 i = 0; i < 4; i++) {
+    static void remove_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos) {
+        for (u8 i = 0; i < 5; i++) {
+            bool sunlight = i == 4;
+
             u8 offset = i * 4;
             u32 mask = 0xF << offset;
-            remove_channel(voxelWorld, voxelLightWorld, pos, mask, offset, DEFAULT_LIGHT);
+            remove_channel(voxelWorld, voxelLightWorld, pos, mask, offset, sunlight ? SUN_LIGHT : DEFAULT_LIGHT);
         }
     }
 
-    static void update_light(const VoxelBlockWorld& voxelWorld, const VoxelHeightWorld& heightWorld, VoxelLightWorld& voxelLightWorld, Vec3<i64>& pos) {
+    static void update_light(const VoxelBlockWorld& voxelWorld, const VoxelHeightWorld& heightWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos) {
         AllLightQueue lightQueue;
 
         // 0..4 for each channel
@@ -195,6 +197,8 @@ namespace ChunkLight {
         // 3 = I
         // 4 = SUN
         for (u8 i = 0; i < 5; i++) {
+            lightQueue = AllLightQueue();
+
             u8 offset = i * 4;
             u32 mask = 0xF << offset;
 
@@ -214,12 +218,12 @@ namespace ChunkLight {
             if (sunlight && pos.y > heightWorld.heightAt(pos.x, pos.z)) {
                 RGBIS4* light;
                 if (VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
-                    *light = Colors::createRGBIS4(0, 0, 0, 0, 15);
+                    *light = Colors::setSunlight(*light, Colors::COLOR4_MAX);
                     lightQueue.push({pos, 0});
                 }
             }
 
-            add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, SUN_LIGHT);
+            add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, sunlight ? SUN_LIGHT : DEFAULT_LIGHT);
         }
     }
 

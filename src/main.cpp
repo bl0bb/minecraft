@@ -910,6 +910,35 @@ int main() {
 
 
 
+    auto getBlockAndStateAtPos = [&voxelBlockWorld, &voxelBlockStateWorld](const Vec3<i64>& pos, EmbeddedVoxel** voxel, BlockStateVoxel** blockStateVoxel) {
+        if (!VoxelWorlds::getVoxel(voxelBlockWorld, pos.x, pos.y, pos.z, voxel)) {
+            printf("NO\n");
+            return false;
+        }
+        if (!VoxelWorlds::getVoxel(voxelBlockStateWorld, pos.x, pos.y, pos.z, blockStateVoxel)) {
+            printf("ERROR: BLOCKSTATE NOT FOUND WHEN BLOCK EXISTS\n");
+            return false;
+        }
+        return true;
+    };
+
+    auto blockChangedAtPos = [&voxelBlockWorld, &voxelBlockStateWorld, &voxelLightWorld, &voxelWorldRenderer, &voxelHeightWorld](const Vec3<i64>& modifyPos, const EmbeddedVoxel* voxel, const BlockStateVoxel* blockStateVoxel) {
+        voxelHeightWorld.updateHeightAtPos(modifyPos, *voxel, *blockStateVoxel);
+
+        ChunkLight::remove_light(voxelBlockWorld, voxelLightWorld, modifyPos);
+        ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, modifyPos);
+        
+        Vec3<i64> blockChunkPos = voxelWorldRenderer.worldToChunkPos(modifyPos);
+        VoxelChunkRenderer& blockChunk = voxelWorldRenderer.chunks[voxelWorldRenderer.chunkPosToChunkIndex(blockChunkPos)];
+        blockChunk.generateMesh(voxelBlockWorld, voxelBlockStateWorld, voxelLightWorld);
+    };
+
+
+
+
+
+
+
     camera = new Camera(Vec3<f32>(0, 0, 0));
     camera->handleResolution(WINDOW_WIDTH, WINDOW_HEIGHT);
   
@@ -920,6 +949,7 @@ int main() {
     float deltaTime = 0.0f;
   
     auto lastFrame = glfwGetTime();
+
 
 
 
@@ -1148,14 +1178,14 @@ int main() {
             if (currentMouseButtonStates[GLFW_MOUSE_BUTTON_LEFT] && wasMouseButtonStateChanged(GLFW_MOUSE_BUTTON_LEFT)) {
                 // break block
                 if (hasLookBlock) {
-                    VoxelWorlds::placeVoxel(voxelBlockWorld, lookBlockPos.x, lookBlockPos.y, lookBlockPos.z, EmbeddedVoxel(BlockTypes::AIR));
-                    *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, lookBlockPos.x, lookBlockPos.y, lookBlockPos.z)->state = BlockBlockState();
-
-                    ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, lookBlockPos);
-                    
-                    Vec3<i64> blockChunkPos = voxelWorldRenderer.worldToChunkPos(lookBlockPos);
-                    VoxelChunkRenderer& blockChunk = voxelWorldRenderer.chunks[voxelWorldRenderer.chunkPosToChunkIndex(blockChunkPos)];
-                    blockChunk.generateMesh(voxelBlockWorld, voxelBlockStateWorld, voxelLightWorld);
+                    EmbeddedVoxel* voxel;
+                    BlockStateVoxel* blockStateVoxel;
+                    if (getBlockAndStateAtPos(lookBlockPos, &voxel, &blockStateVoxel)) {
+                        *voxel = EmbeddedVoxel(BlockTypes::AIR);
+                        *blockStateVoxel->state = BlockBlockState();
+                        
+                        blockChangedAtPos(lookBlockPos, voxel, blockStateVoxel);
+                    }
                 }
             }
             if (currentMouseButtonStates[GLFW_MOUSE_BUTTON_RIGHT] && wasMouseButtonStateChanged(GLFW_MOUSE_BUTTON_RIGHT)) {
@@ -1163,14 +1193,14 @@ int main() {
                 if (hasLookBlock) {
                     Vec3<i64> modifyPos = VoxelWorlds::addDirToVec(lookBlockPos, lookBlockDir);
 
-                    VoxelWorlds::placeVoxel(voxelBlockWorld, modifyPos.x, modifyPos.y, modifyPos.z, EmbeddedVoxel(BlockTypes::COBBLESTONE));
-                    *VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, modifyPos.x, modifyPos.y, modifyPos.z)->state = BlockBlockState();
+                    EmbeddedVoxel* voxel;
+                    BlockStateVoxel* blockStateVoxel;
+                    if (getBlockAndStateAtPos(modifyPos, &voxel, &blockStateVoxel)) {
+                        *voxel = EmbeddedVoxel(BlockTypes::COBBLESTONE);
+                        *blockStateVoxel->state = BlockBlockState();
 
-                    ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, modifyPos);
-
-                    Vec3<i64> blockChunkPos = voxelWorldRenderer.worldToChunkPos(modifyPos);
-                    VoxelChunkRenderer& blockChunk = voxelWorldRenderer.chunks[voxelWorldRenderer.chunkPosToChunkIndex(blockChunkPos)];
-                    blockChunk.generateMesh(voxelBlockWorld, voxelBlockStateWorld, voxelLightWorld);
+                        blockChangedAtPos(modifyPos, voxel, blockStateVoxel);
+                    }
                 }
             }
 
