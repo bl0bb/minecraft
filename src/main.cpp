@@ -243,6 +243,22 @@ GLFWwindow* init_window() {
     
     glfwMakeContextCurrent(window);
 
+    {
+        // Load the icon image
+        int width, height, channels;
+        u8* imageData = stbi_load("assets/logo.jpg", &width, &height, &channels, 4); // Force RGBA
+        if (imageData) {
+            GLFWimage images[1];
+            images[0].width = width;
+            images[0].height = height;
+            images[0].pixels = imageData;
+            glfwSetWindowIcon(window, 1, images);
+            stbi_image_free(imageData);
+        } else {
+            fprintf(stderr, "Failed to load icon image\n");
+        }
+    }
+
     #if GL_API == 0 || GL_API == 1
     if (!gladLoadGL()) {
         fprintf(stderr, "Unable to initialize glad\n");
