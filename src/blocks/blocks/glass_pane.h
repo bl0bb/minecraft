@@ -5,6 +5,7 @@
 
 constexpr inline BlockTexture _glass_pane_get_texture(const BlockStateStruct& state, u8 dir) {
     auto conns = std::get<GlassPaneBlockState>(state).connections;
+    (void)conns;
 
     if (dir == 2 || dir == 3) {
         return BlockTextures::GLASS_PANE_SIDE;

@@ -22,7 +22,7 @@ public:
 
 class VoxelBlockStateWorld : public VoxelWorld<BlockStateVoxelChunk> {
 public:
-    
+    using VoxelWorld<BlockStateVoxelChunk>::VoxelWorld;
 };
 
 #endif

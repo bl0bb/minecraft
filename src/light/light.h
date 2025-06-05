@@ -89,13 +89,13 @@ namespace ChunkLight {
 
                 bool sunlight_down = type == SUN_LIGHT && i == 0;
 
-                u8 actualDir;
-                if (i == 0) actualDir = 3;
-                else if (i == 1) actualDir = 2;
-                else if (i == 2) actualDir = 0;
-                else if (i == 3) actualDir = 1;
-                else if (i == 4) actualDir = 4;
-                else actualDir = 5;
+                // u8 actualDir;
+                // if (i == 0) actualDir = 3;
+                // else if (i == 1) actualDir = 2;
+                // else if (i == 2) actualDir = 0;
+                // else if (i == 3) actualDir = 1;
+                // else if (i == 4) actualDir = 4;
+                // else actualDir = 5;
 
                 if ((newVal != 0 || newBlock.transparent/* || blockMesh.culls(actualDir)*/) && ((sunlight_down && newVal < val) || (newVal + 1 < val))) {
                     // sunlight does not get dimmer as it propagates down
@@ -110,6 +110,7 @@ namespace ChunkLight {
     }
 
     static void remove_propagate(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, AllLightQueue& propQueue, u32 mask, u32 offset, LightPropagationType type) {
+        (void)voxelWorld;
         while (!lightQueue.empty()) {
             auto [pos, value] = lightQueue.front();
             lightQueue.pop();
@@ -126,9 +127,6 @@ namespace ChunkLight {
                 bool sunlight_down = type == SUN_LIGHT && i == 0;
 
                 if ((*newLight & mask) != 0 && (newValue < value || sunlight_down)) {
-                    // sunlight does not get dimmer as it propagates down
-                    i8 delta = sunlight_down ? 0 : -1;
-
                     *newLight = *newLight & ~mask;
                     lightQueue.push({newPos, newValue});
                 } else if (newValue >= value) {

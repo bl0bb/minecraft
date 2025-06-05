@@ -119,6 +119,7 @@ public:
     }
 
     void updateHeightAtPos(const Vec3<i64>& modifyPos, const EmbeddedVoxel& block, const BlockStateVoxel& stateVoxel) {
+        (void)stateVoxel;
         Vec2<i64> chunkPos = worldToChunkPos(modifyPos.x, modifyPos.z);
         Vec2<i64> chunkPosIndex = chunkPosToChunkPosIndex(chunkPos.x, chunkPos.y);
         if (!isChunkPosIndexInWorld(chunkPosIndex)) {
@@ -140,10 +141,9 @@ public:
             return;
         }
 
-        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*stateVoxel.state);
-
         chunk.setHeightAt(chunkBlockPos.x, chunkBlockPos.y, modifyPos.y);
         
+        // BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*stateVoxel.state);
         // if (blockMesh.culls(2) || blockMesh.culls(3)) {
         //     chunk.setHeightAt(chunkBlockPos.x, chunkBlockPos.y, modifyPos.y);
         // }

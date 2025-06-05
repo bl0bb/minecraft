@@ -6,6 +6,7 @@
 
 static BlockMesh _getTorchBlockMesh(const BlockStateStruct& state) {
     auto direction = std::get<TorchBlockState>(state).direction;
+    (void)direction;
 
     BlockMesh torch(1, 1, 1, 1, 1, 1, false, false, false, false, false, false);
     torch.faces[0][0] = BlockFace(0,    7,    7, 0, 8, 9,    7, 0, 8, 9);

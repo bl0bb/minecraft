@@ -4,6 +4,7 @@
 #include "../blocks.h"
 
 constexpr inline BlockTexture _grass_get_texture(const BlockStateStruct& state, u8 dir) {
+    (void)state;
     if (dir == 0) {
         return BlockTextures::GRASS_BLOCK_SIDE;
     } else if (dir == 1) {

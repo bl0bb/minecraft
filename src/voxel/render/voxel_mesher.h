@@ -89,6 +89,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
     VoxelBlockChunk& chunk =           voxelWorld.          chunks[voxelWorld.          chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
     BlockStateVoxelChunk& stateChunk = voxelBlockStateWorld.chunks[voxelBlockStateWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
     VoxelLightChunk& lightChunk =      voxelLightWorld.     chunks[voxelLightWorld.     chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
+    (void)lightChunk;
     
     // voxel as binary for each x,y,z axis, positive and negative
     u64 axis_cols[3 * CS_P2 * 2] = {0};
@@ -247,6 +248,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                 u64 other_axis_col;
                 u64 other_merge_col;
                 u64 other_opaque_col;
+                (void)other_opaque_col;
 
                 if (j == 0) {
                     // positive

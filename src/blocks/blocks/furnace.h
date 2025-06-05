@@ -4,6 +4,7 @@
 #include "../blocks.h"
 
 constexpr inline BlockTexture _furnace_get_texture(const BlockStateStruct& state, u8 dir) {
+    (void)state;
     if (dir == 0) {
         return BlockTextures::FURNACE_SIDE;
     } else if (dir == 1) {

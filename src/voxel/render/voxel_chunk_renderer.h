@@ -127,7 +127,7 @@ public:
             voxel_faces[i] = faces[i].face;
         }
 
-        free(faces);
+        delete faces;
 
         updateMesh();
     }

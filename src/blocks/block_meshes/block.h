@@ -5,6 +5,7 @@
 #include "../blockstate.h"
 
 static BlockMesh _getBlockBlockMesh(const BlockStateStruct& state) {
+    (void)state;
     BlockMesh block(1, 1, 1, 1, 1, 1, true, true, true, true, true, true);
     block.faces[0][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
     block.faces[1][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);

@@ -148,7 +148,6 @@ public:
         glBindTexture(GL_TEXTURE_2D, textureID);
         shader.setInt("fontTexture", 0);
 
-        f32 origX = x;
         while (*str) {
             renderChar(*str, x, y, scale);
             x += scale * ((charSizes[*str] + 1) / (f32)charWidth);

@@ -68,7 +68,7 @@ constexpr bool isInChunkBounds(const Vec3<T>& pos) {
     return (pos.x >= 0 && pos.x < CS) && (pos.y >= 0 && pos.y < CS) && (pos.z >= 0 && pos.z < CS);
 }
 
-template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type, typename ChunkType = VoxelWorldType::chunk_type>
+template<typename VoxelWorldType, typename VoxelType = typename VoxelWorldType::chunk_type::voxel_type, typename ChunkType = typename VoxelWorldType::chunk_type>
 constexpr bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxel_ptr) {
     i64 chunk_pos_x = (i64(world.size.x) / 2) + floor(f64(x) / f64(CS));
     i64 chunk_pos_y = (i64(world.size.y) / 2) + floor(f64(y) / f64(CS));
@@ -78,7 +78,7 @@ constexpr bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelT
         return false;
     }
     
-    if (chunk_pos_x >= world.size.x || chunk_pos_y >= world.size.y || chunk_pos_z >= world.size.z) {
+    if (chunk_pos_x >= i64(world.size.x) || chunk_pos_y >= i64(world.size.y) || chunk_pos_z >= i64(world.size.z)) {
         return false;
     }
 
@@ -89,7 +89,7 @@ constexpr bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelT
     return true;
 }
 
-template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type>
+template<typename VoxelWorldType, typename VoxelType = typename VoxelWorldType::chunk_type::voxel_type>
 constexpr VoxelType* getVoxelUnsafe(const VoxelWorldType& world, i64 x, i64 y, i64 z) {
     VoxelType* voxel;
     if (!getVoxel(world, x, y, z, &voxel)) {
@@ -99,7 +99,7 @@ constexpr VoxelType* getVoxelUnsafe(const VoxelWorldType& world, i64 x, i64 y, i
     return voxel;
 }
 
-template<typename VoxelWorldType, typename VoxelType = VoxelWorldType::chunk_type::voxel_type>
+template<typename VoxelWorldType, typename VoxelType = typename VoxelWorldType::chunk_type::voxel_type>
 constexpr bool placeVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType voxelToPlace) {
     VoxelType* voxel;
     if (!getVoxel(world, x, y, z, &voxel)) {

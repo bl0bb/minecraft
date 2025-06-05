@@ -71,12 +71,15 @@ bool wasMouseButtonStateChanged(int button) {
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    (void)window;
     camera->processMouseMovement(xpos - lastMouseX, lastMouseY - ypos);
     lastMouseX = xpos;
     lastMouseY = ypos;
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    (void)window;
+    (void)mods;
     if (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT || button == GLFW_MOUSE_BUTTON_MIDDLE) {
         if (action == GLFW_PRESS) {
             currentMouseButtonStates[button] = true;
@@ -137,6 +140,10 @@ void GLAPIENTRY message_callback(
     const GLchar* message,
     const void* userParam
 ) {
+    (void)source;
+    (void)id;
+    (void)userParam;
+    (void)length;
     std::string SEVERITY = "";
     switch (severity) {
     case GL_DEBUG_SEVERITY_LOW:
@@ -401,9 +408,9 @@ int main() {
     VoxelWorldRenderer voxelWorldRenderer = VoxelWorldRenderer(world_size);
     
     // setup
-    for (i64 y = 0; y < world_size.y; y++) {
-        for (i64 x = 0; x < world_size.x; x++) {
-            for (i64 z = 0; z < world_size.z; z++) {
+    for (u64 y = 0; y < world_size.y; y++) {
+        for (u64 x = 0; x < world_size.x; x++) {
+            for (u64 z = 0; z < world_size.z; z++) {
                 // game
                 VoxelBlockChunk chunk = VoxelBlockChunk();
                 chunk.pos = Vec3<i64>(x, y, z) - world_chunk_center;
@@ -495,7 +502,6 @@ int main() {
 
     {
         i64 start_x = -63;
-        i64 start_y = -63;
         i64 start_z = 6;
         
         // oak planks
@@ -652,7 +658,7 @@ int main() {
 
                 // Get block position
                 const auto& pos = std::get<std::vector<NBT*>>(compound.at("pos")->value);
-                int stateIndex = std::get<i32>(compound.at("state")->value);
+                u64 stateIndex = std::get<i32>(compound.at("state")->value);
 
                 if (stateIndex >= 0 && stateIndex < palette.size()) {
                     auto stateTag = palette[stateIndex];
@@ -850,8 +856,8 @@ int main() {
     }
 
     // light
-    for (i64 x = 0; x < world_size.x; x++) {
-        for (i64 z = 0; z < world_size.z; z++) {
+    for (u64 x = 0; x < world_size.x; x++) {
+        for (u64 z = 0; z < world_size.z; z++) {
             VoxelHeightChunk& heightChunk = voxelHeightWorld.chunks[voxelHeightWorld.getChunkIndex(x, z)];
             heightChunk.pos = Vec2<i64>(x, z) - world_chunk_height_center;
 
@@ -867,10 +873,10 @@ int main() {
     }
 
     // light
-    for (i64 x = 0; x < world_size.x; x++) {
-        for (i64 z = 0; z < world_size.z; z++) {
+    for (u64 x = 0; x < world_size.x; x++) {
+        for (u64 z = 0; z < world_size.z; z++) {
             VoxelHeightChunk& heightChunk = voxelHeightWorld.chunks[voxelHeightWorld.getChunkIndex(x, z)];
-            for (i64 y = 0; y < world_size.y; y++) {
+            for (u64 y = 0; y < world_size.y; y++) {
                 VoxelBlockChunk& blockChunk = voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)];
                 VoxelLightChunk& lightChunk = voxelLightWorld.chunks[voxelLightWorld.getChunkIndex(x, y, z)];
 
@@ -887,9 +893,9 @@ int main() {
 
 
     // mesh
-    for (i64 x = 0; x < world_size.x; x++) {
-        for (i64 y = 0; y < world_size.y; y++) {
-            for (i64 z = 0; z < world_size.z; z++) {
+    for (u64 x = 0; x < world_size.x; x++) {
+        for (u64 y = 0; y < world_size.y; y++) {
+            for (u64 z = 0; z < world_size.z; z++) {
                 VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[voxelWorldRenderer.getChunkIndex(x, y, z)];
 
                 auto start = std::chrono::high_resolution_clock::now();
@@ -1277,7 +1283,7 @@ int main() {
             if (camBlockPos != lastCamBlockPos) {
                 // printf("sort (%i %i %i)\n", camBlockPos.x, camBlockPos.y, camBlockPos.z);
 
-                for (i64 i = 0; i < voxelWorldRenderer.size.volume(); i++) {
+                for (u64 i = 0; i < voxelWorldRenderer.size.volume(); i++) {
                     VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[i];
                     if (camChunkPos == chunk.chunk->pos) {
                         Vec3<i64> pos = camBlockPos - (camChunkPos * CS);
@@ -1290,7 +1296,7 @@ int main() {
                     // printf("sort chunks\n");
                     voxelWorldRenderer.sortChunks(camChunkPos);
 
-                    for (i64 i = 0; i < voxelWorldRenderer.size.volume(); i++) {
+                    for (u64 i = 0; i < voxelWorldRenderer.size.volume(); i++) {
                         VoxelChunkRenderer& chunk = voxelWorldRenderer.chunks[i];
 
                         // only rerender chunks that are NOT the new chunk AND are directly next to the new chunk

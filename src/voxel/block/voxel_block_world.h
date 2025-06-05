@@ -12,7 +12,7 @@ public:
 
 class VoxelBlockWorld : public VoxelWorld<VoxelBlockChunk> {
 public:
-    
+    using VoxelWorld<VoxelBlockChunk>::VoxelWorld;
 };
 
 #endif

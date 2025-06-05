@@ -10,7 +10,7 @@ public:
 
 class VoxelLightWorld : public VoxelWorld<VoxelLightChunk> {
 public:
-
+    using VoxelWorld<VoxelLightChunk>::VoxelWorld;
 };
 
 #endif

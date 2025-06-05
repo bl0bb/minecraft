@@ -1,10 +1,9 @@
 CC_VERSION = 20
 
 ERROR_FLAGS = \
-# -Wall\
-# -Wextra\
-# -Werror\
-# -pedantic
+-Wall\
+-Wextra\
+-pedantic
 
 CORE_FILES = \
 src/FastNoise/FastNoise.cpp\
@@ -25,8 +24,8 @@ LIBS = -Idep/include -Ldep/lib -lglfw3dll -lz
 # GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
 # LIBS = -L$(GLFW_LIB_DIR) -lglfw -I$(GLFW_INCLUDE_DIR) -lz
 
-# linux (from macos)
-# CC = x86_64-unknown-linux-gnu-g++
+# linux
+# CC = g++
 # GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
 # GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
 # LIBS = -L$(GLFW_LIB_DIR) -lglfw -I$(GLFW_INCLUDE_DIR) -lz
