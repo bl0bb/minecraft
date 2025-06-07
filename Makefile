@@ -1,9 +1,9 @@
 CC_VERSION = 20
 
 ERROR_FLAGS = \
--Wall\
--Wextra\
--pedantic
+# -Wall\
+# -Wextra\
+# -pedantic
 
 CORE_FILES = \
 src/FastNoise/FastNoise.cpp\

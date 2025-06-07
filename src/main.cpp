@@ -595,6 +595,10 @@ int main() {
 
         VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 80, 6,  start_z, EmbeddedVoxel(BlockTypes::GLASS_PANE));
         VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 80, 6,  start_z, BlockStateVoxel(new BlockStateStruct(GlassPaneBlockState(0b1111)))); // all
+
+        // poppy
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 84, 6,  start_z, EmbeddedVoxel(BlockTypes::POPPY));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 84, 6,  start_z, BlockStateVoxel(new BlockStateStruct(BlockBlockState())));
     }
 
 
@@ -752,9 +756,6 @@ int main() {
                             std::string facing = std::get<std::string>(properties->at("facing")->value);
                             std::get<TorchBlockState>(*newState).direction = facing[0] - 'x';
                         }
-
-                        // light
-                        ChunkLight::add_light(voxelBlockWorld, voxelLightWorld, worldPos, Colors::createRGBIS4(15, 15, 15, 0, 0));
                     } else if (blockTemplate.stateType == BlockStateTypes::GLASS_PANE) {
                         *newState = GlassPaneBlockState();
                         if (hasProperties) {
@@ -769,9 +770,6 @@ int main() {
                                 (north == "true" ? 1 : 0) << 3
                             );
                         }
-
-                        // light
-                        ChunkLight::add_light(voxelBlockWorld, voxelLightWorld, worldPos, Colors::createRGBIS4(15, 15, 15, 0, 0));
                     }
 
                     VoxelWorlds::placeVoxel(voxelBlockWorld,      worldPos.x, worldPos.y, worldPos.z, EmbeddedVoxel(blockType));
@@ -932,7 +930,6 @@ int main() {
         voxelHeightWorld.updateHeightAtPos(modifyPos, *voxel, *blockStateVoxel);
 
         ChunkLight::remove_light(voxelBlockWorld, voxelLightWorld, modifyPos);
-        ChunkLight::update_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, modifyPos);
         
         Vec3<i64> blockChunkPos = voxelWorldRenderer.worldToChunkPos(modifyPos);
         VoxelChunkRenderer& blockChunk = voxelWorldRenderer.chunks[voxelWorldRenderer.chunkPosToChunkIndex(blockChunkPos)];
@@ -1202,6 +1199,8 @@ int main() {
                     EmbeddedVoxel* voxel;
                     BlockStateVoxel* blockStateVoxel;
                     if (getBlockAndStateAtPos(modifyPos, &voxel, &blockStateVoxel)) {
+                        RGBIS4 light = *VoxelWorlds::getVoxelUnsafe(voxelLightWorld, modifyPos.x, modifyPos.y, modifyPos.z);
+
                         *voxel = EmbeddedVoxel(BlockTypes::COBBLESTONE);
                         *blockStateVoxel->state = BlockBlockState();
 

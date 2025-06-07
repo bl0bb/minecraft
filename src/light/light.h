@@ -62,11 +62,13 @@ namespace ChunkLight {
             auto [pos, _] = lightQueue.front();
             lightQueue.pop();
 
-            RGBIS4* light;
-            if (!VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &light)) {
+            RGBIS4* lightPtr;
+            if (!VoxelWorlds::getVoxel(voxelLightWorld, pos.x, pos.y, pos.z, &lightPtr)) {
                 continue;
             }
-            u8 val = (*light & mask) >> offset;
+            RGBIS4 light = *lightPtr;
+
+            u32 val = (light & mask) >> offset;
 
             // propagate in reverse of enum Direction order so DOWN is first
             // this will improve sunlight propagation speed
@@ -83,7 +85,7 @@ namespace ChunkLight {
                     continue;
                 }
 
-                u8 newVal = (*newLight & mask) >> offset;
+                u32 newVal = (*newLight & mask) >> offset;
 
                 BlockVoxelData newBlock = BLOCK_VOXEL_DATA[voxel->type];
 
@@ -99,9 +101,10 @@ namespace ChunkLight {
 
                 if ((newVal != 0 || newBlock.transparent/* || blockMesh.culls(actualDir)*/) && ((sunlight_down && newVal < val) || (newVal + 1 < val))) {
                     // sunlight does not get dimmer as it propagates down
-                    i8 delta = sunlight_down ? 0 : -1;
+                    i32 delta = sunlight_down ? 0 : -1;
                     
-                    *newLight = (*newLight & ~mask) | ((((*light & mask) >> offset) + delta) << offset);
+                    *newLight = (*newLight & ~mask) | ((((light & mask) >> offset) + delta) << offset);
+                    // *newLight = (*newLight & ~mask) | (std::max(i32((light & mask) >> offset) + delta, i32(0)) << offset);
 
                     lightQueue.push({newPos, 0});
                 }
@@ -122,7 +125,7 @@ namespace ChunkLight {
                 if (!VoxelWorlds::getVoxel(voxelLightWorld, newPos.x, newPos.y, newPos.z, &newLight)) {
                     continue;
                 }
-                u8 newValue = (*newLight & mask) >> offset;
+                u32 newValue = (*newLight & mask) >> offset;
 
                 bool sunlight_down = type == SUN_LIGHT && i == 0;
 
@@ -164,12 +167,12 @@ namespace ChunkLight {
 
         lightQueue.push({pos, (oldLight & mask) >> offset});
         remove_propagate(voxelWorld, voxelLightWorld, lightQueue, propQueue, mask, offset, type);
-        add_propagate(voxelWorld, voxelLightWorld, lightQueue, mask, offset, type);
+        add_propagate(voxelWorld, voxelLightWorld, propQueue, mask, offset, type);
     }
 
     static void add_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, RGBIS4 light) {
         for (u8 i = 0; i < 4; i++) {
-            u8 offset = i * 4;
+            u32 offset = i * 4;
             u32 mask = 0xF << offset;
             add_channel(voxelWorld, voxelLightWorld, pos, (light & mask) >> offset, mask, offset, DEFAULT_LIGHT);
         }
@@ -179,7 +182,7 @@ namespace ChunkLight {
         for (u8 i = 0; i < 5; i++) {
             bool sunlight = i == 4;
 
-            u8 offset = i * 4;
+            u32 offset = i * 4;
             u32 mask = 0xF << offset;
             remove_channel(voxelWorld, voxelLightWorld, pos, mask, offset, sunlight ? SUN_LIGHT : DEFAULT_LIGHT);
         }

@@ -85,10 +85,10 @@ struct VoxelFace {
     inline u32 getLight0() const {      return (data2 >>         0) & (1048576 - 1); }
     inline u32 getLight1() const {      return (data2 >>        20) & (1048576 - 1); }
     inline u32 getLight2() const {      return (data2 >>        40) & (1048576 - 1); }
-    inline u32 getLight3() const {      return (data2 >>        60) & (1048576 - 1) | ((data3 & ((1048576 - 1) >> 4)) << 4); }
+    inline u32 getLight3() const {      return((data2 >>        60) & (1048576 - 1)) | ((data3 & ((1048576 - 1) >> 4)) << 4); }
     inline u32 getLight4() const {      return (data3 >>        16) & (1048576 - 1); }
     inline u32 getLight5() const {      return (data3 >>        36) & (1048576 - 1); }
-    inline u32 getLight6() const {      return (data3 >>        56) & (1048576 - 1) | ((data4 & ((1048576 - 1) >> 8)) << 8); }
+    inline u32 getLight6() const {      return((data3 >>        56) & (1048576 - 1)) | ((data4 & ((1048576 - 1) >> 8)) << 8); }
     inline u32 getLight7() const {      return (data4 >>        12) & (1048576 - 1); }
     inline u32 getLight8() const {      return (data4 >>        32) & (1048576 - 1); }
 

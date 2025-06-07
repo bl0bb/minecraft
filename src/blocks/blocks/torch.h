@@ -10,7 +10,7 @@ constexpr inline BlockTexture _torch_get_texture(const BlockStateStruct& state, 
 }
 
 constexpr inline RGBI4 getTorchLight() {
-    return Colors::createRGBI4(15, 0, 0, 15);
+    return Colors::createRGBI4(15, 15, 15, 15);
 }
 
 void _torch_init() {

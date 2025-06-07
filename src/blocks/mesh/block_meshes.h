@@ -24,6 +24,9 @@
 // glass pane
 #include "../block_meshes/glass_pane.h"
 
+// cross
+#include "../block_meshes/cross.h"
+
 void loadBlocksMeshes() {
     // standard building blocks
     _loadBlockBlockMesh();
@@ -38,6 +41,9 @@ void loadBlocksMeshes() {
 
     // glass pane
     _loadGlassPaneBlockMesh();
+
+    // cross
+    _loadCrossBlockMesh();
 }
 
 #endif

@@ -37,23 +37,23 @@ namespace Colors {
     constexpr u8 COLOR8_MAX = 255;
 
     constexpr inline RGB4 createRGB4(u8 r, u8 g, u8 b) {
-        return (b << 8) | (g << 4) | r;
+        return (u64(b) << 8) | (u64(g) << 4) | u64(r);
     }
 
     constexpr inline RGBI4 createRGBI4(u8 r, u8 g, u8 b, u8 i) {
-        return (i << 12) | (b << 8) | (g << 4) | r;
+        return (u64(i) << 12) | (u64(b) << 8) | (u64(g) << 4) | u64(r);
     }
 
     constexpr inline RGBIS4 createRGBIS4(u8 r, u8 g, u8 b, u8 i, u8 s) {
-        return (s << 16) | (i << 12) | (b << 8) | (g << 4) | r;
+        return (u64(s) << 16) | (u64(i) << 12) | (u64(b) << 8) | (u64(g) << 4) | u64(r);
     }
 
     constexpr inline RGB8 createRGB8(u8 r, u8 g, u8 b) {
-        return (b << 16) | (g << 8) | r;
+        return (u64(b) << 16) | (u64(g) << 8) | u64(r);
     }
 
     constexpr inline RGBI8 createRGBI8(u8 r, u8 g, u8 b, u8 i) {
-        return (i << 24) | (b << 16) | (g << 8) | r;
+        return (u64(i) << 24) | (u64(b) << 16) | (u64(g) << 8) | u64(r);
     }
 
     template<typename T>
@@ -76,8 +76,7 @@ namespace Colors {
     }
 
     constexpr inline RGBIS4 setSunlight(RGBIS4 color, u8 sunlight) {
-        // TODO: typecast COLOR4_MAX to u32 here? (maybe even sunlight as well?)
-        return (color & ~(COLOR4_MAX << 16)) | (sunlight << 16);
+        return (color & ~(u64(COLOR4_MAX) << 16)) | (u64(sunlight) << 16);
     }
 };
 

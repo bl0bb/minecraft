@@ -14,6 +14,7 @@ enum BlockMeshTypeEnum {
     LOG,
     TORCH,
     GLASS_PANE,
+    CROSS,
 };
 }
 

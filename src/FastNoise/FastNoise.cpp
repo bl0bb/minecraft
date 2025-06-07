@@ -401,9 +401,6 @@ FN_DECIMAL FastNoise::GetNoise(FN_DECIMAL x, FN_DECIMAL y, FN_DECIMAL z) const
 			return SingleCubicFractalBillow(x, y, z);
 		case RigidMulti:
 			return SingleCubicFractalRigidMulti(x, y, z);
-		default:
-			throw new std::runtime_error("invalid fractal type");
-			return;
 		}
 	default:
 		return 0;
@@ -428,9 +425,6 @@ FN_DECIMAL FastNoise::GetNoise(FN_DECIMAL x, FN_DECIMAL y) const
 			return SingleValueFractalBillow(x, y);
 		case RigidMulti:
 			return SingleValueFractalRigidMulti(x, y);
-		default:
-			throw new std::runtime_error("invalid fractal type");
-			return;
 		}
 	case Perlin:
 		return SinglePerlin(0, x, y);
@@ -443,9 +437,6 @@ FN_DECIMAL FastNoise::GetNoise(FN_DECIMAL x, FN_DECIMAL y) const
 			return SinglePerlinFractalBillow(x, y);
 		case RigidMulti:
 			return SinglePerlinFractalRigidMulti(x, y);
-		default:
-			throw new std::runtime_error("invalid fractal type");
-			return;
 		}
 	case Simplex:
 		return SingleSimplex(0, x, y);
