@@ -115,7 +115,7 @@ public:
 
         for (u32 i = 0; i < voxel_count; i++) {
             VoxelFace face = voxel_faces[i];
-            f64 dist = (Vec3<i64>(pos) - Vec3<i64>(face.getX(), face.getY(), face.getZ())).magnitude();
+            f64 dist = (Vec3<i64>(pos) - Vec3<i64>(face.x, face.y, face.z)).magnitude();
             faces[i] = ChunkMeshSortFace(dist, face);
         }
 
@@ -135,13 +135,13 @@ public:
     // TODO
     // void sortNeighbor(u8 xSort, u8 ySort, u8 zSort) {
     //     std::sort(voxel_faces, voxel_faces + voxel_count, [dir](const VoxelFace& a, const VoxelFace& b) {
-    //         u8 aX = a.getX();
-    //         u8 aY = a.getY();
-    //         u8 aZ = a.getZ();
+    //         u8 aX = a.x;
+    //         u8 aY = a.y;
+    //         u8 aZ = a.z;
 
-    //         u8 bX = b.getX();
-    //         u8 bY = b.getY();
-    //         u8 bZ = b.getZ();
+    //         u8 bX = b.x;
+    //         u8 bY = b.y;
+    //         u8 bZ = b.z;
 
 
     //     });

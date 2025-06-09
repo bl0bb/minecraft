@@ -353,67 +353,85 @@ struct Mat4 {
         return result;
     }
 
-    void scale(T x, T y, T z) {
-        *this = (*this) * scalingMatrix(x, y, z);
+    Mat4<T> scale(T x, T y, T z) {
+        return *this * scalingMatrix(x, y, z);
     }
 
-    void translate(T x, T y, T z) {
-        *this = (*this) * translationMatrix(x, y, z);
+    Mat4<T> translate(T x, T y, T z) {
+        return *this * translationMatrix(x, y, z);
     }
 
-    void translate(const Vec3<T>& vec) {
-        translate(vec.x, vec.y, vec.z);
+    Mat4<T> translate(const Vec3<T>& vec) {
+        return translate(vec.x, vec.y, vec.z);
     }
 
-    void translateWorld(T x, T y, T z) {
-        *this = translationMatrix(x, y, z) * (*this);
+    Mat4<T> translateWorld(T x, T y, T z) {
+        return translationMatrix(x, y, z) * *this;
     }
 
-    void translateWorld(const Vec3<T>& vec) {
-        translateWorld(vec.x, vec.y, vec.z);
+    Mat4<T> translateWorld(const Vec3<T>& vec) {
+        return translateWorld(vec.x, vec.y, vec.z);
     }
 
-    void rotate(T x, T y, T z) {
-        *this = *this * rotationMatrix(x, y, z);
+    Mat4<T> rotate(T x, T y, T z) {
+        return *this * rotationMatrix(x, y, z);
+    }
+
+    Mat4<T> rotate(const Vec3<T>& vec) {
+        return rotate(vec.x, vec.y, vec.z);
     }
 
     Vec3<T> extractPosition() const {
         return { m[0][3], m[1][3], m[2][3] };
     }
 
+    Vec3<T> getEulerAnglesXYZ() {
+        T x, y, z;
+
+        if (std::abs(m[0][2]) < 1 - static_cast<T>(1e-6)) {
+            // Unique solution
+            y = std::asin(-m[0][2]);
+            x = std::atan2(m[1][2], m[2][2]);
+            z = std::atan2(m[0][1], m[0][0]);
+        } else {
+            // Gimbal lock: cos(y) == 0
+            y = m[0][2] <= -1 ? static_cast<T>(M_PI) / 2 : -static_cast<T>(M_PI) / 2;
+            x = std::atan2(-m[2][1], m[1][1]);
+            z = 0;
+        }
+
+        return {x, y, z};
+    }
+
     static Mat4<T> perspective(T fov_y, T aspect, T z_near, T z_far) {
-        // Mat4<T> result{};
-        // T f = static_cast<T>(1) / std::tan(fov_y / static_cast<T>(2));
-        // result.m[0][0] = f / aspect;
-        // result.m[1][1] = f;
-        // result.m[2][2] = (z_far + z_near) / (z_near - z_far);
-        // result.m[3][2] = -1;
-        // result.m[2][3] = (static_cast<T>(2) * z_far * z_near) / (z_near - z_far);
-        // return result;
-
-
-
         f64 tan_half_fov_y = std::tan(fov_y / static_cast<T>(2));
-
+        
         Mat4<T> result = identity();
         result.m[0][0] = static_cast<T>(1) / (aspect * tan_half_fov_y);
         result.m[1][1] = static_cast<T>(1) / (tan_half_fov_y);
         result.m[2][2] = -(z_far + z_near) / (z_far - z_near);
         result.m[3][2] = static_cast<T>(-1);
         result.m[2][3] = -(static_cast<T>(2) * z_far * z_near) / (z_far - z_near);
+
         return result;
     }
 
     static Mat4<T> ortho(T left, T right, T bottom, T top, T z_near = static_cast<T>(-1), T z_far = static_cast<T>(1)) {
         Mat4<T> result = identity();
 
+        // result.m[0][0] = static_cast<T>(2) / (right - left);
+        // result.m[1][1] = static_cast<T>(2) / (top - bottom);
+        // result.m[2][2] = static_cast<T>(-2) / (z_far - z_near);
+        // result.m[0][3] = -(right + left) / (right - left);
+        // result.m[1][3] = -(top + bottom) / (top - bottom);
+        // result.m[2][3] = -(z_far + z_near) / (z_far - z_near);
+
         result.m[0][0] = static_cast<T>(2) / (right - left);
         result.m[1][1] = static_cast<T>(2) / (top - bottom);
         result.m[2][2] = static_cast<T>(-2) / (z_far - z_near);
-
-        result.m[0][3] = -(right + left) / (right - left);
-        result.m[1][3] = -(top + bottom) / (top - bottom);
-        result.m[2][3] = -(z_far + z_near) / (z_far - z_near);
+        result.m[3][0] = -(right + left) / (right - left);
+        result.m[3][1] = -(top + bottom) / (top - bottom);
+        result.m[3][2] = -(z_far + z_near) / (z_far - z_near);
         
         return result;
     }

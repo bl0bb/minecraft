@@ -10,6 +10,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include <windows.h>
+#endif
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -50,9 +56,10 @@
 
 // TODO: add quad support for rendering and for obj importing??
 
-constexpr u16 WINDOW_WIDTH = 1920;
-constexpr u16 WINDOW_HEIGHT = 1080;
-const bool FULLSCREEN = false;
+u16 WINDOW_WIDTH = 1920;
+u16 WINDOW_HEIGHT = 1080;
+constexpr bool FULLSCREEN = true;
+constexpr bool FULLSCREEN_EXCLUSIVE = false;
 
 
 Shader* shader;
@@ -120,6 +127,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // Call this once per frame to update last frame key states
 void updateLastKeyStates() {
     lastKeyStates = currentKeyStates;
+}
+
+
+
+
+
+// window size callback
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    std::cout << "Window resized: " << width << " x " << height << std::endl;
+
+    // Adjust the viewport to the new window size
+    WINDOW_WIDTH = width;
+    WINDOW_HEIGHT = height;
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 
 
@@ -237,12 +258,45 @@ GLFWwindow* init_window() {
 
     glfwWindowHint(GLFW_SAMPLES, 4);
 
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong", FULLSCREEN ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+    // no white top thingy on windows
+    // havent tested on mac
+    glfwWindowHint(GLFW_DECORATED, true);
+
+
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+    glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+    glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+    glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+    WINDOW_WIDTH = mode->width;
+    WINDOW_HEIGHT = mode->height;
+    if (!FULLSCREEN_EXCLUSIVE) {
+        WINDOW_HEIGHT -= 31;
+    }
+
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong bing bong", FULLSCREEN_EXCLUSIVE ? monitor : nullptr, nullptr);
     if (!window) {
         fprintf(stderr, "Unable to create GLFW window\n");
         glfwDestroyWindow(window);
         glfwTerminate();
         return nullptr;
+    }
+
+    if (FULLSCREEN_EXCLUSIVE) {
+        glfwSetWindowMonitor(window, monitor, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, mode->refreshRate);
+    }
+
+    if (FULLSCREEN) {
+        #ifdef _WIN32
+        // Use Win32 API to maximize the window
+        HWND hwnd = glfwGetWin32Window(window);  // Requires including <GLFW/glfw3native.h>
+        ShowWindow(hwnd, SW_MAXIMIZE);
+        #endif
+    } else {
+        glfwSetWindowPos(window, 50, 50 + 31);
     }
 
     // no cursor thing
@@ -342,7 +396,7 @@ int main() {
     if (!window) {
         return 1;
     }
-    glfwSetWindowPos(window, 0, 31);
+
     glfwSwapInterval(0);
 
     // mouse input
@@ -351,6 +405,9 @@ int main() {
 
     // keyboard input
     glfwSetKeyCallback(window, key_callback);
+
+    // window resize callback
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     #if GL_API == 0 || GL_API == 1
     if (!init_opengl()) {
@@ -599,6 +656,12 @@ int main() {
         // poppy
         VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 84, 6,  start_z, EmbeddedVoxel(BlockTypes::POPPY));
         VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 84, 6,  start_z, BlockStateVoxel(new BlockStateStruct(BlockBlockState())));
+
+        // torch
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 84, 8,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 84, 8,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(0))));
+        VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 84, 10,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+        VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 84, 10,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(1))));
     }
 
 

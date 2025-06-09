@@ -7,14 +7,15 @@
 static BlockMesh _getSlabBlockMesh(const BlockStateStruct& state) {
     auto placement = std::get<SlabBlockState>(state).placement;
 
-    BlockMesh slab(1, 1, 1, 1, 1, 1, false, false, false, false, false, false);
-    slab.faces[0][0] = BlockFace(0,    0,                         0, placement == 0 ? 0 : 8, 16 - 1, (placement == 0 ? 8 : 16) - 1,    0, placement == 0 ? 0 : 8, 16 - 1, (placement == 0 ? 8 : 16) - 1);
-    slab.faces[1][0] = BlockFace(0,    0,                         0, placement == 0 ? 0 : 8, 16 - 1, (placement == 0 ? 8 : 16) - 1,    0, placement == 0 ? 0 : 8, 16 - 1, (placement == 0 ? 8 : 16) - 1);
-    slab.faces[2][0] = BlockFace(0,    placement == 0 ? 8 : 0,    0,                      0, 16 - 1,                        16 - 1,    0,                      0, 16 - 1,                        16 - 1);
-    slab.faces[3][0] = BlockFace(0,    placement == 0 ? 0 : 8,    0,                      0, 16 - 1,                        16 - 1,    0,                      0, 16 - 1,                        16 - 1);
-    slab.faces[4][0] = BlockFace(0,    0,                         0, placement == 0 ? 0 : 8, 16 - 1, (placement == 0 ? 8 : 16) - 1,    0, placement == 0 ? 0 : 8, 16 - 1, (placement == 0 ? 8 : 16) - 1);
-    slab.faces[5][0] = BlockFace(0,    0,                         0, placement == 0 ? 0 : 8, 16 - 1, (placement == 0 ? 8 : 16) - 1,    0, placement == 0 ? 0 : 8, 16 - 1, (placement == 0 ? 8 : 16) - 1);
-    return slab;
+    BlockMesh block(1);
+    block.elements[0] = BlockElement(0, placement == 0 ? 0 : 8, 0,    16, placement == 0 ? 8 : 16, 16,    0, 0, 0,    0, 0, 0,    6);
+    block.elements[0].faces[0] = BlockFace(0,    0,    0, placement == 0 ? 0 : 8, 16, placement == 0 ? 8 : 16,    0);
+    block.elements[0].faces[1] = BlockFace(1,    0,    0, placement == 0 ? 0 : 8, 16, placement == 0 ? 8 : 16,    0);
+    block.elements[0].faces[2] = BlockFace(2,    0,    0, 0, 16, 16,    0);
+    block.elements[0].faces[3] = BlockFace(3,    0,    0, 0, 16, 16,    0);
+    block.elements[0].faces[4] = BlockFace(4,    0,    0, placement == 0 ? 0 : 8, 16, placement == 0 ? 8 : 16,    0);
+    block.elements[0].faces[5] = BlockFace(5,    0,    0, placement == 0 ? 0 : 8, 16, placement == 0 ? 8 : 16,    0);
+    return block;
 }
 
 void _loadSlabBlockMesh() {

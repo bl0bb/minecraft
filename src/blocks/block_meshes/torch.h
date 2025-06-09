@@ -8,14 +8,22 @@ static BlockMesh _getTorchBlockMesh(const BlockStateStruct& state) {
     auto direction = std::get<TorchBlockState>(state).direction;
     (void)direction;
 
-    BlockMesh torch(1, 1, 1, 1, 1, 1, false, false, false, false, false, false);
-    torch.faces[0][0] = BlockFace(0,    7,    7, 0, 8, 9,    7, 0, 8, 9);
-    torch.faces[1][0] = BlockFace(0,    7,    7, 0, 8, 9,    7, 0, 8, 9);
-    torch.faces[2][0] = BlockFace(0,    6,    7, 7, 8, 8,    7, 8, 8, 9);
-    torch.faces[3][0] = BlockFace(0,    0,    7, 7, 8, 8,    7, 0, 8, 1);
-    torch.faces[4][0] = BlockFace(0,    7,    7, 0, 8, 9,    7, 0, 8, 9);
-    torch.faces[5][0] = BlockFace(0,    7,    7, 0, 8, 9,    7, 0, 8, 9);
-    return torch;
+    BlockMesh block(1);
+    
+    if (direction == 0) {
+        block.elements[0] = BlockElement(7, 0, 7,    9, 10, 9,    0, 0, 0,    0, 0, 0,    6);
+    } else {
+        block.elements[0] = BlockElement(-1, 3.5, 7,    1, 13.5, 9,    0, 3.5, 8,    0, 0, -22.5,    6);
+    }
+
+    block.elements[0].faces[0] = BlockFace(0,    0,    7, 0, 9, 10,    0);
+    block.elements[0].faces[1] = BlockFace(1,    0,    7, 0, 9, 10,    0);
+    block.elements[0].faces[2] = BlockFace(2,    0,    7, 8, 9, 10,    0);
+    block.elements[0].faces[3] = BlockFace(3,    1,    7, 0, 9,  2,    0);
+    block.elements[0].faces[4] = BlockFace(4,    0,    7, 0, 9, 10,    0);
+    block.elements[0].faces[5] = BlockFace(5,    0,    7, 0, 9, 10,    0);
+
+    return block;
 }
 
 void _loadTorchBlockMesh() {

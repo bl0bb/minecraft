@@ -84,6 +84,26 @@ constexpr inline void getFaceOffset(T& x, T& y, T& z, u8 axis) {
     }
 }
 
+inline Mat4<f32> getFaceOrig(u8 axis) {
+    Mat4<f32> orig = Mat4<f32>::identity();
+    orig = orig.translate(0.5, 0.5, 0.5);
+    if (axis == 0) {
+        orig = orig.rotate(0, Math::deg_to_rad<f32>(-90), 0);
+    } else if (axis == 1) {
+        orig = orig.rotate(0, Math::deg_to_rad<f32>(90), 0);
+    } else if (axis == 2) {
+        orig = orig.rotate(Math::deg_to_rad<f32>(90), 0, 0);
+    } else if (axis == 3) {
+        orig = orig.rotate(Math::deg_to_rad<f32>(-90), 0, 0);
+    } else if (axis == 4) {
+        orig = orig.rotate(0, Math::deg_to_rad<f32>(180), 0);
+    } else {
+        orig = orig.rotate(0, Math::deg_to_rad<f32>(0), 0);
+    }
+    orig = orig.translate(-0.5, -0.5, -0.5);
+    return orig;
+}
+
 
 u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld, const VoxelLightWorld& voxelLightWorld, const Vec3<i64>& chunkPos, VoxelFace* vertices) {
     VoxelBlockChunk& chunk =           voxelWorld.          chunks[voxelWorld.          chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
@@ -390,12 +410,93 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                         BlockTexture blockTexture = blockData.get_texture(*state, dir);
                         BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
 
-                        for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
-                            BlockFace face = blockMesh.faces[dir][i];
+                        for (u8 i = 0; i < blockMesh.elementCount; i++) {
+                            BlockElement& element = blockMesh.elements[i];
 
-                            // lightChunk.voxels[get_zxy_index(x, y, z)]
-                            vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.depth, face.width(), face.height(), face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.uvRot, dir, blockTexture, lightSources, ao_mask);
+                            Vec3<f32> rot = element.rot();
+
+                            // Mat4<f32> origMat = Mat4<f32>::identity()
+                            //     .translateWorld(element.rotOrig() / 16.0f)
+                            //     .rotate(Math::deg_to_rad<f32>(rot.x), Math::deg_to_rad<f32>(rot.y), Math::deg_to_rad<f32>(rot.z))
+                            //     .translateWorld(element.rotOrig() / 16.0f * -1);
+
+                            Mat4<f32> origMat = Mat4<f32>::identity().rotate(Math::deg_to_rad<f32>(rot.x), Math::deg_to_rad<f32>(rot.y), Math::deg_to_rad<f32>(rot.z));
+                            
+                            for (u8 j = 0; j < element.facesCount; j++) {
+                                BlockFace& face = element.faces[j];
+                                if (face.dir != dir) {
+                                    continue;
+                                }
+
+                                f32 fromX = element.fromX / 16.0f;
+                                f32 fromY = element.fromY / 16.0f;
+                                f32 fromZ = element.fromZ / 16.0f;
+
+                                f32 toX = element.toX / 16.0f;
+                                f32 toY = element.toY / 16.0f;
+                                f32 toZ = element.toZ / 16.0f;
+
+                                f32 sizeX = toX - fromX;
+                                f32 sizeY = toY - fromY;
+                                f32 sizeZ = toZ - fromZ;
+
+                                f32 width;
+                                f32 height;
+                                if (dir & 0b100) {
+                                    width = element.toX - element.fromX;
+                                    height = element.toY - element.fromY;
+                                } else if (dir & 0b10) {
+                                    width = element.toX - element.fromX;
+                                    height = element.toZ - element.fromZ;
+                                } else {
+                                    width = element.toZ - element.fromZ;
+                                    height = element.toY - element.fromY;
+                                }
+
+                                Mat4<f32> startPos = Mat4<f32>::identity().translate(fromX, fromY, fromZ);
+
+                                // Mat4<f32> translated = origMat * startPos;
+                                Mat4<f32> translated = origMat * Mat4<f32>::identity().translateWorld(element.rotOrig() / 16.0f * -1.0f) * startPos; // move to the rotation origin and rotate, then 
+
+                                Mat4<f32> faceOrig = getFaceOrig(dir); // vertex pos for face
+                                Vec3<f32> origPos = faceOrig.extractPosition(); // get only the pos
+                                translated = translated.translate(origPos.x * sizeX, origPos.y * sizeY, origPos.z * sizeZ); // move the face to fit the cube
+                                translated = translated * faceOrig.translateWorld(origPos * -1.0f); // remove the position from the face matrix and rotate the face to fit the cube
+
+                                translated = translated.translateWorld(element.rotOrig() / 16.0f); // move back from the rotation origin
+
+                                Vec3<f32> translatedPos = translated.extractPosition() * 16.0f;
+                                Vec3<f32> translatedRot = translated.getEulerAnglesXYZ();
+
+                                vertices[vertexIdx++] = VoxelFace(
+                                    x, y, z,
+
+                                    translatedPos.x, translatedPos.y, translatedPos.z,
+
+                                    width, height,
+
+                                    translatedRot.x, translatedRot.y, translatedRot.z,
+
+                                    face.uvRot,
+
+                                    face.uvFromX, face.uvFromY,
+
+                                    face.uvToX - face.uvFromX, face.uvToY - face.uvFromY,
+
+                                    dir,
+                                    blockTexture,
+                                    lightSources,
+                                    ao_mask
+                                );
+                            }
                         }
+
+                        // for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
+                        //     BlockFace face = blockMesh.faces[dir][i];
+
+                        //     // lightChunk.voxels[get_zxy_index(x, y, z)]
+                        //     vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.fromZ, face.width, face.height, face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.faceRot, face.uvRot, dir, blockTexture, lightSources, ao_mask);
+                        // }
                     }
                 }
             }

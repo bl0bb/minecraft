@@ -110,6 +110,10 @@ void main() {
       FragColor = sampled;
   }
 
+  if (FragColor.w == 0) {
+    discard;
+  }
+
 
   // directional darkness thingy
   FragColor *= vec4(vec3(lightLookup[Axis]), 1.0);

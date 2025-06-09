@@ -6,13 +6,14 @@
 
 static BlockMesh _getBlockBlockMesh(const BlockStateStruct& state) {
     (void)state;
-    BlockMesh block(1, 1, 1, 1, 1, 1, true, true, true, true, true, true);
-    block.faces[0][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    block.faces[1][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    block.faces[2][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    block.faces[3][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    block.faces[4][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    block.faces[5][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
+    BlockMesh block(1);
+    block.elements[0] = BlockElement(0, 0, 0,    16, 16, 16,    0, 0, 0,    0, 0, 0,    6);
+    block.elements[0].faces[0] = BlockFace(0,    1,    0, 0, 16, 16,    0);
+    block.elements[0].faces[1] = BlockFace(1,    1,    0, 0, 16, 16,    0);
+    block.elements[0].faces[2] = BlockFace(2,    1,    0, 0, 16, 16,    0);
+    block.elements[0].faces[3] = BlockFace(3,    1,    0, 0, 16, 16,    0);
+    block.elements[0].faces[4] = BlockFace(4,    1,    0, 0, 16, 16,    0);
+    block.elements[0].faces[5] = BlockFace(5,    1,    0, 0, 16, 16,    0);
     return block;
 }
 

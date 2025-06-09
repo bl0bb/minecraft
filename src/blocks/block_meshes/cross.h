@@ -6,13 +6,16 @@
 
 static BlockMesh _getCrossBlockMesh(const BlockStateStruct& state) {
     (void)state;
-    BlockMesh cross(1, 1, 1, 1, 1, 1, true, true, true, true, true, true);
-    cross.faces[0][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    cross.faces[1][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    cross.faces[2][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    cross.faces[3][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    cross.faces[4][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
-    cross.faces[5][0] = BlockFace(0,    0,    0, 0, 16 - 1, 16 - 1,    0, 0, 16 - 1, 16 - 1);
+    BlockMesh cross(2);
+    
+    cross.elements[0] = BlockElement(0, 0, 8,    16, 16, 8,    8, 8, 8,    0,  45, 0,    2);
+    cross.elements[0].faces[0] = BlockFace(4,    0,    0, 0, 16, 16,    0);
+    cross.elements[0].faces[1] = BlockFace(5,    0,    0, 0, 16, 16,    0);
+
+    cross.elements[1] = BlockElement(0, 0, 8,    16, 16, 8,    8, 8, 8,    0, -45, 0,    2);
+    cross.elements[1].faces[0] = BlockFace(4,    0,    0, 0, 16, 16,    0);
+    cross.elements[1].faces[1] = BlockFace(5,    0,    0, 0, 16, 16,    0);
+
     return cross;
 }
 

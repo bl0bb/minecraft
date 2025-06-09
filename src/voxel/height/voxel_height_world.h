@@ -39,7 +39,8 @@ public:
                 found_block = false;
                 heightmap[getXZIndex(x, z)] = CS;
                 for (u8 y = CS - 1; y >= 0; y--) {
-                    BlockVoxelData blockData = BLOCK_VOXEL_DATA[chunk.voxels[get_zxy_index(x, y, z)].type];
+                    BlockType blockType = chunk.voxels[get_zxy_index(x, y, z)].type;
+                    BlockVoxelData blockData = BLOCK_VOXEL_DATA[blockType];
                     if (blockData.transparent) {
                         continue;
                     }
@@ -47,7 +48,7 @@ public:
                     BlockStateStruct* state = stateChunk.voxels[get_zxy_index(x, y, z)].state;
                     BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
 
-                    if (blockMesh.culls(2) || blockMesh.culls(3)) {
+                    if (blockType != BlockTypes::AIR) { // blockMesh.culls(2) || blockMesh.culls(3)
                         found_block = true;
                         heightmap[getXZIndex(x, z)] = y;
                         break;
