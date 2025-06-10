@@ -11,7 +11,8 @@
 #include "types.h"
 
 // math.h stuff C++ in MS doesnt work properly or something so define pi manually
-#define M_PI 3.14159265358979323846 // 3.14159265358979323846264338327950288
+// 3.14159265358979323846264338327950288
+#define M_PI 3.14159265358979323846
 
 namespace Math {
 
@@ -61,50 +62,50 @@ struct Vec2 {
           y(static_cast<T>(other.y)) {}
 
     // Addition
-    Vec2<T> operator+(const Vec2<T>& other) const {
+    constexpr inline Vec2<T> operator+(const Vec2<T>& other) const {
         return Vec2<T>(x + other.x, y + other.y);
     }
 
     // Subtraction
-    Vec2<T> operator-(const Vec2<T>& other) const {
+    constexpr inline Vec2<T> operator-(const Vec2<T>& other) const {
         return Vec2<T>(x - other.x, y - other.y);
     }
 
     // Scalar multiplication
     template<typename T1>
-    Vec2<T> operator*(T1 scalar) const {
+    constexpr inline Vec2<T> operator*(T1 scalar) const {
         return Vec2<T>(x * scalar, y * scalar);
     }
 
     // Scalar division
     template<typename T1>
-    Vec2<T> operator/(T1 scalar) const {
+    constexpr inline Vec2<T> operator/(T1 scalar) const {
         return Vec2<T>(x / scalar, y / scalar);
     }
 
     // Dot product
-    T dot(const Vec2<T>& other) const {
+    constexpr inline T dot(const Vec2<T>& other) const {
         return x * other.x + y * other.y;
     }
 
     // Cross product
-    T cross(const Vec2<T>& other) const {
+    constexpr inline T cross(const Vec2<T>& other) const {
         return x * other.y - y * other.x;
     }
 
     // Magnitude (length)
-    f64 magnitude() const {
+    constexpr inline f64 magnitude() const {
         return std::sqrt(x * x + y * y);
     }
 
     // Normalize
-    Vec2<T> normalized() const {
+    constexpr inline Vec2<T> normalized() const {
         T mag = magnitude();
         return mag == T(0) ? *this : *this / mag;
     }
 
     // Floor
-    Vec2<T> floor() const {
+    constexpr inline Vec2<T> floor() const {
         return Vec2<T>(
             floor(x),
             floor(y)
@@ -112,24 +113,24 @@ struct Vec2 {
     }
 
     // Sum
-    T sum() const {
+    constexpr inline T sum() const {
         return x + y;
     }
 
     // Volume
-    T volume() const {
+    constexpr inline T volume() const {
         return x * y;
     }
 
-    Vec2<T> abs() const {
+    constexpr inline Vec2<T> abs() const {
         return Vec2<T>(std::abs(x), std::abs(y));
     }
 
-    T max() const {
+    constexpr inline T max() const {
         return std::max(x, y);
     }
 
-    T min() const {
+    constexpr inline T min() const {
         return std::min(x, y);
     }
 
@@ -143,12 +144,12 @@ struct Vec2 {
     }
 
     // Equal
-    bool operator==(const Vec2<T>& other) const {
+    constexpr inline bool operator==(const Vec2<T>& other) const {
         return x == other.x && y == other.y;
     }
 
     // Not equal
-    bool operator!=(const Vec2<T>& other) const {
+    constexpr inline bool operator!=(const Vec2<T>& other) const {
         return x != other.x || y != other.y;
     }
 };
@@ -188,34 +189,34 @@ struct Vec3 {
           z(static_cast<T>(other.z)) {}
 
     // Addition
-    Vec3<T> operator+(const Vec3<T>& other) const {
+    constexpr inline Vec3<T> operator+(const Vec3<T>& other) const {
         return Vec3<T>(x + other.x, y + other.y, z + other.z);
     }
 
     // Subtraction
-    Vec3<T> operator-(const Vec3<T>& other) const {
+    constexpr inline Vec3<T> operator-(const Vec3<T>& other) const {
         return Vec3<T>(x - other.x, y - other.y, z - other.z);
     }
 
     // Scalar multiplication
     template<typename T1>
-    Vec3<T> operator*(T1 scalar) const {
+    constexpr inline Vec3<T> operator*(T1 scalar) const {
         return Vec3<T>(x * scalar, y * scalar, z * scalar);
     }
 
     // Scalar division
     template<typename T1>
-    Vec3<T> operator/(T1 scalar) const {
+    constexpr inline Vec3<T> operator/(T1 scalar) const {
         return Vec3<T>(x / scalar, y / scalar, z / scalar);
     }
 
     // Dot product
-    T dot(const Vec3<T>& other) const {
+    constexpr inline T dot(const Vec3<T>& other) const {
         return x * other.x + y * other.y + z * other.z;
     }
 
     // Cross product
-    Vec3<T> cross(const Vec3<T>& other) const {
+    constexpr inline Vec3<T> cross(const Vec3<T>& other) const {
         return Vec3<T>(
             y * other.z - z * other.y,
             z * other.x - x * other.z,
@@ -224,18 +225,18 @@ struct Vec3 {
     }
 
     // Magnitude (length)
-    f64 magnitude() const {
+    constexpr inline f64 magnitude() const {
         return std::sqrt(x * x + y * y + z * z);
     }
 
     // Normalize
-    Vec3<T> normalized() const {
+    constexpr inline Vec3<T> normalized() const {
         T mag = magnitude();
         return mag == T(0) ? *this : *this / mag;
     }
 
     // Floor
-    Vec3<T> floor() const {
+    constexpr inline Vec3<T> floor() const {
         return Vec3<T>(
             std::floor(x),
             std::floor(y),
@@ -244,7 +245,7 @@ struct Vec3 {
     }
 
     // Sign
-    Vec3<T> sign() const {
+    constexpr inline Vec3<T> sign() const {
         return Vec3<T>(
             Math::sign(x),
             Math::sign(y),
@@ -253,24 +254,24 @@ struct Vec3 {
     }
 
     // Sum
-    T sum() const {
+    constexpr inline T sum() const {
         return x + y + z;
     }
 
     // Volume
-    T volume() const {
+    constexpr inline T volume() const {
         return x * y * z;
     }
 
-    Vec3<T> abs() const {
+    constexpr inline Vec3<T> abs() const {
         return Vec3<T>(std::abs(x), std::abs(y), std::abs(z));
     }
 
-    T max() const {
+    constexpr inline T max() const {
         return std::max(std::max(x, y), z);
     }
 
-    T min() const {
+    constexpr inline T min() const {
         return std::min(std::min(x, y), z);
     }
 
@@ -307,12 +308,12 @@ struct Vec3 {
     }
 
     // Equal
-    bool operator==(const Vec3<T>& other) const {
+    constexpr inline bool operator==(const Vec3<T>& other) const {
         return x == other.x && y == other.y && z == other.z;
     }
 
     // Not equal
-    bool operator!=(const Vec3<T>& other) const {
+    constexpr inline bool operator!=(const Vec3<T>& other) const {
         return x != other.x || y != other.y || z != other.z;
     }
 };
@@ -329,7 +330,7 @@ template <typename T>
 struct Mat4 {
     std::array<std::array<T, 4>, 4> m{};
 
-    static Mat4<T> identity() {
+    static inline Mat4<T> identity() {
         Mat4<T> mat{};
         for (int i = 0; i < 4; ++i)
             mat.m[i][i] = static_cast<T>(1);
@@ -353,35 +354,35 @@ struct Mat4 {
         return result;
     }
 
-    Mat4<T> scale(T x, T y, T z) {
+    inline Mat4<T> scale(T x, T y, T z) {
         return *this * scalingMatrix(x, y, z);
     }
 
-    Mat4<T> translate(T x, T y, T z) {
+    inline Mat4<T> translate(T x, T y, T z) {
         return *this * translationMatrix(x, y, z);
     }
 
-    Mat4<T> translate(const Vec3<T>& vec) {
+    inline Mat4<T> translate(const Vec3<T>& vec) {
         return translate(vec.x, vec.y, vec.z);
     }
 
-    Mat4<T> translateWorld(T x, T y, T z) {
+    inline Mat4<T> translateWorld(T x, T y, T z) {
         return translationMatrix(x, y, z) * *this;
     }
 
-    Mat4<T> translateWorld(const Vec3<T>& vec) {
+    inline Mat4<T> translateWorld(const Vec3<T>& vec) {
         return translateWorld(vec.x, vec.y, vec.z);
     }
 
-    Mat4<T> rotate(T x, T y, T z) {
+    inline Mat4<T> rotate(T x, T y, T z) {
         return *this * rotationMatrix(x, y, z);
     }
 
-    Mat4<T> rotate(const Vec3<T>& vec) {
+    inline Mat4<T> rotate(const Vec3<T>& vec) {
         return rotate(vec.x, vec.y, vec.z);
     }
 
-    Vec3<T> extractPosition() const {
+    inline Vec3<T> extractPosition() const {
         return { m[0][3], m[1][3], m[2][3] };
     }
 
@@ -457,7 +458,7 @@ struct Mat4 {
 		return Result;
     }
 
-    void toGLMatrix(float* out) const {
+    inline void toGLMatrix(float* out) const {
         out[0]  = m[0][0];
         out[1]  = m[1][0];
         out[2]  = m[2][0];
@@ -482,17 +483,17 @@ struct Mat4 {
     }
 
     // Overload for non-const access
-    std::array<T, 4>& operator[](size_t row) {
+    inline std::array<T, 4>& operator[](size_t row) {
         return m[row];
     }
 
     // Overload for const access
-    const std::array<T, 4>& operator[](size_t row) const {
+    const inline std::array<T, 4>& operator[](size_t row) const {
         return m[row];
     }
 
 private:
-    static Mat4<T> scalingMatrix(T x, T y, T z) {
+    static inline Mat4<T> scalingMatrix(T x, T y, T z) {
         Mat4<T> mat = Mat4<T>::identity();
         mat.m[0][0] = x;
         mat.m[1][1] = y;
@@ -500,7 +501,7 @@ private:
         return mat;
     }
 
-    static Mat4<T> translationMatrix(T x, T y, T z) {
+    static inline Mat4<T> translationMatrix(T x, T y, T z) {
         Mat4<T> mat = Mat4<T>::identity();
         mat.m[0][3] = x;
         mat.m[1][3] = y;

@@ -415,12 +415,10 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
                             Vec3<f32> rot = element.rot();
 
-                            // Mat4<f32> origMat = Mat4<f32>::identity()
-                            //     .translateWorld(element.rotOrig() / 16.0f)
-                            //     .rotate(Math::deg_to_rad<f32>(rot.x), Math::deg_to_rad<f32>(rot.y), Math::deg_to_rad<f32>(rot.z))
-                            //     .translateWorld(element.rotOrig() / 16.0f * -1);
-
-                            Mat4<f32> origMat = Mat4<f32>::identity().rotate(Math::deg_to_rad<f32>(rot.x), Math::deg_to_rad<f32>(rot.y), Math::deg_to_rad<f32>(rot.z));
+                            Mat4<f32> origMat = Mat4<f32>::identity();
+                            if (rot != Vec3<f32>(0, 0, 0)) {
+                                origMat = origMat.rotate(Math::deg_to_rad<f32>(rot.x), Math::deg_to_rad<f32>(rot.y), Math::deg_to_rad<f32>(rot.z));
+                            }
                             
                             for (u8 j = 0; j < element.facesCount; j++) {
                                 BlockFace& face = element.faces[j];
@@ -455,7 +453,6 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
                                 Mat4<f32> startPos = Mat4<f32>::identity().translate(fromX, fromY, fromZ);
 
-                                // Mat4<f32> translated = origMat * startPos;
                                 Mat4<f32> translated = origMat * Mat4<f32>::identity().translateWorld(element.rotOrig() / 16.0f * -1.0f) * startPos; // move to the rotation origin and rotate, then 
 
                                 Mat4<f32> faceOrig = getFaceOrig(dir); // vertex pos for face

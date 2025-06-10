@@ -63,6 +63,7 @@ enum BlockTextureEnum : BlockTexture {
     GLASS_PANE_SIDE,
     WATER,
     POPPY,
+    SHORT_GRASS,
     TORCH,
 };
 }
@@ -90,6 +91,7 @@ enum BlockTypeEnum : BlockType {
     GLASS_PANE,
     WATER,
     POPPY,
+    SHORT_GRASS,
     TORCH,
 };
 }

@@ -12,7 +12,7 @@ constexpr inline BlockTexture _poppy_get_texture(const BlockStateStruct& state, 
 void _poppy_init() {
     BLOCK_VOXEL_DATA[BlockTypes::POPPY] = BlockVoxelData(
         BlockStateTypes::BLOCK,
-        BlockMeshTypes::CROSS, // TODO: add plant
+        BlockMeshTypes::CROSS,
         false,
         false,
         false,

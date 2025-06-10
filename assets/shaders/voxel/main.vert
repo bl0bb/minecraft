@@ -27,16 +27,19 @@ layout(std430, binding = 0) readonly buffer instanceDataBuffer {\
 };
 #elif OGL_VERSION == 41
 #define DATA_LAYOUT \
-layout(location = 0) in uint  quadData1;\
-layout(location = 1) in uint  quadData2;\
-layout(location = 2) in uint  quadData3;\
-layout(location = 3) in uint  quadData4;\
-layout(location = 4) in uint  quadData5;\
-layout(location = 5) in uint  quadData6;\
-layout(location = 6) in uint  quadData7;\
-layout(location = 7) in uint  quadData8;\
-layout(location = 8) in uint  quadData9;\
-layout(location = 9) in uint quadData10;
+layout(location =  0) in uvec3 data_pos;\
+layout(location =  1) in  vec3 data_face_pos;\
+layout(location =  2) in  vec2 data_face_size;\
+layout(location =  3) in  vec3 data_face_rot;\
+layout(location =  4) in  uint data_uv_rot;\
+layout(location =  5) in uvec2 data_uv_pos;\
+layout(location =  6) in uvec2 data_uv_size;\
+layout(location =  7) in  uint data_dir;\
+layout(location =  8) in  uint data_type;\
+layout(location =  9) in uvec3 data_light_0_1_2;\
+layout(location = 10) in uvec3 data_light_3_4_5;\
+layout(location = 11) in uvec3 data_light_6_7_8;\
+layout(location = 12) in  uint data_ao;
 #endif
 
 
@@ -169,16 +172,7 @@ void main() {
   uint data_light[9] = data.light;
   uint data_ao = data.ao;
   #elif OGL_VERSION == 41
-  uint  data1 =  quadData1;
-  uint  data2 =  quadData2;
-  uint  data3 =  quadData3;
-  uint  data4 =  quadData4;
-  uint  data5 =  quadData5;
-  uint  data6 =  quadData6;
-  uint  data7 =  quadData7;
-  uint  data8 =  quadData8;
-  uint  data9 =  quadData9;
-  uint data10 = quadData10;
+
   #endif
 
 
@@ -186,14 +180,14 @@ void main() {
 
 
 
-  vec3 offset = vec3(data_x, data_y, data_z);
+  vec3 offset = data_pos;
 
-  vec3 face_pos = vec3(data_face_x, data_face_y, data_face_z) / 16.0;
-  vec2 face_size = vec2(data_face_width, data_face_height) / 16.0;
-  vec3 face_rot = vec3(data_face_rot_x, data_face_rot_y, data_face_rot_z);
+  vec3 face_pos = data_face_pos / 16.0;
+  vec2 face_size = data_face_size / 16.0;
+  vec3 face_rot = data_face_rot;
 
-  vec2 uvOffset = vec2(data_uv_x, data_uv_y) / 16.0;
-  vec2 uvSize = vec2(data_uv_w, data_uv_h) / 16.0;
+  vec2 uvOffset = data_uv_pos / 16.0;
+  vec2 uvSize = data_uv_size / 16.0;
 
   uint axis = data_dir;
   uint isNegative = axis & 1u;
@@ -224,6 +218,7 @@ void main() {
 
 
   // light
+  #if OGL_VERSION == 46
   Light0 = data_light[0];
   Light1 = data_light[1];
   Light2 = data_light[2];
@@ -233,7 +228,17 @@ void main() {
   Light6 = data_light[6];
   Light7 = data_light[7];
   Light8 = data_light[8];
-
+  #elif OGL_VERSION == 41
+  Light0 = data_light_0_1_2.x;
+  Light1 = data_light_0_1_2.y;
+  Light2 = data_light_0_1_2.z;
+  Light3 = data_light_3_4_5.x;
+  Light4 = data_light_3_4_5.y;
+  Light5 = data_light_3_4_5.z;
+  Light6 = data_light_6_7_8.x;
+  Light7 = data_light_6_7_8.y;
+  Light8 = data_light_6_7_8.z;
+  #endif
 
 
 

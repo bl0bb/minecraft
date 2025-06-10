@@ -78,33 +78,82 @@ public:
         glBindVertexArray(voxel_data_vao);
         glBindBuffer(GL_ARRAY_BUFFER, voxel_data_vbo);
 
-        VoxelFace* data = new VoxelFace[voxel_count * 6];
+        VoxelFace data[voxel_count * 6];
         for (u32 i = 0; i < voxel_count; i++) {
             for (u32 j = 0; j < 6; j++) {
                 data[i * 6 + j] = voxel_faces[i];
             }
         }
 
-        glBufferData(GL_ARRAY_BUFFER, voxel_count * 6 * 8 * sizeof(u32), data, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, voxel_count * 6 * sizeof(VoxelFace), data, GL_STATIC_DRAW);
 
-        glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(0 * sizeof(u32)));
+        u64 dataPtr = 0;
+        u16 data_row_size = (3 * sizeof(u32)) + (3 * sizeof(f32)) + (2 * sizeof(f32)) + (3 * sizeof(f32)) + (1 * sizeof(u32)) + (2 * sizeof(u32)) + (2 * sizeof(u32)) + (1 * sizeof(u32)) + (1 * sizeof(u32)) + (3 * sizeof(u32)) + (3 * sizeof(u32)) + (3 * sizeof(u32)) + (1 * sizeof(u32));
+
+        // data_pos
+        glVertexAttribIPointer(0, 3, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
         glEnableVertexAttribArray(0);
-        glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(1 * sizeof(u32)));
-        glEnableVertexAttribArray(1);
-        glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(2 * sizeof(u32)));
-        glEnableVertexAttribArray(2);
-        glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(3 * sizeof(u32)));
-        glEnableVertexAttribArray(3);
-        glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(4 * sizeof(u32)));
-        glEnableVertexAttribArray(4);
-        glVertexAttribIPointer(5, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(5 * sizeof(u32)));
-        glEnableVertexAttribArray(5);
-        glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(6 * sizeof(u32)));
-        glEnableVertexAttribArray(6);
-        glVertexAttribIPointer(7, 1, GL_UNSIGNED_INT, 8 * sizeof(u32), (void*)(7 * sizeof(u32)));
-        glEnableVertexAttribArray(7);
+        dataPtr += (3 * sizeof(u32));
 
-        free(data);
+        // data_face_pos
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(1);
+        dataPtr += (3 * sizeof(f32));
+
+        // data_face_size
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(2);
+        dataPtr += (2 * sizeof(f32));
+
+        // data_face_rot
+        glVertexAttribPointer(3, 3, GL_FLOAT, false, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(3);
+        dataPtr += (3 * sizeof(f32));
+
+        // data_uv_rot
+        glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(4);
+        dataPtr += (1 * sizeof(u32));
+
+        // data_uv_pos
+        glVertexAttribIPointer(5, 2, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(5);
+        dataPtr += (2 * sizeof(u32));
+
+        // data_uv_size
+        glVertexAttribIPointer(6, 2, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(6);
+        dataPtr += (2 * sizeof(u32));
+
+        // data_dir
+        glVertexAttribIPointer(7, 1, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(7);
+        dataPtr += (1 * sizeof(u32));
+
+        // data_type
+        glVertexAttribIPointer(8, 1, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(8);
+        dataPtr += (1 * sizeof(u32));
+
+        // data_light_0_1_2
+        glVertexAttribIPointer(9, 3, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(9);
+        dataPtr += (3 * sizeof(u32));
+
+        // data_light_3_4_5
+        glVertexAttribIPointer(10, 3, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(10);
+        dataPtr += (3 * sizeof(u32));
+
+        // data_light_6_7_8
+        glVertexAttribIPointer(11, 3, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(11);
+        dataPtr += (3 * sizeof(u32));
+
+        // data_ao
+        glVertexAttribIPointer(12, 1, GL_UNSIGNED_INT, data_row_size, (void*)dataPtr);
+        glEnableVertexAttribArray(12);
+        dataPtr += (1 * sizeof(u32));
         #elif GL_API == 2
         // TODO
         #endif
@@ -127,7 +176,7 @@ public:
             voxel_faces[i] = faces[i].face;
         }
 
-        delete faces;
+        delete[] faces;
 
         updateMesh();
     }

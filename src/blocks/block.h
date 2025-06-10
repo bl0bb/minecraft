@@ -18,6 +18,7 @@
 #include "blocks/oak_stairs.h"
 #include "blocks/poppy.h"
 #include "blocks/sand.h"
+#include "blocks/short_grass.h"
 #include "blocks/snow.h"
 #include "blocks/stone.h"
 #include "blocks/stripped_oak_log.h"
@@ -44,6 +45,7 @@ void loadBlocks() {
     _oak_stairs_init();
     _poppy_init();
     _sand_init();
+    _short_grass_init();
     _snow_init();
     _stone_init();
     _stripped_oak_log_init();
