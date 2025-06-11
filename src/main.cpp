@@ -1306,13 +1306,16 @@ int main() {
                 }
 
                 playerVel = playerVel + Vec3<f32>(0.0f, -32.656f, 0.0f) * deltaTime;
-                playerAABB.pos = playerAABB.pos + ((wishdir * 10.0f) + playerVel) * deltaTime;
 
-                Intersection intersection = playerAABB.getIntersection(voxelBlockWorld);
-                playerAABB.solveCollision(intersection);
+                Vec3<f32> stepDir = ((wishdir * 10.0f) + playerVel) * deltaTime;
+
+                Intersection intersection = playerAABB.getIntersection(voxelBlockWorld, stepDir);
 
                 if (intersection.intersects) {
+                    playerAABB.pos = playerAABB.pos + intersection.intersectDir;
                     playerVel = Vec3<f32>(0.0f);
+                } else {
+                    playerAABB.pos = playerAABB.pos + stepDir;
                 }
 
                 camera->position = playerAABB.pos + playerCamOffset;
