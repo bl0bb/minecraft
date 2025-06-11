@@ -58,7 +58,7 @@
 
 u16 WINDOW_WIDTH = 1920;
 u16 WINDOW_HEIGHT = 1080;
-constexpr bool FULLSCREEN = true;
+constexpr bool FULLSCREEN = false;
 constexpr bool FULLSCREEN_EXCLUSIVE = false;
 
 
@@ -271,8 +271,11 @@ GLFWwindow* init_window() {
     glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-    WINDOW_WIDTH = mode->width;
-    WINDOW_HEIGHT = mode->height;
+    if (FULLSCREEN) {
+        WINDOW_WIDTH = mode->width;
+        WINDOW_HEIGHT = mode->height;
+    }
+
     if (!FULLSCREEN_EXCLUSIVE) {
         WINDOW_HEIGHT -= 31;
     }
@@ -554,6 +557,10 @@ int main() {
     // }
 
     // TODO: free already existing block state. OR can you just override the value set there?
+
+
+
+    VoxelWorlds::placeVoxel(voxelBlockWorld, 0, 20, 0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
 
 

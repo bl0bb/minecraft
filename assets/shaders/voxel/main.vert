@@ -151,25 +151,18 @@ void main() {
 
   #if OGL_VERSION == 46
   QuadData data = instanceData[faceId];
-  uint data_x = data.x;
-  uint data_y = data.y;
-  uint data_z = data.z;
-  float data_face_x = data.face_x;
-  float data_face_y = data.face_y;
-  float data_face_z = data.face_z;
-  float data_face_width = data.face_width;
-  float data_face_height = data.face_height;
-  float data_face_rot_x = data.face_rot_x;
-  float data_face_rot_y = data.face_rot_y;
-  float data_face_rot_z = data.face_rot_z;
+  uvec3 data_pos = uvec3(data.x, data.y, data.z);
+  vec3 data_face_pos = vec3(data.face_x, data.face_y, data.face_z);
+  vec2 data_face_size = vec2(data.face_width, data.face_height);
+  vec3 data_face_rot = vec3(data.face_rot_x, data.face_rot_y, data.face_rot_z);
   uint data_uv_rot = data.uv_rot;
-  uint data_uv_x = data.uv_x;
-  uint data_uv_y = data.uv_y;
-  uint data_uv_w = data.uv_w;
-  uint data_uv_h = data.uv_h;
+  uvec2 data_uv_pos = uvec2(data.uv_x, data.uv_y);
+  uvec2 data_uv_size = uvec2(data.uv_w, data.uv_h);
   uint data_dir = data.dir;
   uint data_type = data.type;
-  uint data_light[9] = data.light;
+  uvec3 data_light_0_1_2 = uvec3(data.light[0], data.light[1], data.light[2]);
+  uvec3 data_light_3_4_5 = uvec3(data.light[3], data.light[4], data.light[5]);
+  uvec3 data_light_6_7_8 = uvec3(data.light[6], data.light[7], data.light[8]);
   uint data_ao = data.ao;
   #elif OGL_VERSION == 41
 
@@ -218,17 +211,6 @@ void main() {
 
 
   // light
-  #if OGL_VERSION == 46
-  Light0 = data_light[0];
-  Light1 = data_light[1];
-  Light2 = data_light[2];
-  Light3 = data_light[3];
-  Light4 = data_light[4];
-  Light5 = data_light[5];
-  Light6 = data_light[6];
-  Light7 = data_light[7];
-  Light8 = data_light[8];
-  #elif OGL_VERSION == 41
   Light0 = data_light_0_1_2.x;
   Light1 = data_light_0_1_2.y;
   Light2 = data_light_0_1_2.z;
@@ -238,7 +220,6 @@ void main() {
   Light6 = data_light_6_7_8.x;
   Light7 = data_light_6_7_8.y;
   Light8 = data_light_6_7_8.z;
-  #endif
 
 
 
