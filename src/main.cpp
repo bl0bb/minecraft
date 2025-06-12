@@ -1312,15 +1312,23 @@ int main() {
                     playerVel.y += 12.0f;
                 }
 
-                playerVel = playerVel + Vec3<f32>(0.0f, -32.656f, 0.0f) * deltaTime;
+                // gravity
+                playerVel = playerVel + (Vec3<f32>(0.0f, -32.656f, 0.0f) * deltaTime);
 
-                Vec3<f32> stepDir = ((wishdir * 10.0f) + playerVel) * deltaTime;
+                // movement
+                playerVel = playerVel + ((wishdir * 50.0f) * deltaTime);
+
+                // drag
+                playerVel = playerVel - ((Vec3<f32>(playerVel.x, 0, playerVel.z) * 5.0f) * deltaTime);
+
+
+                Vec3<f32> stepDir = playerVel * deltaTime;
 
                 Intersection intersection = playerAABB.getIntersection(voxelBlockWorld, stepDir);
 
                 if (intersection.intersects) {
                     playerAABB.pos = playerAABB.pos + intersection.intersectDir;
-                    playerVel = Vec3<f32>(0.0f);
+                    playerVel = playerVel * intersection.collideSolveForce;
                 } else {
                     playerAABB.pos = playerAABB.pos + stepDir;
                 }
@@ -1329,7 +1337,6 @@ int main() {
             }
             
 
-            // printf("(%f %f %f) (%f %f %f)\n", camera->front.x, camera->front.y, camera->front.z, camera->position.x, camera->position.y, camera->position.z);
 
 
 

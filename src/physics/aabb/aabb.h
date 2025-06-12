@@ -9,36 +9,54 @@ class Intersection {
 public:
     bool intersects;
     Vec3<f32> intersectDir;
+    Vec3<f32> collideSolveForce;
 
     Intersection() {}
 
     Intersection(bool _intersects, Vec3<f32> _intersectDir) :
     intersects(_intersects),
-    intersectDir(_intersectDir) {}
+    intersectDir(_intersectDir),
+    collideSolveForce(Vec3<f32>(1.0f)) {}
+
+    Intersection(bool _intersects, Vec3<f32> _intersectDir, Vec3<f32> _collideSolveForce) :
+    intersects(_intersects),
+    intersectDir(_intersectDir),
+    collideSolveForce(_collideSolveForce) {}
 };
 
 class AABB {
 public:
     Vec3<f32> pos;
     Vec3<f32> size;
+    u8 intersectFlag;
 
     AABB() {}
 
     AABB(Vec3<f32> _pos, Vec3<f32> _size) :
     pos(_pos),
-    size(_size) {}
+    size(_size),
+    intersectFlag(0b00111111) {}
 
-    Vec3<f32> worldMax() const {
+    AABB(Vec3<f32> _pos, Vec3<f32> _size, u8 _intersectFlag) :
+    pos(_pos),
+    size(_size),
+    intersectFlag(_intersectFlag) {}
+
+    inline bool intersectsDir(u8 dir) const {
+        return (intersectFlag >> dir) & 1;
+    }
+
+    inline Vec3<f32> worldMax() const {
         return pos + size / 2;
     }
 
-    Vec3<f32> worldMin() const {
+    inline Vec3<f32> worldMin() const {
         return pos - size / 2;
     }
 
     Intersection getIntersection(const AABB& other, const Vec3<f32>& moveDir) const {
         if (moveDir.magnitude() == 0) {
-            return { false, moveDir, };
+            return { false, moveDir };
         }
         
         Vec3<f32> aMin = worldMin();
@@ -50,7 +68,7 @@ public:
         bool checkOverlapY = aMax.y > bMin.y && aMin.y < bMax.y;
         bool checkOverlapZ = aMax.z > bMin.z && aMin.z < bMax.z;
         if (checkOverlapX && checkOverlapY && checkOverlapZ) {
-            printf("ORIGINAL INTERSECT\n");
+            // TODO: move out of block if somehow clipped inside?
         }
         
         AABB movedAABB = *this;
@@ -67,23 +85,31 @@ public:
             return { false, moveDir };
         }
 
-
-
-        f32 dxEntry = (moveDir.x > 0) ? (bMin.x - aMax.x) : (bMax.x - aMin.x);
-        f32 dyEntry = (moveDir.y > 0) ? (bMin.y - aMax.y) : (bMax.y - aMin.y);
-        f32 dzEntry = (moveDir.z > 0) ? (bMin.z - aMax.z) : (bMax.z - aMin.z);
-
         Vec3<f32> absMoveDir = moveDir.abs();
 
-        f32 distX = moveDir.x ? abs(dxEntry) / absMoveDir.x : std::numeric_limits<f32>::infinity();
-        f32 distY = moveDir.y ? abs(dyEntry) / absMoveDir.y : std::numeric_limits<f32>::infinity();
-        f32 distZ = moveDir.z ? abs(dzEntry) / absMoveDir.z : std::numeric_limits<f32>::infinity();
+
+        std::array<f32, 3> times;
+        times.fill(std::numeric_limits<f32>::infinity());
+
+        if ((moveDir.x > 0 && other.intersectsDir(1)) || (moveDir.x < 0 && other.intersectsDir(0))) {
+            f32 dxEntry = (moveDir.x > 0) ? (bMin.x - aMax.x) : (bMax.x - aMin.x);
+            times[0] = abs(dxEntry) / absMoveDir.x;
+        }
+
+        if ((moveDir.y > 0 && other.intersectsDir(3)) || (moveDir.y < 0 && other.intersectsDir(2))) {
+            f32 dyEntry = (moveDir.y > 0) ? (bMin.y - aMax.y) : (bMax.y - aMin.y);
+            times[1] = abs(dyEntry) / absMoveDir.y;
+        }
+
+        if ((moveDir.z > 0 && other.intersectsDir(5)) || (moveDir.z < 0 && other.intersectsDir(4))) {
+            f32 dzEntry = (moveDir.z > 0) ? (bMin.z - aMax.z) : (bMax.z - aMin.z);
+            times[2] = abs(dzEntry) / absMoveDir.z;
+        }
 
 
 
 
         // Time of collision along each axis
-        f32 times[3] = { distX, distY, distZ };
         int minAxis = 0;
         f32 tMin = times[0];
 
@@ -94,12 +120,15 @@ public:
             }
         }
 
+        // we didnt actually collide even though we intersected because of intersect dir flags
+        if (tMin == std::numeric_limits<f32>::infinity()) {
+            return { false, moveDir };
+        }
+
         tMin = std::clamp(tMin, 0.0f, 1.0f);
 
         // Movement up to collision
         Vec3<f32> movementBeforeCollision = moveDir * tMin;
-
-        printf("(%lf %lf %lf) (%lf %lf %lf) (%lf %lf %lf) %lf\n", dxEntry, dyEntry, dzEntry, distX, distY, distZ, moveDir.x, moveDir.y, moveDir.z, tMin);
 
 
 
@@ -110,16 +139,14 @@ public:
         // remaining = remaining.normalized() * (moveDir.magnitude() * (1.0f - tMin));
         remaining = remaining * (1.0f - tMin);
 
-        printf("test a (%lf %lf) (%lf %lf)\n", movedAMax.y, bMin.y, movedAMin.y, bMax.y);
-        printf("test b (%lf %lf) (%lf %lf)\n", aMax.y, bMin.y, aMin.y, bMax.y);
-        printf("move dir (%lf %lf %lf)\n", remaining.x, remaining.y, remaining.z);
-
         Vec3<f32> finalMove = movementBeforeCollision + remaining;
 
 
 
 
-        return { true, finalMove };
+        Vec3<f32> collideSolveForce(1.0f);
+        collideSolveForce[minAxis] = 0.0f;
+        return { true, finalMove, collideSolveForce };
     }
 
     Intersection getIntersection(const VoxelBlockWorld& blockWorld, const Vec3<f32>& moveDir) const {
@@ -142,7 +169,7 @@ public:
         i64 endY = aMax.y >= 0 ? aMax.y : aMax.y - 1;
         i64 endZ = aMax.z >= 0 ? aMax.z : aMax.z - 1;
 
-        Intersection intersection(false, moveDir);
+        Intersection intersection(false, moveDir, Vec3<f32>(1.0f));
 
         i64 sizeX = endX - startX + 1;
         i64 sizeY = endY - startY + 1;
@@ -176,28 +203,30 @@ public:
                     i64 iy = y - startY;
                     i64 iz = z - startZ;
 
-                    // EmbeddedVoxel& voxel = cachedVoxels[ix + (iy * sizeY) + (iz * sizeY * sizeZ)];
-                    // if (voxel.type == BlockTypes::AIR) {
-                    //     continue;
-                    // }
-                    EmbeddedVoxel* voxel;
-                    if (!VoxelWorlds::getVoxel(blockWorld, x, y, z, &voxel)) {
-                        continue;
-                    }
-                    if (voxel->type == BlockTypes::AIR) {
+                    EmbeddedVoxel& voxel = cachedVoxels[ix + (iy * sizeX) + (iz * sizeX * sizeY)];
+                    if (voxel.type == BlockTypes::AIR) {
                         continue;
                     }
 
-                    AABB blockAABB(Vec3<f32>(x, y, z) + 0.5f, Vec3<f32>(1.0f));
+                    u8 collideFlag = 0;
+                    if (x < endX) collideFlag |= (cachedVoxels[(ix + 1) + (iy * sizeX) + (iz * sizeX * sizeY)].type == BlockTypes::AIR) << 0;
+                    if (x > startX) collideFlag |= (cachedVoxels[(ix - 1) + (iy * sizeX) + (iz * sizeX * sizeY)].type == BlockTypes::AIR) << 1;
+                    if (y < endY) collideFlag |= (cachedVoxels[ix + ((iy + 1) * sizeX) + (iz * sizeX * sizeY)].type == BlockTypes::AIR) << 2;
+                    if (y > startY) collideFlag |= (cachedVoxels[ix + ((iy - 1) * sizeX) + (iz * sizeX * sizeY)].type == BlockTypes::AIR) << 3;
+                    if (z < endZ) collideFlag |= (cachedVoxels[ix + (iy * sizeX) + ((iz + 1) * sizeX * sizeY)].type == BlockTypes::AIR) << 4;
+                    if (z > startZ) collideFlag |= (cachedVoxels[ix + (iy * sizeX) + ((iz - 1) * sizeX * sizeY)].type == BlockTypes::AIR) << 5;
+
+                    AABB blockAABB(Vec3<f32>(x, y, z) + 0.5f, Vec3<f32>(1.0f), collideFlag);
 
                     Intersection newIntersection = getIntersection(blockAABB, intersection.intersectDir);
                     if (!intersection.intersects || newIntersection.intersects) {
+                        Vec3<f32> newCollideSolveForce = intersection.collideSolveForce * newIntersection.collideSolveForce;
                         intersection = newIntersection;
+                        intersection.collideSolveForce = newCollideSolveForce;
                     }
                 }
             }
         }
-        printf("b\n");
 
         return intersection;
     }

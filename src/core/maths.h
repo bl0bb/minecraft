@@ -206,6 +206,16 @@ struct Vec3 {
         return Vec3<T>(x - other.x, y - other.y, z - other.z);
     }
 
+    // Multiplication
+    constexpr inline Vec3<T> operator*(const Vec3<T>& other) const {
+        return Vec3<T>(x * other.x, y * other.y, z * other.z);
+    }
+
+    // Division
+    constexpr inline Vec3<T> operator/(const Vec3<T>& other) const {
+        return Vec3<T>(x / other.x, y / other.y, z / other.z);
+    }
+
     // Scalar multiplication
     template<typename T1>
     constexpr inline Vec3<T> operator*(T1 scalar) const {
