@@ -34,9 +34,9 @@ RaycastResult raycast(const VoxelBlockWorld& voxelWorld, const Vec3<f64>& origin
         f64 offY = dir.y > 0 ? (blockY + 1) - pos.y : pos.y - blockY;
         f64 offZ = dir.z > 0 ? (blockZ + 1) - pos.z : pos.z - blockZ;
 
-        f64 distX = offX / (dir.x ? abs(dir.x) : 1);
-        f64 distY = offY / (dir.y ? abs(dir.y) : 1);
-        f64 distZ = offZ / (dir.z ? abs(dir.z) : 1);
+        f64 distX = dir.x ? offX / abs(dir.x) : std::numeric_limits<f64>::infinity();
+        f64 distY = dir.y ? offY / abs(dir.y) : std::numeric_limits<f64>::infinity();
+        f64 distZ = dir.z ? offZ / abs(dir.z) : std::numeric_limits<f64>::infinity();
 
         f64 stepAmount;
         u8 face;

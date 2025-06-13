@@ -38,7 +38,7 @@ public:
             for (u8 z = 0; z < CS; z++) {
                 found_block = false;
                 heightmap[getXZIndex(x, z)] = CS;
-                for (u8 y = CS - 1; y >= 0; y--) {
+                for (i16 y = (world.size.y / 2 * CS) - 1; y >= (-world.size.y / 2 * CS); y--) {
                     BlockType blockType = chunk.voxels[get_zxy_index(x, y, z)].type;
                     BlockVoxelData blockData = BLOCK_VOXEL_DATA[blockType];
                     if (blockData.transparent) {

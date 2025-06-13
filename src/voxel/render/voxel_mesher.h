@@ -354,17 +354,23 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                             else if (dir == 4)  neighbor_pos = {neighbor_offset.x, neighbor_offset.y,  1};
                             else                neighbor_pos = {neighbor_offset.x, neighbor_offset.y, -1};
 
-                            Vec3<i64> voxel_pos = (chunk.pos * CS) + Vec3<i64>(x, y, z) + neighbor_pos;
 
-                            EmbeddedVoxel* voxel;
-                            bool hasBlock = VoxelWorlds::getVoxel(voxelWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &voxel);
-                            
-                            if (!hasBlock) {
+
+
+
+
+
+
+
+                            Vec3<i64> voxel_pos = Vec3<i64>(1) + Vec3<i64>(x, y, z) + neighbor_pos;
+
+                            EmbeddedVoxel* voxel = blocks[get_zxy_index_p(voxel_pos.x, voxel_pos.y, voxel_pos.z)];
+                            if (!voxel) {
                                 RGBIS4* lightPtr;
                                 lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
                                 continue;
                             }
-                            
+
                             // ao
                             if (voxel->type == BlockTypes::AIR) {
                                 RGBIS4* lightPtr;
@@ -380,11 +386,54 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                                 continue;
                             }
 
-                            // BlockStateStruct* state = VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z)->state;
-                            // BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
-                            // if (!blockMesh.cullFlag) {
+                            BlockStateStruct* state = blockStates[get_zxy_index_p(voxel_pos.x, voxel_pos.y, voxel_pos.z)];
+                            BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
+                            if (!blockMesh.culls(0)) {
+                                RGBIS4* lightPtr;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
+                                continue;
+                            }
+
+
+
+                            // Vec3<i64> voxel_pos = (chunk.pos * CS) + Vec3<i64>(x, y, z) + neighbor_pos;
+
+                            // EmbeddedVoxel* voxel;
+                            // bool hasBlock = VoxelWorlds::getVoxel(voxelWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &voxel);
+                            
+                            // if (!hasBlock) {
+                            //     RGBIS4* lightPtr;
+                            //     lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
                             //     continue;
                             // }
+                            
+                            // // ao
+                            // if (voxel->type == BlockTypes::AIR) {
+                            //     RGBIS4* lightPtr;
+                            //     lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
+                            //     continue;
+                            // }
+
+                            // BlockVoxelData blockData = BLOCK_VOXEL_DATA[voxel->type];
+
+                            // if (blockData.transparent) {
+                            //     RGBIS4* lightPtr;
+                            //     lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
+                            //     continue;
+                            // }
+
+                            // BlockStateStruct* state = VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z)->state;
+                            // BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
+                            // if (!blockMesh.culls(0)) {
+                            //     RGBIS4* lightPtr;
+                            //     lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
+                            //     continue;
+                            // }
+
+
+
+
+
 
                             
                             // light

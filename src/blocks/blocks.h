@@ -33,6 +33,7 @@ constexpr const char* block_textures[] = {
     "glass_pane_side",
     "water",
     "poppy",
+    "short_grass",
     "torch",
 };
 

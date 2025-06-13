@@ -15,6 +15,7 @@ enum BlockMeshTypeEnum {
     TORCH,
     GLASS_PANE,
     CROSS,
+    LEAVES,
 };
 }
 
@@ -130,6 +131,6 @@ struct BlockMesh {
 
 typedef BlockMesh (*BlockMeshFunc)(const BlockStateStruct& state);
 
-BlockMeshFunc* BLOCK_MESHES = (BlockMeshFunc*)malloc(sizeof(BlockMeshFunc) * (BlockMeshTypes::TORCH + 1));
+BlockMeshFunc* BLOCK_MESHES = (BlockMeshFunc*)malloc(sizeof(BlockMeshFunc) * (BlockMeshTypes::LEAVES + 1));
 
 #endif

@@ -27,6 +27,9 @@
 // cross
 #include "../block_meshes/cross.h"
 
+// leaves
+#include "../block_meshes/leaves.h"
+
 void loadBlocksMeshes() {
     // standard building blocks
     _loadBlockBlockMesh();
@@ -44,6 +47,9 @@ void loadBlocksMeshes() {
 
     // cross
     _loadCrossBlockMesh();
+
+    // leaves
+    _loadLeavesBlockMesh();
 }
 
 #endif
