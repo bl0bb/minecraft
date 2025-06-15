@@ -502,6 +502,16 @@ int main() {
     }
 
 
+    // {
+    //     AABB aabbA(Vec3<f32>(-5.0f,  5.0f,  0.0f) + Vec3<f32>(-1.0f,  1.0f,  0.0f), Vec3<f32>(2.0f));
+    //     AABB aabbB(Vec3<f32>( 0.0f,  0.0f,  0.0f) + Vec3<f32>( 1.0f, -1.0f,  0.0f), Vec3<f32>(2.0f));
+
+    //     Vec3<f32> moveDir = Vec3<f32>(cos(Math::deg_to_rad<f32>(-42.0f)), sin(Math::deg_to_rad<f32>(-42.0f)), 0.0f) * 8.5f; // Vec3<f32>(3.0f, -2.0f, 0.0f).normalized() * 8.0f;
+
+    //     Intersection intersection = aabbA.getIntersection(aabbB, moveDir);
+    //     printf("(%lf %lf %lf) (%lf %lf %lf)\n", intersection.intersectDir.x, intersection.intersectDir.y, intersection.intersectDir.z, intersection.collideSolveForce.x, intersection.collideSolveForce.y, intersection.collideSolveForce.z);
+    // }
+
 
     if (false) {
         // terrain generation

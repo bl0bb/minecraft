@@ -9,17 +9,6 @@ constexpr inline BlockTexture _dirt_get_texture(const BlockStateStruct& state, u
     return BlockTextures::DIRT;
 }
 
-void _dirt_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::DIRT] = BlockVoxelData(
-        BlockStateTypes::BLOCK,
-        BlockMeshTypes::BLOCK,
-        false,
-        false,
-        false,
-        false,
-        nullptr,
-        _dirt_get_texture
-    );
-}
+void _dirt_init();
 
 #endif

@@ -9,17 +9,6 @@ constexpr inline BlockTexture _air_get_texture(const BlockStateStruct& state, u8
     return BlockTextures::NONE;
 }
 
-void _air_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::AIR] = BlockVoxelData(
-        BlockStateTypes::BLOCK,
-        BlockMeshTypes::BLOCK,
-        true,
-        false,
-        false,
-        false,
-        nullptr,
-        _air_get_texture
-    );
-}
+void _air_init();
 
 #endif

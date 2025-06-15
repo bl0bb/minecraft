@@ -9,17 +9,6 @@ constexpr inline BlockTexture _sand_get_texture(const BlockStateStruct& state, u
     return BlockTextures::SAND;
 }
 
-void _sand_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::SAND] = BlockVoxelData(
-        BlockStateTypes::BLOCK,
-        BlockMeshTypes::BLOCK,
-        false,
-        false,
-        false,
-        false,
-        nullptr,
-        _sand_get_texture
-    );
-}
+void _sand_init();
 
 #endif

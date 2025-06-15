@@ -18,7 +18,7 @@ static BlockMesh _getSlabBlockMesh(const BlockStateStruct& state) {
     return block;
 }
 
-void _loadSlabBlockMesh() {
+static void _loadSlabBlockMesh() {
     BLOCK_MESHES[BlockMeshTypes::SLAB] = _getSlabBlockMesh;
 }
 

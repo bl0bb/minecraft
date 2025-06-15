@@ -13,17 +13,6 @@ constexpr inline RGBI4 getTorchLight() {
     return Colors::createRGBI4(15, 15, 15, 15);
 }
 
-void _torch_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::TORCH] = BlockVoxelData(
-        BlockStateTypes::TORCH,
-        BlockMeshTypes::TORCH,
-        false,
-        false,
-        true,
-        false,
-        getTorchLight,
-        _torch_get_texture
-    );
-}
+void _torch_init();
 
 #endif

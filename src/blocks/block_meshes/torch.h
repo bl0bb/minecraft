@@ -26,7 +26,7 @@ static BlockMesh _getTorchBlockMesh(const BlockStateStruct& state) {
     return block;
 }
 
-void _loadTorchBlockMesh() {
+static void _loadTorchBlockMesh() {
     BLOCK_MESHES[BlockMeshTypes::TORCH] = _getTorchBlockMesh;
 }
 

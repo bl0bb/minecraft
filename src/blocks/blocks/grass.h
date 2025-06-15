@@ -20,17 +20,6 @@ constexpr inline BlockTexture _grass_get_texture(const BlockStateStruct& state, 
     }
 }
 
-void _grass_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::GRASS] = BlockVoxelData(
-        BlockStateTypes::BLOCK,
-        BlockMeshTypes::BLOCK,
-        false,
-        false,
-        false,
-        false,
-        nullptr,
-        _grass_get_texture
-    );
-}
+void _grass_init();
 
 #endif

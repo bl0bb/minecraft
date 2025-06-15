@@ -9,17 +9,6 @@ constexpr inline BlockTexture _poppy_get_texture(const BlockStateStruct& state, 
     return BlockTextures::POPPY;
 }
 
-void _poppy_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::POPPY] = BlockVoxelData(
-        BlockStateTypes::BLOCK,
-        BlockMeshTypes::CROSS,
-        false,
-        false,
-        false,
-        false,
-        nullptr,
-        _poppy_get_texture
-    );
-}
+void _poppy_init();
 
 #endif

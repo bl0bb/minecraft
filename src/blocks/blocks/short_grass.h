@@ -9,17 +9,6 @@ constexpr inline BlockTexture _short_grass_get_texture(const BlockStateStruct& s
     return BlockTextures::SHORT_GRASS;
 }
 
-void _short_grass_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::SHORT_GRASS] = BlockVoxelData(
-        BlockStateTypes::BLOCK,
-        BlockMeshTypes::CROSS,
-        false,
-        false,
-        false,
-        false,
-        nullptr,
-        _short_grass_get_texture
-    );
-}
+void _short_grass_init();
 
 #endif

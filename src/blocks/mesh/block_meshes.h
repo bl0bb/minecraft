@@ -30,7 +30,7 @@
 // leaves
 #include "../block_meshes/leaves.h"
 
-void loadBlocksMeshes() {
+static void loadBlocksMeshes() {
     // standard building blocks
     _loadBlockBlockMesh();
     _loadSlabBlockMesh();

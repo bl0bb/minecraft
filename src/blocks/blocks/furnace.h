@@ -24,17 +24,6 @@ constexpr inline RGBI4 getFurnaceLight() {
     return Colors::createRGBI4(15, 0, 0, 15);
 }
 
-void _furnace_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::FURNACE] = BlockVoxelData(
-        BlockStateTypes::BLOCK, // TODO: furnace
-        BlockMeshTypes::BLOCK,
-        false,
-        false,
-        true,
-        false,
-        getFurnaceLight,
-        _furnace_get_texture
-    );
-}
+void _furnace_init();
 
 #endif

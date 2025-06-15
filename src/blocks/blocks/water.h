@@ -9,17 +9,6 @@ constexpr inline BlockTexture _water_get_texture(const BlockStateStruct& state, 
     return BlockTextures::WATER;
 }
 
-void _water_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::WATER] = BlockVoxelData(
-        BlockStateTypes::BLOCK,
-        BlockMeshTypes::BLOCK,
-        false,
-        false,
-        false,
-        false,
-        nullptr,
-        _water_get_texture
-    );
-}
+void _water_init();
 
 #endif

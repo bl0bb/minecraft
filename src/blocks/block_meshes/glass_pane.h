@@ -74,7 +74,7 @@ static BlockMesh _getGlassPaneBlockMesh(const BlockStateStruct& state) {
     return block;
 }
 
-void _loadGlassPaneBlockMesh() {
+static void _loadGlassPaneBlockMesh() {
     BLOCK_MESHES[BlockMeshTypes::GLASS_PANE] = _getGlassPaneBlockMesh;
 }
 

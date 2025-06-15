@@ -18,7 +18,7 @@ static BlockMesh _getLogBlockMesh(const BlockStateStruct& state) {
     return block;
 }
 
-void _loadLogBlockMesh() {
+static void _loadLogBlockMesh() {
     BLOCK_MESHES[BlockMeshTypes::LOG] = _getLogBlockMesh;
 }
 

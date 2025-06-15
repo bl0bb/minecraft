@@ -9,17 +9,6 @@ constexpr inline BlockTexture _snow_get_texture(const BlockStateStruct& state, u
     return BlockTextures::SNOW;
 }
 
-void _snow_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::SNOW] = BlockVoxelData(
-        BlockStateTypes::BLOCK,
-        BlockMeshTypes::BLOCK,
-        false,
-        false,
-        false,
-        false,
-        nullptr,
-        _snow_get_texture
-    );
-}
+void _snow_init();
 
 #endif

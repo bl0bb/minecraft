@@ -5,9 +5,13 @@ ERROR_FLAGS = \
 # -Wextra\
 # -pedantic
 
-CORE_FILES = \
-src/FastNoise/FastNoise.cpp\
-src/shading/ambient_occlusion.cpp
+# CORE_FILES = \
+# src/FastNoise/FastNoise.cpp
+
+SRC_DIR = src
+CORE_FILES = $(wildcard $(SRC_DIR)/*.cpp)
+
+
 DEP_FILES = dep/src/glad.c
 
 FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp
@@ -44,4 +48,4 @@ GL_API = 0
 
 
 all:
-	$(CC) -std=c++$(CC_VERSION) $(ERROR_FLAGS) -DGL_API=$(GL_API) $(FILES) -o main $(FLAGS) $(LIBS)
+	$(CC) -std=c++$(CC_VERSION) $(ERROR_FLAGS) -DGL_API=$(GL_API) $(FILES) -g -o main $(FLAGS) $(LIBS)

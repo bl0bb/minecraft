@@ -9,17 +9,6 @@ constexpr inline BlockTexture _oak_leaves_get_texture(const BlockStateStruct& st
     return BlockTextures::OAK_LEAVES;
 }
 
-void _oak_leaves_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::OAK_LEAVES] = BlockVoxelData(
-        BlockStateTypes::BLOCK,
-        BlockMeshTypes::LEAVES,
-        true,
-        false,
-        false,
-        false,
-        nullptr,
-        _oak_leaves_get_texture
-    );
-}
+void _oak_leaves_init();
 
 #endif

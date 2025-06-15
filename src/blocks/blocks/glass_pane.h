@@ -18,17 +18,6 @@ constexpr inline BlockTexture _glass_pane_get_texture(const BlockStateStruct& st
     return BlockTextures::GLASS;
 }
 
-void _glass_pane_init() {
-    BLOCK_VOXEL_DATA[BlockTypes::GLASS_PANE] = BlockVoxelData(
-        BlockStateTypes::GLASS_PANE,
-        BlockMeshTypes::GLASS_PANE,
-        true,
-        false,
-        false,
-        false,
-        nullptr,
-        _glass_pane_get_texture
-    );
-}
+void _glass_pane_init();
 
 #endif

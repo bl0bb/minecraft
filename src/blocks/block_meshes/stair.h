@@ -26,7 +26,7 @@ static BlockMesh _getStairBlockMesh(const BlockStateStruct& state) {
     return block;
 }
 
-void _loadStairBlockMesh() {
+static void _loadStairBlockMesh() {
     BLOCK_MESHES[BlockMeshTypes::STAIR] = _getStairBlockMesh;
 }
 

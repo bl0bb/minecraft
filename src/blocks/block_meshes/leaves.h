@@ -17,7 +17,7 @@ static BlockMesh _getLeavesBlockMesh(const BlockStateStruct& state) {
     return block;
 }
 
-void _loadLeavesBlockMesh() {
+static void _loadLeavesBlockMesh() {
     BLOCK_MESHES[BlockMeshTypes::LEAVES] = _getLeavesBlockMesh;
 }
 

@@ -19,7 +19,7 @@ static BlockMesh _getCrossBlockMesh(const BlockStateStruct& state) {
     return cross;
 }
 
-void _loadCrossBlockMesh() {
+static void _loadCrossBlockMesh() {
     BLOCK_MESHES[BlockMeshTypes::CROSS] = _getCrossBlockMesh;
 }
 

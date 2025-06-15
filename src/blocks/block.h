@@ -28,7 +28,7 @@
 // other includes
 #include "blocks.h"
 
-void loadBlocks() {
+static void loadBlocks() {
     _air_init();
     _cobblestone_slab_init();
     _cobblestone_stairs_init();
