@@ -29,6 +29,8 @@ struct BlockFace {
     u16 uvToY;
 
     u8 uvRot;
+
+    BlockFace(u8 _dir, u8 _culls, u16 _uvFromX, u16 _uvFromY, u16 _uvToX, u16 _uvToY, u8 _uvRot) : dir(_dir), culls(_culls), uvFromX(_uvFromX), uvFromY(_uvFromY), uvToX(_uvToX), uvToY(_uvToY), uvRot(_uvRot) {}
 };
 
 struct BlockElement {

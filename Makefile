@@ -1,51 +1,49 @@
-CC_VERSION = 20
+# Compiler and flags
+CXX := g++
+CXXFLAGS := \
+-std=c++20 -Isrc\
+-Idep/include -Ldep/lib -lglfw3dll -lz\
+-DGL_API=0
 
-ERROR_FLAGS = \
-# -Wall\
-# -Wextra\
-# -pedantic
+# Directories
+SRC_DIR := src
+OBJ_DIR := build
+BIN_DIR := bin
 
-# CORE_FILES = \
-# src/FastNoise/FastNoise.cpp
+# Source files
+CPP_SRCS := $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/**/*.cpp) $(wildcard $(SRC_DIR)/**/**/*.cpp) $(wildcard $(SRC_DIR)/**/**/**/*.cpp)
+C_SRCS := $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/**/*.c) $(wildcard $(SRC_DIR)/**/**/*.c) $(wildcard $(SRC_DIR)/**/**/**/*.c)
 
-SRC_DIR = src
-CORE_FILES = $(wildcard $(SRC_DIR)/*.cpp)
+# Combine all sources (including glad.c)
+SRCS := $(CPP_SRCS) $(C_SRCS)
 
+# Generate corresponding .o object files in the build/ directory
+OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPP_SRCS)) \
+        $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_SRCS))
 
-DEP_FILES = dep/src/glad.c
+# Final executable
+TARGET := $(BIN_DIR)/app.exe
 
-FILES = $(CORE_FILES) $(DEP_FILES) src/main.cpp
+# Default rule
+all: $(TARGET)
 
+# Link object files into the executable
+$(TARGET): $(OBJS)
+#   @mkdir $(BIN_DIR)
+	$(CXX) $(OBJS) -o $@
 
+# Compile C++ source files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+#   @mkdir $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Compile C source files (e.g., glad.c)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+#   @mkdir $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -x c -c $< -o $@
 
-# GL_API
-# 0 = OpenGL 4.6
-# 1 = OpenGL 4.1
-# 2 = Vulkan
+# Clean rule
+clean:
+	rm $(OBJ_DIR) $(BIN_DIR)
 
-
-
-# windows
-CC = g++
-LIBS = -Idep/include -Ldep/lib -lglfw3dll -lz
-GL_API = 0
-
-# macos
-# CC = g++
-# GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
-# GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
-# LIBS = -L$(GLFW_LIB_DIR) -lglfw -I$(GLFW_INCLUDE_DIR) -lz
-# GL_API = 1
-
-# linux
-# CC = g++
-# GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
-# GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
-# LIBS = -L$(GLFW_LIB_DIR) -lglfw -I$(GLFW_INCLUDE_DIR) -lz
-# GL_API = 0
-
-
-
-all:
-	$(CC) -std=c++$(CC_VERSION) $(ERROR_FLAGS) -DGL_API=$(GL_API) $(FILES) -g -o main $(FLAGS) $(LIBS)
+.PHONY: all clean
