@@ -54,6 +54,12 @@
 #include "file_parsers/nbt_parser.h"
 #include "file_parsers/mca_parser.h"
 
+
+// constants
+BlockVoxelData* BLOCK_VOXEL_DATA = (BlockVoxelData*)malloc(sizeof(BlockVoxelData) * (BlockTypes::TORCH + 1));
+BlockMeshFunc* BLOCK_MESHES = (BlockMeshFunc*)malloc(sizeof(BlockMeshFunc) * (BlockMeshTypes::LEAVES + 1));
+
+
 // TODO: add quad support for rendering and for obj importing??
 
 u16 WINDOW_WIDTH = 1920;
@@ -455,7 +461,7 @@ int main() {
 
 
     // world size in chunks
-    Vec3<u64> world_size = {8, 2, 8};
+    Vec3<u64> world_size = {3, 2, 3};
     Vec3<i64> world_chunk_center = world_size / 2;
 
     Vec2<u64> height_size = {world_size.x, world_size.z};
@@ -945,7 +951,6 @@ int main() {
             VoxelHeightChunk& heightChunk = voxelHeightWorld.chunks[voxelHeightWorld.getChunkIndex(x, z)];
             heightChunk.pos = Vec2<i64>(x, z) - world_chunk_height_center;
 
-
             auto start = std::chrono::high_resolution_clock::now();
 
             heightChunk.calculateHeightmap(voxelBlockWorld, voxelBlockStateWorld);
@@ -953,6 +958,13 @@ int main() {
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::milli> elapsed = end - start;
             std::cout << "Heightmap gen: " << elapsed.count() << " ms\n";
+
+            // for (u8 cx = 0; cx < CS; cx++) {
+            //     for (u8 cz = 0; cz < CS; cz++) {
+            //         printf("%i\n", heightChunk.heightAt(cx, cz));
+            //         VoxelWorlds::placeVoxel(voxelBlockWorld, heightChunk.pos.x * CS + cx, heightChunk.heightAt(cx, cz) + 1, heightChunk.pos.y * CS + cz, EmbeddedVoxel(BlockTypes::COBBLESTONE));
+            //     }
+            // }
         }
     }
 

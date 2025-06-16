@@ -5,6 +5,7 @@
 
 #include "../../core/types.h"
 #include "../../core/maths.h"
+#include "../blockstate.h"
 
 namespace BlockMeshTypes {
 enum BlockMeshTypeEnum {
@@ -119,6 +120,6 @@ struct BlockMesh {
 
 typedef BlockMesh (*BlockMeshFunc)(const BlockStateStruct& state);
 
-BlockMeshFunc* BLOCK_MESHES = (BlockMeshFunc*)malloc(sizeof(BlockMeshFunc) * (BlockMeshTypes::LEAVES + 1));
+extern BlockMeshFunc* BLOCK_MESHES;
 
 #endif

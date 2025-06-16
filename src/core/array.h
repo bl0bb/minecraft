@@ -1,10 +1,10 @@
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef _ARRAY_H
+#define _ARRAY_H
 
 #include <cstddef>
 
 template<typename T, std::size_t N>
-constexpr std::size_t array_size(T (&)[N]) noexcept {
+constexpr inline std::size_t array_size(T (&)[N]) noexcept {
     return N;
 }
 

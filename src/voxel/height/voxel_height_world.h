@@ -4,6 +4,7 @@
 #include "../../core/types.h"
 #include "../../blocks/mesh/block_mesh.h"
 #include "../logic/voxel_chunk.h"
+#include "../block/voxel_block_world.h"
 #include "../blockstate/voxel_blockstate_world.h"
 
 class VoxelHeightChunk {
@@ -15,13 +16,13 @@ public:
 
     // class
     Vec2<i64> pos;
-    u8* heightmap;
+    i64* heightmap;
 
-    VoxelHeightChunk() : heightmap((u8*)malloc(sizeof(u8) * CS_2)) {
+    VoxelHeightChunk() : heightmap((i64*)malloc(sizeof(i64) * CS_2)) {
 
     }
 
-    inline u8 heightAt(u8 x, u8 z) const {
+    inline i64 heightAt(u8 x, u8 z) const {
         return heightmap[getXZIndex(x, z)];
     }
 
@@ -30,32 +31,41 @@ public:
     }
 
     void calculateHeightmap(const VoxelBlockWorld& world, const VoxelBlockStateWorld& stateWorld) {
-        const auto& chunk = world.chunks[world.chunkPosToChunkIndex(pos.x, 0, pos.y)];
-        const auto& stateChunk = stateWorld.chunks[stateWorld.chunkPosToChunkIndex(pos.x, 0, pos.y)];
-
         bool found_block;
         for (u8 x = 0; x < CS; x++) {
             for (u8 z = 0; z < CS; z++) {
                 found_block = false;
-                heightmap[getXZIndex(x, z)] = CS;
-                for (i16 y = (world.size.y / 2 * CS) - 1; y >= (-world.size.y / 2 * CS); y--) {
-                    BlockType blockType = chunk.voxels[get_zxy_index(x, y, z)].type;
-                    BlockVoxelData blockData = BLOCK_VOXEL_DATA[blockType];
-                    if (blockData.transparent) {
-                        continue;
+                heightmap[getXZIndex(x, z)] = world.size.y / 2 * CS - 1;
+
+                for (i8 chunk_y = world.size.y - 1; chunk_y >= 0; chunk_y--) {
+                    i8 chunk_y_world = world.size.y / 2 - 1;
+                    const auto& chunk = world.chunks[world.chunkPosToChunkIndex(pos.x, chunk_y_world, pos.y)];
+                    const auto& stateChunk = stateWorld.chunks[stateWorld.chunkPosToChunkIndex(pos.x, chunk_y_world, pos.y)];
+
+                    for (i16 y = CS - 1; y >= 0; y--) {
+                        BlockType blockType = chunk.voxels[get_zxy_index(x, y, z)].type;
+                        BlockVoxelData blockData = BLOCK_VOXEL_DATA[blockType];
+                        if (blockData.transparent) {
+                            continue;
+                        }
+
+                        BlockStateStruct* state = stateChunk.voxels[get_zxy_index(x, y, z)].state;
+                        BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
+
+                        if (blockType != BlockTypes::AIR) { // blockMesh.culls(2) || blockMesh.culls(3)
+                            found_block = true;
+                            printf("fluh!!\n");
+                            heightmap[getXZIndex(x, z)] = CS * chunk_y_world + y;
+                            break;
+                        }
                     }
-
-                    BlockStateStruct* state = stateChunk.voxels[get_zxy_index(x, y, z)].state;
-                    BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
-
-                    if (blockType != BlockTypes::AIR) { // blockMesh.culls(2) || blockMesh.culls(3)
-                        found_block = true;
-                        heightmap[getXZIndex(x, z)] = y;
+                    if (found_block) {
                         break;
                     }
                 }
+
                 if (!found_block) {
-                    heightmap[getXZIndex(x, z)] = 0;
+                    heightmap[getXZIndex(x, z)] = -world.size.y / 2 * CS;
                 }
             }
         }

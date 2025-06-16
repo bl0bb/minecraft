@@ -12,5 +12,3 @@ void _air_init() {
         _air_get_texture
     );
 }
-
-#endif

@@ -234,7 +234,7 @@ namespace ChunkLight {
 
         for (u8 x = 0; x < CS; x++) {
             for (u8 z = 0; z < CS; z++) {
-                u8 height = heightChunk.heightAt(x, z);
+                i64 height = heightChunk.heightAt(x, z);
 
                 // dont change to u8
                 // keep signed
@@ -258,7 +258,7 @@ namespace ChunkLight {
                             // printf("%i\n", VoxelWorlds::isInChunkBounds(dir_pos_chunk));
 
                             bool hasY = false;
-                            u8 foundY;
+                            i64 foundY;
                             if (VoxelWorlds::isInChunkBounds(dir_pos_chunk)) {
                                 hasY = true;
                                 foundY = heightChunk.heightAt(dir_pos_chunk.x, dir_pos_chunk.z);

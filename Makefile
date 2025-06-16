@@ -1,49 +1,65 @@
 # Compiler and flags
-CXX := g++
-CXXFLAGS := \
--std=c++20 -Isrc\
--Idep/include -Ldep/lib -lglfw3dll -lz\
--DGL_API=0
+CXX = clang++
+CC = clang
+CXXFLAGS = -std=c++20
+CFLAGS = 
 
 # Directories
-SRC_DIR := src
-OBJ_DIR := build
-BIN_DIR := bin
+SRC_DIR = src
+OBJ_DIR = build
+BIN_DIR = bin
+DEP_DIR = dep/src
+TARGET = $(BIN_DIR)/main
 
-# Source files
-CPP_SRCS := $(wildcard $(SRC_DIR)/*.cpp) $(wildcard $(SRC_DIR)/**/*.cpp) $(wildcard $(SRC_DIR)/**/**/*.cpp) $(wildcard $(SRC_DIR)/**/**/**/*.cpp)
-C_SRCS := $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/**/*.c) $(wildcard $(SRC_DIR)/**/**/*.c) $(wildcard $(SRC_DIR)/**/**/**/*.c)
+# Libraries
+LIBS = -lglfw -lz
 
-# Combine all sources (including glad.c)
-SRCS := $(CPP_SRCS) $(C_SRCS)
 
-# Generate corresponding .o object files in the build/ directory
-OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPP_SRCS)) \
-        $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(C_SRCS))
+# windows
 
-# Final executable
-TARGET := $(BIN_DIR)/app.exe
 
-# Default rule
+# macos
+GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
+GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
+LIBS += -L$(GLFW_LIB_DIR) -I$(GLFW_INCLUDE_DIR) -DGL_API=1
+
+
+
+
+
+# Source files (recursive)
+CPP_SOURCES = $(shell find $(SRC_DIR) -name '*.cpp')
+GLAD_SOURCE = $(DEP_DIR)/glad.c
+
+# Object and dependency files
+CPP_OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(CPP_SOURCES))
+GLAD_OBJECT = $(OBJ_DIR)/glad.o
+OBJECTS = $(CPP_OBJECTS) $(GLAD_OBJECT)
+DEPS = $(OBJECTS:.o=.d)
+
+# Default target
 all: $(TARGET)
 
-# Link object files into the executable
-$(TARGET): $(OBJS)
-#   @mkdir $(BIN_DIR)
-	$(CXX) $(OBJS) -o $@
+# Link executable
+$(TARGET): $(OBJECTS)
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(OBJECTS) -o $@ $(LIBS)
 
-# Compile C++ source files
+# Pattern rule for compiling C++ source to object
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-#   @mkdir $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(LIBS)
 
-# Compile C source files (e.g., glad.c)
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-#   @mkdir $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -x c -c $< -o $@
+# Compile glad.c
+$(OBJ_DIR)/glad.o: $(GLAD_SOURCE)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean rule
+# Clean build files
 clean:
-	rm $(OBJ_DIR) $(BIN_DIR)
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+# Include generated dependency files
+-include $(DEPS)
 
 .PHONY: all clean

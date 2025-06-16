@@ -7,12 +7,13 @@
 #include <array>
 #include <stdexcept>
 #include <algorithm>
+#include <numbers>
 
 #include "types.h"
 
 // math.h stuff C++ in MS doesnt work properly or something so define pi manually
 // 3.14159265358979323846264338327950288
-#define M_PI 3.14159265358979323846
+// #define M_PI 3.14159265358979323846
 
 namespace Math {
 
@@ -25,12 +26,12 @@ static constexpr inline i8 sign(T n) {
 // deg rad
 template<typename T>
 static constexpr inline T deg_to_rad(T deg) {
-    return deg * (M_PI / 180.0);
+    return deg * (std::numbers::pi / 180.0);
 }
 
 template<typename T>
 static constexpr inline T rad_to_deg(T rad) {
-    return rad * (180.0 / M_PI);
+    return rad * (180.0 / std::numbers::pi);
 }
 
 

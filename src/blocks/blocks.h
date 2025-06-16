@@ -7,6 +7,7 @@
 #include "../core/color.h"
 
 #include "blockstate.h"
+#include "mesh/block_mesh.h"
 
 constexpr const char* block_textures[] = {
     "",
@@ -140,6 +141,6 @@ struct BlockVoxelData {
     {}
 };
 
-BlockVoxelData* BLOCK_VOXEL_DATA = (BlockVoxelData*)malloc(sizeof(BlockVoxelData) * (BlockTypes::TORCH + 1));
+extern BlockVoxelData* BLOCK_VOXEL_DATA;
 
 #endif
