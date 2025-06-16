@@ -461,7 +461,7 @@ int main() {
 
 
     // world size in chunks
-    Vec3<u64> world_size = {3, 2, 3};
+    Vec3<u64> world_size = {4, 2, 4};
     Vec3<i64> world_chunk_center = world_size / 2;
 
     Vec2<u64> height_size = {world_size.x, world_size.z};
@@ -961,9 +961,10 @@ int main() {
 
             // for (u8 cx = 0; cx < CS; cx++) {
             //     for (u8 cz = 0; cz < CS; cz++) {
-            //         printf("%i\n", heightChunk.heightAt(cx, cz));
+            //         printf("%i ", heightChunk.heightAt(cx, cz));
             //         VoxelWorlds::placeVoxel(voxelBlockWorld, heightChunk.pos.x * CS + cx, heightChunk.heightAt(cx, cz) + 1, heightChunk.pos.y * CS + cz, EmbeddedVoxel(BlockTypes::COBBLESTONE));
             //     }
+            //     printf("\n");
             // }
         }
     }

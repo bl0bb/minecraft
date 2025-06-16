@@ -1,6 +1,14 @@
-# Compiler and flags
-CXX = clang++
-CC = clang
+# run on windows
+# clear && if [ -f build/main.o ]; then rm build/main.o; fi && time make
+
+# run on mac / linux
+# clear && time make
+
+
+
+
+
+# Flags
 CXXFLAGS = -std=c++20
 CFLAGS = 
 
@@ -12,17 +20,26 @@ DEP_DIR = dep/src
 TARGET = $(BIN_DIR)/main
 
 # Libraries
-LIBS = -lglfw -lz
+LIBS = -lz
 
 
 # windows
-
+CXX = g++
+CC = gcc
+LIBS += -Idep/include -Ldep/lib -lglfw3dll
+GL_API = 0
 
 # macos
-GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
-GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
-LIBS += -L$(GLFW_LIB_DIR) -I$(GLFW_INCLUDE_DIR) -DGL_API=1
+# CXX = clang++
+# CC = clang
+# GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
+# GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
+# LIBS += -lglfw -L$(GLFW_LIB_DIR) -I$(GLFW_INCLUDE_DIR)
+# GL_API = 1
 
+
+# define GL api
+LIBS += -DGL_API=$(GL_API)
 
 
 
@@ -53,11 +70,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 # Compile glad.c
 $(OBJ_DIR)/glad.o: $(GLAD_SOURCE)
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ $(LIBS)
 
 # Clean build files
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	@if [ -f build/main.o ]; then rm build/main.o; fi
 
 # Include generated dependency files
 -include $(DEPS)

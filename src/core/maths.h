@@ -424,7 +424,7 @@ struct Mat4 {
             z = std::atan2(m[0][1], m[0][0]);
         } else {
             // Gimbal lock: cos(y) == 0
-            y = m[0][2] <= -1 ? static_cast<T>(M_PI) / 2 : -static_cast<T>(M_PI) / 2;
+            y = m[0][2] <= -1 ? static_cast<T>(std::numbers::pi) / 2 : -static_cast<T>(std::numbers::pi) / 2;
             x = std::atan2(-m[2][1], m[1][1]);
             z = 0;
         }

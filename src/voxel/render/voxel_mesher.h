@@ -19,20 +19,6 @@
 
 #include "voxel_chunk_mesh_common.h"
 
-void printBinary(unsigned int num, u8 count) {
-    // Adjust for 32-bit integers
-    for (int i = count - 1; i >= 0; i--) {
-        unsigned int mask = 1 << i;
-        putchar((num & mask) ? '1' : '0');
-        putchar(' ');
-
-        // Optional: Add a space every 4 bits for readability
-        // if (i % 4 == 0) {
-        //     putchar(' ');
-        // }
-    }
-}
-
 
 
 
@@ -362,19 +348,24 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
 
 
-                            Vec3<i64> voxel_pos = Vec3<i64>(1) + Vec3<i64>(x, y, z) + neighbor_pos;
+                            // raw position
+                            Vec3<i64> voxel_pos_raw = Vec3<i64>(x, y, z) + neighbor_pos;
+                            // position in chunk (add one cuz of padding)
+                            Vec3<i64> voxel_pos = Vec3<i64>(1) + voxel_pos_raw;
+                            // voxel pos in the world
+                            Vec3<i64> voxel_pos_world = (chunk.pos * CS) + voxel_pos_raw;
 
                             EmbeddedVoxel* voxel = blocks[get_zxy_index_p(voxel_pos.x, voxel_pos.y, voxel_pos.z)];
                             if (!voxel) {
                                 RGBIS4* lightPtr;
-                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : 0;
                                 continue;
                             }
 
                             // ao
                             if (voxel->type == BlockTypes::AIR) {
                                 RGBIS4* lightPtr;
-                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : 0;
                                 continue;
                             }
 
@@ -382,7 +373,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
                             if (blockData.transparent) {
                                 RGBIS4* lightPtr;
-                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : 0;
                                 continue;
                             }
 
@@ -390,45 +381,9 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                             BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
                             if (!blockMesh.culls(0)) {
                                 RGBIS4* lightPtr;
-                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : 0;
                                 continue;
                             }
-
-
-
-                            // Vec3<i64> voxel_pos = (chunk.pos * CS) + Vec3<i64>(x, y, z) + neighbor_pos;
-
-                            // EmbeddedVoxel* voxel;
-                            // bool hasBlock = VoxelWorlds::getVoxel(voxelWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &voxel);
-                            
-                            // if (!hasBlock) {
-                            //     RGBIS4* lightPtr;
-                            //     lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
-                            //     continue;
-                            // }
-                            
-                            // // ao
-                            // if (voxel->type == BlockTypes::AIR) {
-                            //     RGBIS4* lightPtr;
-                            //     lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
-                            //     continue;
-                            // }
-
-                            // BlockVoxelData blockData = BLOCK_VOXEL_DATA[voxel->type];
-
-                            // if (blockData.transparent) {
-                            //     RGBIS4* lightPtr;
-                            //     lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
-                            //     continue;
-                            // }
-
-                            // BlockStateStruct* state = VoxelWorlds::getVoxelUnsafe(voxelBlockStateWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z)->state;
-                            // BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
-                            // if (!blockMesh.culls(0)) {
-                            //     RGBIS4* lightPtr;
-                            //     lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos.x, voxel_pos.y, voxel_pos.z, &lightPtr) ? *lightPtr : 0;
-                            //     continue;
-                            // }
 
 
 
@@ -536,13 +491,6 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                                 );
                             }
                         }
-
-                        // for (u8 i = 0; i < blockMesh.counts[dir]; i++) {
-                        //     BlockFace face = blockMesh.faces[dir][i];
-
-                        //     // lightChunk.voxels[get_zxy_index(x, y, z)]
-                        //     vertices[vertexIdx++] = VoxelFace(x, y, z, face.fromX, face.fromY, face.fromZ, face.width, face.height, face.uvFromX, face.uvFromY, face.uvWidth(), face.uvHeight(), face.faceRot, face.uvRot, dir, blockTexture, lightSources, ao_mask);
-                        // }
                     }
                 }
             }

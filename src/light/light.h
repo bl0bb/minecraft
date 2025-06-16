@@ -231,7 +231,6 @@ namespace ChunkLight {
     static void apply_light(const VoxelBlockWorld& voxelWorld, const VoxelHeightWorld& heightWorld, VoxelLightWorld& lightWorld, const VoxelBlockChunk& chunk, const VoxelHeightChunk& heightChunk, VoxelLightChunk& voxelLightChunk) {
         AllLightQueue sunlightQueue;
         AllLightQueue lightQueue;
-
         for (u8 x = 0; x < CS; x++) {
             for (u8 z = 0; z < CS; z++) {
                 i64 height = heightChunk.heightAt(x, z);

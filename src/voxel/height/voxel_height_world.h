@@ -38,7 +38,7 @@ public:
                 heightmap[getXZIndex(x, z)] = world.size.y / 2 * CS - 1;
 
                 for (i8 chunk_y = world.size.y - 1; chunk_y >= 0; chunk_y--) {
-                    i8 chunk_y_world = world.size.y / 2 - 1;
+                    i8 chunk_y_world = -world.size.y / 2 + chunk_y;
                     const auto& chunk = world.chunks[world.chunkPosToChunkIndex(pos.x, chunk_y_world, pos.y)];
                     const auto& stateChunk = stateWorld.chunks[stateWorld.chunkPosToChunkIndex(pos.x, chunk_y_world, pos.y)];
 
@@ -54,7 +54,6 @@ public:
 
                         if (blockType != BlockTypes::AIR) { // blockMesh.culls(2) || blockMesh.culls(3)
                             found_block = true;
-                            printf("fluh!!\n");
                             heightmap[getXZIndex(x, z)] = CS * chunk_y_world + y;
                             break;
                         }

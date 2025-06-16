@@ -11,39 +11,44 @@
 
 
 
-enum BiomeType {
-    PLAINS,
-    DESERT,
-    TUNDRA,
-    FOREST
+
+enum class TerrainContinentalness : u8 {
+    MUSHROOM_FIELDS,
+    DEEP_OCEAN,
+    OCEAN,
+    COAST,
+    NEAR_INLAND,
+    MID_INLAND,
+    FAR_INLAND,
+};
+
+
+enum class TerrainPV : u8 {
+    VALLEYS,
+    LOW,
+    MID,
+    HIGH,
+    PEAKS,
 };
 
 
 
 
 
-class Noise {
+
+
+
+class TerrainGen {
 public:
     // Create separate noise instances for each terrain feature
 
     // Terrain shaping
-    FastNoise continentalness;
-    FastNoise erosion;
-    FastNoise peaksValleys;
     FastNoise temperature;
     FastNoise humidity;
-
-    // Decoration
-    FastNoise plants;
-    FastNoise trees;
-
-    static BiomeType GetBiome(float temperature, float humidity) {
-        if (temperature > 0.5f) {
-            return humidity > 0.5f ? BiomeType::FOREST : BiomeType::DESERT;
-        } else {
-            return humidity > 0.5f ? BiomeType::PLAINS : BiomeType::TUNDRA;
-        }
-    }
+    FastNoise continentalness;
+    FastNoise erosion;
+    FastNoise weirdness;
+    FastNoise peaksValleys;
 
     Noise() {
         
@@ -52,6 +57,568 @@ public:
     ~Noise() {
         
     }
+
+
+
+    // biome selection
+    BiomeType getNonInlandBiome(u8 temp, TerrainContinentalness cont) {
+        if (cont == TerrainContinentalness::MUSHROOM_FIELDS) {
+            return "Mushroom fields";
+        }
+        if (temp == 0) {
+            if (cont == TerrainContinentalness::OCEANS) {
+                return "Frozen ocean";
+            } else if (cont == TerrainContinentalness::DEEP_OCEANS) {
+                return "Deep frozen ocean";
+            }
+        } else if (temp == 1) {
+            if (cont == TerrainContinentalness::OCEANS) {
+                return "Cold ocean";
+            } else if (cont == TerrainContinentalness::DEEP_OCEANS) {
+                return "Deep cold ocean";
+            }
+        } else if (temp == 2) {
+            if (cont == TerrainContinentalness::OCEANS) {
+                return "Ocean";
+            } else if (cont == TerrainContinentalness::DEEP_OCEANS) {
+                return "Deep ocean";
+            }
+        } else if (temp == 3) {
+            if (cont == TerrainContinentalness::OCEANS) {
+                return "Lukewarm ocean";
+            } else if (cont == TerrainContinentalness::DEEP_OCEANS) {
+                return "Deep lukewarm ocean";
+            }
+        } else if (temp == 4) {
+            if (cont == TerrainContinentalness::OCEANS) {
+                return "Warm ocean";
+            } else if (cont == TerrainContinentalness::DEEP_OCEANS) {
+                return "Warm ocean";
+            }
+        }
+        return "None";
+    }
+
+    BiomeType getInlandBiome(TerrainContinentalness cont, TerrainPV pv, u8 erosion, u8 temp) {
+        if (pv == TerrainPV::VALLEYS) {
+            if (cont == TerrainContinentalness::COAST) {
+                if (temp == 0) {
+                    return "Frozen river";
+                } else {
+                    return "River";
+                }
+            } else if (cont == TerrainContinentalness::NEAR_INLAND) {
+                if (erosion < 6) {
+                    if (temp == 0) {
+                        return "Frozen river";
+                    } else {
+                        return "River";
+                    }
+                } else {
+                    if (temp == 0) {
+                        return "Frozen river";
+                    } else if (temp < 3) {
+                        return "Swamp";
+                    } else {
+                        return "Mangrove swamp";
+                    }
+                }
+            } else if (cont == TerrainContinentalness::MID_INLAND) {
+                if (erosion < 2) {
+                    if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "BADLAND BIOMES";
+                    }
+                } else if (erosion < 6) {
+                    if (temp == 0) {
+                        return "Frozen river";
+                    } else {
+                        return "River";
+                    }
+                } else {
+                    if (temp == 0) {
+                        return "Frozen river";
+                    } else if (temp < 3) {
+                        return "Swamp";
+                    } else {
+                        return "Mangrove swamp";
+                    }
+                }
+            } else if (cont == TerrainContinentalness::FAR_INLAND) {
+                if (erosion < 2) {
+                    if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "BADLAND BIOMES";
+                    }
+                } else if (erosion < 6) {
+                    if (temp == 0) {
+                        return "Frozen river";
+                    } else {
+                        return "River";
+                    }
+                } else {
+                    if (temp == 0) {
+                        return "Frozen river";
+                    } else if (temp < 3) {
+                        return "Swamp";
+                    } else {
+                        return "Mangrove swamp";
+                    }
+                }
+            }
+        } else if (pv == TerrainPV::LOW) {
+            if (cont == TerrainContinentalness::COAST) {
+                if (erosion < 3) {
+                    return "Stony shore";
+                } else if (erosion < 5) {
+                    return "BEACH BIOMES";
+                } else if (erosion == 5) {
+                    if (weirdness < 0) {
+                        return "BEACH BIOMES";
+                    } else {
+                        if (temp < 2 || hum == 4) {
+                            return "MIDDLE BIOMES";
+                        } else {
+                            return "Windswept savanna";
+                        }
+                    }
+                } else {
+                    return "BEACH BIOMES";
+                }
+            } else if (cont == TerrainContinentalness::NEAR_INLAND) {
+                if (erosion < 2) {
+                    if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "BADLAND BIOMES";
+                    }
+                } else if (erosion < 5) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    if (weirdness < 0 || temp < 2 || hum == 4) {
+                        return "SHATTERED BIOMES";
+                    } else if (weirdness > 0 && temp > 1 && hum < 4) {
+                        return "Windswept savanna";
+                    }
+                } else {
+                    if (temp == 0) {
+                        return "MIDDLE BIOMES";
+                    } else if (temp < 3) {
+                        return "Swamp";
+                    } else {
+                        return "Mangrove swamp";
+                    }
+                }
+            } else if (cont == TerrainContinentalness::MID_INLAND || cont == TerrainContinentalness::FAR_INLAND) {
+                if (erosion < 2) {
+                    if (temp == 0) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion < 4) {
+                    if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "BADLAND BIOMES";
+                    }
+                } else if (erosion < 6) {
+                    return "MIDDLE BIOMES";
+                } else {
+                    if (temp == 0) {
+                        return "MIDDLE BIOMES";
+                    } else if (temp < 3) {
+                        return "Swamp";
+                    } else {
+                        return "Mangrove swamp";
+                    }
+                }
+            }
+        } else if (pv == TerrainPV::MID) {
+            if (cont == TerrainContinentalness::COAST) {
+                if (erosion < 3) {
+                    return "Stony shore";
+                } else if (erosion == 3) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 4) {
+                    if (weirdness < 0) {
+                        return "BEACH BIOMES";
+                    } else {
+                        return "MIDDLE BIOMES";
+                    }
+                } else if (erosion == 5) {
+                    if (weirdness < 0) {
+                        return "BEACH BIOMES";
+                    } else {
+                        if (temp < 2 || hum == 4) {
+                            return "MIDDLE BIOMES";
+                        } else {
+                            return "Windswept savanna";
+                        }
+                    }
+                } else {
+                    if (weirdness < 0) {
+                        return "BEACH BIOMES";
+                    } else {
+                        return "MIDDLE BIOMES";
+                    }
+                }
+            } else if (cont == TerrainContinentalness::NEAR_INLAND) {
+                if (erosion == 0) {
+                    if (temp < 3) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else {
+                        return "Plateau biomes";
+                    }
+                } else if (erosion == 1) {
+                    if (temp == 0) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion < 5) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    if (weirdness < 0 || temp < 2 || hum == 4) {
+                        return "SHATTERED BIOMES";
+                    } else if (weirdness > 0 && temp > 1 && hum < 4) {
+                        return "Windswept savanna";
+                    }
+                } else {
+                    if (temp == 0) {
+                        return "MIDDLE BIOMES";
+                    } else if (temp < 3) {
+                        return "Swamp";
+                    } else {
+                        return "Mangrove swamp";
+                    }
+                }
+            } else if (cont == TerrainContinentalness::MID_INLAND) {
+                if (erosion == 0) {
+                    if (temp < 3) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else {
+                        return "Plateau biomes";
+                    }
+                } else if (erosion == 1) {
+                    if (temp == 0) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion < 4) {
+                    if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 4) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    return "SHATTERED BIOMES";
+                } else {
+                    if (temp == 0) {
+                        return "MIDDLE BIOMES";
+                    } else if (temp < 3) {
+                        return "Swamp";
+                    } else {
+                        return "Mangrove swamp";
+                    }
+                }
+            } else if (cont == TerrainContinentalness::FAR_INLAND) {
+                if (erosion == 0) {
+                    if (temp < 3) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else {
+                        return "Plateau biomes";
+                    }
+                } else if (erosion == 1) {
+                    if (temp == 0) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else {
+                        return "Plateau biomes";
+                    }
+                } else if (erosion == 2) {
+                    return "Plateau biomes";
+                } else if (erosion == 3) {
+                    if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 4) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    return "SHATTERED BIOMES";
+                } else {
+                    if (temp == 0) {
+                        return "MIDDLE BIOMES";
+                    } else if (temp < 3) {
+                        return "Swamp";
+                    } else {
+                        return "Mangrove swamp";
+                    }
+                }
+            }
+        } else if (pv == TerrainPV::HIGH) {
+            if (cont == TerrainContinentalness::COAST) {
+                if (erosion < 5) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    if (weirdness < 0 || temp < 2 || hum == 4) {
+                        return "SHATTERED BIOMES";
+                    } else if (weirdness > 0 && temp > 1 && hum < 4) {
+                        return "Windswept savanna";
+                    }
+                } else {
+                    return "MIDDLE BIOMES";
+                }
+            } else if (cont == TerrainContinentalness::NEAR_INLAND) {
+                if (erosion == 0) {
+                    if (temp < 3) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else {
+                        return "Plateau biomes";
+                    }
+                } else if (erosion == 1) {
+                    if (temp == 0) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 5) {
+                    if (weirdness < 0 || temp < 2 || hum == 4) {
+                        return "SHATTERED BIOMES";
+                    } else if (weirdness > 0 && temp > 1 && hum < 4) {
+                        return "Windswept savanna";
+                    }
+                } else {
+                    return "MIDDLE BIOMES";
+                }
+            } else if (cont == TerrainContinentalness::MID_INLAND) {
+                if (erosion == 0) {
+                    if (temp < 3) {
+                        if (weirdness < 0) {
+                            return "Jagged peaks";
+                        } else {
+                            return "Frozen peaks";
+                        }
+                    } else if (temp == 3) {
+                        return "Stony peaks";
+                    } else if (temp == 3) {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 1) {
+                    if (temp < 3) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else {
+                        return "Plateau biomes";
+                    }
+                } else if (erosion == 2) {
+                    return "Plateau biomes";
+                } else if (erosion == 3) {
+                    if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 4) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    return "Shattered biomes";
+                } else {
+                    return "MIDDLE BIOMES";
+                }
+            } else if (cont == TerrainContinentallness::FAR_INLAND) {
+                if (erosion == 0) {
+                    if (temp < 3) {
+                        if (weirdness < 0) {
+                            return "Jagged peaks";
+                        } else {
+                            return "Frozen peaks";
+                        }
+                    } else if (temp == 3) {
+                        return "Stony peaks";
+                    } else if (temp == 3) {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 1) {
+                    if (temp < 3) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else {
+                        return "Plateau biomes";
+                    }
+                } else if (erosion < 4) {
+                    return "Plateau biomes";
+                } else if (erosion == 4) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    return "Shattered biomes";
+                } else {
+                    return "MIDDLE BIOMES";
+                }
+            }
+        } else if (pv == TerrainPV::PEAKS) {
+            if (cont == TerrainContinentalness::COAST || cont == TerrainContinentalness::NEAR_INLAND) {
+                if (erosion == 0) {
+                    if (temp < 3) {
+                        if (weirdness < 0) {
+                            return "Jagged peaks";
+                        } else {
+                            return "Frozen peaks";
+                        }
+                    } else if (temp == 3) {
+                        return "Stony peaks";
+                    } else if (temp == 3) {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 1) {
+                    if (temp == 0) {
+                        if (hum < 2) {
+                            return "Snowy slopes";
+                        } else {
+                            return "Grove";
+                        }
+                    } else if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion < 5) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    if (weirdness < 0 || temp < 2 || hum == 4) {
+                        return "SHATTERED BIOMES";
+                    } else if (weirdness > 0 && temp > 1 && hum < 4) {
+                        return "Windswept savanna";
+                    }
+                } else {
+                    return "MIDDLE BIOMES";
+                }
+            } else if (cont == TerrainContinentalness::MID_INLAND) {
+                if (erosion < 2) {
+                    if (temp < 3) {
+                        if (weirdness < 0) {
+                            return "Jagged peaks";
+                        } else {
+                            return "Frozen peaks";
+                        }
+                    } else if (temp == 3) {
+                        return "Stony peaks";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 2) {
+                    return "Plateau biomes";
+                } else if (erosion == 3) {
+                    if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 4) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    return "Shattered biomes";
+                } else if (erosion == 6) {
+                    return "MIDDLE BIOMES";
+                }
+            } else if (cont == TerrainContinentalness::FAR_INLAND) {
+                if (erosion < 2) {
+                    if (temp < 3) {
+                        if (weirdness < 0) {
+                            return "Jagged peaks";
+                        } else {
+                            return "Frozen peaks";
+                        }
+                    } else if (temp == 3) {
+                        return "Stony peaks";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 2) {
+                    return "Plateau biomes";
+                } else if (erosion == 3) {
+                    if (temp < 4) {
+                        return "MIDDLE BIOMES";
+                    } else {
+                        return "Badland biomes";
+                    }
+                } else if (erosion == 4) {
+                    return "MIDDLE BIOMES";
+                } else if (erosion == 5) {
+                    return "Shattered biomes";
+                } else if (erosion == 6) {
+                    return "MIDDLE BIOMES";
+                }
+            }
+        }
+    }
+
+    BiomeType getBiome(float temp, float hum) {
+        
+    }
+
+    BiomeType getBiome(float temp, float hum) {
+        
+    }
+
+
+
 
     void updateNoise() {
         // Terrain shaping
