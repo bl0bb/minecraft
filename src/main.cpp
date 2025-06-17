@@ -461,7 +461,7 @@ int main() {
 
 
     // world size in chunks
-    Vec3<u64> world_size = {4, 2, 4};
+    Vec3<u64> world_size = {2, 2, 2};
     Vec3<i64> world_chunk_center = world_size / 2;
 
     Vec2<u64> height_size = {world_size.x, world_size.z};
@@ -1299,8 +1299,6 @@ int main() {
                     EmbeddedVoxel* voxel;
                     BlockStateVoxel* blockStateVoxel;
                     if (getBlockAndStateAtPos(modifyPos, &voxel, &blockStateVoxel)) {
-                        RGBIS4 light = *VoxelWorlds::getVoxelUnsafe(voxelLightWorld, modifyPos.x, modifyPos.y, modifyPos.z);
-
                         *voxel = EmbeddedVoxel(BlockTypes::COBBLESTONE);
                         *blockStateVoxel->state = BlockBlockState();
 

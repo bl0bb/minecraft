@@ -70,9 +70,10 @@ constexpr bool isInChunkBounds(const Vec3<T>& pos) {
 
 template<typename VoxelWorldType, typename VoxelType = typename VoxelWorldType::chunk_type::voxel_type, typename ChunkType = typename VoxelWorldType::chunk_type>
 constexpr bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxel_ptr) {
-    i64 chunk_pos_x = (i64(world.size.x) / 2) + floor(f64(x) / f64(CS));
-    i64 chunk_pos_y = (i64(world.size.y) / 2) + floor(f64(y) / f64(CS));
-    i64 chunk_pos_z = (i64(world.size.z) / 2) + floor(f64(z) / f64(CS));
+    // TODO: HERE FIX BUG
+    i64 chunk_pos_x = (i64(world.size.x) / 2) + floor(f64(x < 0 ? x + 1 : x) / f64(CS));
+    i64 chunk_pos_y = (i64(world.size.y) / 2) + floor(f64(y < 0 ? y + 1 : y) / f64(CS));
+    i64 chunk_pos_z = (i64(world.size.z) / 2) + floor(f64(z < 0 ? z + 1 : z) / f64(CS));
 
     if (chunk_pos_x < 0 || chunk_pos_y < 0 || chunk_pos_z < 0) {
         return false;

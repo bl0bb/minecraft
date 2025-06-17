@@ -9,6 +9,24 @@
 
 
 
+const f32 continentalnessAmplitudes[] = {
+    1.0f,
+    0.5f,
+    0.5f,
+    0.5f,
+    1.0f,
+    1.0f,
+    1.0f,
+};
+
+const f32 pvAmplitudes[] = {
+    1.0f,
+    1.0f,
+    0.0f,
+    1.0f,
+    1.0f,
+};
+
 
 
 
@@ -34,6 +52,8 @@ enum class TerrainPV : u8 {
 
 
 enum class BiomeType : u8 {
+    // none
+    NONE,
     // offshore biomes
     OCEAN,
     DEEP_OCEAN,
@@ -432,9 +452,7 @@ public:
                 return BiomeType::WARM_OCEAN;
             }
         }
-        
-        printf("buh 7\n");
-        return BiomeType::OCEAN;
+        return BiomeType::NONE;
     }
 
     BiomeType getInlandBiome(TerrainContinentalness cont, TerrainPV pv, u8 erosion, u8 temp, u8 hum, u8 weird) {
@@ -539,6 +557,9 @@ public:
                         return getShatteredBiomes(hum, temp, weird);
                     } else if (weird > 0 && temp > 1 && hum < 4) {
                         return BiomeType::WINDSWEPT_SAVANNA;
+                    } else {
+                        printf("wwww 5\n");
+                        return BiomeType::WINDSWEPT_SAVANNA;
                     }
                 } else {
                     if (temp == 0) {
@@ -638,6 +659,9 @@ public:
                     if (weird < 0 || temp < 2 || hum == 4) {
                         return getShatteredBiomes(hum, temp, weird);
                     } else if (weird > 0 && temp > 1 && hum < 4) {
+                        return BiomeType::WINDSWEPT_SAVANNA;
+                    } else {
+                        printf("wwww 4\n");
                         return BiomeType::WINDSWEPT_SAVANNA;
                     }
                 } else {
@@ -743,6 +767,9 @@ public:
                         return getShatteredBiomes(hum, temp, weird);
                     } else if (weird > 0 && temp > 1 && hum < 4) {
                         return BiomeType::WINDSWEPT_SAVANNA;
+                    } else {
+                        printf("wwww 3\n");
+                        return BiomeType::WINDSWEPT_SAVANNA;
                     }
                 } else {
                     return getMiddleBiomes(hum, temp, weird);
@@ -775,6 +802,9 @@ public:
                         return getShatteredBiomes(hum, temp, weird);
                     } else if (weird > 0 && temp > 1 && hum < 4) {
                         return BiomeType::WINDSWEPT_SAVANNA;
+                    } else {
+                        printf("wwww 2\n");
+                        return BiomeType::WINDSWEPT_SAVANNA;
                     }
                 } else {
                     return getMiddleBiomes(hum, temp, weird);
@@ -789,7 +819,7 @@ public:
                         }
                     } else if (temp == 3) {
                         return BiomeType::STONY_PEAKS;
-                    } else if (temp == 3) {
+                    } else {
                         return getBadlandBiomes(hum, weird);
                     }
                 } else if (erosion == 1) {
@@ -827,7 +857,7 @@ public:
                         }
                     } else if (temp == 3) {
                         return BiomeType::STONY_PEAKS;
-                    } else if (temp == 3) {
+                    } else {
                         return getBadlandBiomes(hum, weird);
                     }
                 } else if (erosion == 1) {
@@ -861,7 +891,7 @@ public:
                         }
                     } else if (temp == 3) {
                         return BiomeType::STONY_PEAKS;
-                    } else if (temp == 3) {
+                    } else {
                         return getBadlandBiomes(hum, weird);
                     }
                 } else if (erosion == 1) {
@@ -882,6 +912,9 @@ public:
                     if (weird < 0 || temp < 2 || hum == 4) {
                         return getShatteredBiomes(hum, temp, weird);
                     } else if (weird > 0 && temp > 1 && hum < 4) {
+                        return BiomeType::WINDSWEPT_SAVANNA;
+                    } else {
+                        printf("wwwww 1\n");
                         return BiomeType::WINDSWEPT_SAVANNA;
                     }
                 } else {
@@ -912,7 +945,7 @@ public:
                     return getMiddleBiomes(hum, temp, weird);
                 } else if (erosion == 5) {
                     return getShatteredBiomes(hum, temp, weird);
-                } else if (erosion == 6) {
+                } else {
                     return getMiddleBiomes(hum, temp, weird);
                 }
             } else if (cont == TerrainContinentalness::FAR_INLAND) {
@@ -940,11 +973,30 @@ public:
                     return getMiddleBiomes(hum, temp, weird);
                 } else if (erosion == 5) {
                     return getShatteredBiomes(hum, temp, weird);
-                } else if (erosion == 6) {
+                } else {
                     return getMiddleBiomes(hum, temp, weird);
                 }
             }
         }
+
+        printf("NUHUH\n");
+        return BiomeType::PLAINS;
+    }
+
+
+
+    BiomeType getBiome(TerrainContinentalness cont, TerrainPV pv, u8 erosion, u8 temp, u8 hum, u8 weird) {
+        BiomeType nonInlandBiome = getNonInlandBiome(cont, temp);
+        if (nonInlandBiome != BiomeType::NONE) {
+            return nonInlandBiome;
+        }
+        return getInlandBiome(cont, pv, erosion, temp, hum, weird);
+    }
+
+
+
+    f32 calculatePV(f32 x) {
+        return 1.0f - std::abs(3.0f * std::abs(x) - 2.0f);
     }
 
 
@@ -990,6 +1042,123 @@ public:
         weirdnessNoise.SetSeed(seed);
         temperatureNoise.SetSeed(seed);
         humidityNoise.SetSeed(seed);
+    }
+
+    int* generateHeightMap(i64 chunk_x, i64 chunk_y, i64 chunk_z) {
+        int* heightMap = new int[CS_2]{0};
+    
+        for (u8 x = 0; x < CS; x++) {
+            for (u8 z = 0; z < CS; z++) {
+                i64 world_x = (chunk_x * CS) + x;
+                i64 world_z = (chunk_z * CS) + z;
+
+
+
+
+
+                f32 heightValue = 0.0f;
+
+                f32 cont = continentalnessNoise.GetNoise(world_x, world_z);
+                f32 eros = erosionNoise.GetNoise(world_x, world_z);
+                f32 peaks = calculatePV(weirdnessNoise.GetNoise(world_x, world_z));
+
+
+                heightValue += continentalnessAmplitudes[u8(getContinent(cont))];
+                heightValue += continentalnessAmplitudes[u8(getContinent(cont))];
+
+
+
+
+
+
+                heightValue = (heightValue + 1.0f) / 2.0f; // Normalize to 0..1
+                heightMap[z + x * CS] = heightValue * 64.0f; // (heightValue * CS * 2) - (chunk_y * CS); // (heightValue * CS) - (chunk_y * CS);
+            }
+        }
+
+        return heightMap;
+    }
+
+    void assignBaseBlocks(EmbeddedVoxel* terrain, i64 chunk_x, i64 chunk_y, i64 chunk_z, const int* heightMap) {
+        for (u8 x = 0; x < CS; x++) {
+            for (u8 z = 0; z < CS; z++) {
+                int surfaceY = heightMap[z + x * CS];
+
+                if (surfaceY < 0) {
+                    continue;
+                }
+
+                surfaceY = std::min(surfaceY, CS - 1);
+
+                for (u8 y = 0; y < CS; y++) {
+                    BlockType type;
+
+                    i64 world_y = y + (chunk_y * CS);
+
+                    if (world_y > surfaceY) {
+                        if (world_y <= CS * 2 * 0.4) {
+                            type = BlockTypes::WATER;
+                        } else {
+                            type = BlockTypes::AIR;
+                        }
+                    } else if (world_y == surfaceY) {
+                        type = BlockTypes::DIRT;  // Placeholder; will be overwritten in surface layer
+                    } else if (world_y > surfaceY - 3) {
+                        type = BlockTypes::DIRT;
+                    } else {
+                        type = BlockTypes::STONE;
+                    }
+
+                    terrain[get_zxy_index(x, y, z)] = EmbeddedVoxel(type);
+                }
+            }
+        }
+    }
+
+
+    void applySurfaceAndBiomes(EmbeddedVoxel* terrain, i64 chunk_x, i64 chunk_y, i64 chunk_z, const int* heightMap) {
+        for (u8 x = 0; x < CS; x++) {
+            for (u8 z = 0; z < CS; z++) {
+                i64 world_x = (chunk_x * CS) + x;
+                i64 world_z = (chunk_z * CS) + z;
+
+                int surfaceY = heightMap[z + x * CS];
+
+                if (surfaceY < 0) {
+                    continue;
+                }
+
+                surfaceY = std::min(surfaceY, CS - 1);
+
+
+                f32 contF = (continentalnessNoise.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
+                TerrainContinentalness cont = getContinent(contF);
+                f32 erosion = (erosionNoise.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
+                f32 weird = (weirdnessNoise.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
+                f32 pvF = calculatePV(weird);
+                TerrainPV pv = getPV(pvF);
+                f32 temp = (temperatureNoise.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
+                f32 hum = (humidityNoise.GetNoise(world_x, world_z) + 1.0f) / 2.0f;
+
+                BiomeType biome = getBiome(cont, pv, erosion, temp, hum, weird);
+
+                BlockType type = BlockTypes::GRASS;
+                // switch (biome) {
+                //     case BiomeType::PLAINS: type = BlockTypes::GRASS; break;
+                //     case BiomeType::DESERT: type = BlockTypes::SAND; break;
+                //     case BiomeType::FOREST: type = BlockTypes::GRASS; break;
+                // }
+
+                terrain[get_zxy_index(x, 0, z)] = EmbeddedVoxel(type);
+            }
+        }
+    }
+
+    void generateFullTerrain(EmbeddedVoxel* terrain, i64 chunk_x, i64 chunk_y, i64 chunk_z) {
+        auto heightMap = generateHeightMap(chunk_x, chunk_y, chunk_z);
+        assignBaseBlocks(terrain, chunk_x, chunk_y, chunk_z, heightMap);
+        applySurfaceAndBiomes(terrain, chunk_x, chunk_y, chunk_z, heightMap);
+        delete heightMap;
     }
 };
 
