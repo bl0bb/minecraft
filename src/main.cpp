@@ -521,9 +521,9 @@ int main() {
 
     if (false) {
         // terrain generation
-        Noise noise = Noise();
-        noise.setSeed(69420);
-        noise.updateNoise();
+        TerrainGen terrainGen = TerrainGen();
+        terrainGen.setSeed(69420);
+        terrainGen.updateNoise();
         for (i64 y = 0; y < world_size.y; y++) {
             for (i64 x = 0; x < world_size.x; x++) {
                 for (i64 z = 0; z < world_size.z; z++) {
@@ -531,7 +531,7 @@ int main() {
                     VoxelBlockChunk& chunk = voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)];
 
                     auto start = std::chrono::high_resolution_clock::now();
-                    noise.GenerateFullTerrain(chunk.voxels, x, y, z);
+                    terrainGen.generateFullTerrain(chunk.voxels, x, y, z);
                     auto end = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double, std::milli> elapsed = end - start;
                     std::cout << "Terrain gen: " << elapsed.count() << " ms\n";
