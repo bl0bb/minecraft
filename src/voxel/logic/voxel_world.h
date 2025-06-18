@@ -42,7 +42,10 @@ public:
         return chunkPosToChunkIndex(pos.x, pos.y, pos.z);
     }
 
-    inline Vec3<i64> worldToChunkPos(const Vec3<i64>& pos) const {
+    inline Vec3<i64> worldToChunkPos(Vec3<i64> pos) const {
+        if (pos.x < 0) pos.x++;
+        if (pos.y < 0) pos.y++;
+        if (pos.z < 0) pos.z++;
         Vec3<i64> result = pos / CS;
         if (pos.x < 0) result.x--;
         if (pos.y < 0) result.y--;
@@ -71,9 +74,22 @@ constexpr bool isInChunkBounds(const Vec3<T>& pos) {
 template<typename VoxelWorldType, typename VoxelType = typename VoxelWorldType::chunk_type::voxel_type, typename ChunkType = typename VoxelWorldType::chunk_type>
 constexpr bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelType** voxel_ptr) {
     // TODO: HERE FIX BUG
-    i64 chunk_pos_x = (i64(world.size.x) / 2) + floor(f64(x < 0 ? x + 1 : x) / f64(CS));
-    i64 chunk_pos_y = (i64(world.size.y) / 2) + floor(f64(y < 0 ? y + 1 : y) / f64(CS));
-    i64 chunk_pos_z = (i64(world.size.z) / 2) + floor(f64(z < 0 ? z + 1 : z) / f64(CS));
+
+    // i64 chunk_pos_x = (i64(world.size.x) / 2) + floor(f64(x) / f64(CS));
+    // i64 chunk_pos_y = (i64(world.size.y) / 2) + floor(f64(y) / f64(CS));
+    // i64 chunk_pos_z = (i64(world.size.z) / 2) + floor(f64(z) / f64(CS));
+
+    // i64 chunk_pos_x = (i64(world.size.x) / 2) + floor(f64(x < 0 ? -(x + 1) : x) / f64(CS)) * (x < 0 ? -1 : 1);
+    // i64 chunk_pos_y = (i64(world.size.y) / 2) + floor(f64(y < 0 ? -(y + 1) : y) / f64(CS)) * (y < 0 ? -1 : 1);
+    // i64 chunk_pos_z = (i64(world.size.z) / 2) + floor(f64(z < 0 ? -(z + 1) : z) / f64(CS)) * (z < 0 ? -1 : 1);
+
+    i64 chunk_pos_x = (i64(world.size.x) / 2) + floor(f64(x < 0 ? -(x + 1) : x) / f64(CS)) * (x < 0 ? -1 : 1) + (x < 0 ? -1 : 0);
+    i64 chunk_pos_y = (i64(world.size.y) / 2) + floor(f64(y < 0 ? -(y + 1) : y) / f64(CS)) * (y < 0 ? -1 : 1) + (y < 0 ? -1 : 0);
+    i64 chunk_pos_z = (i64(world.size.z) / 2) + floor(f64(z < 0 ? -(z + 1) : z) / f64(CS)) * (z < 0 ? -1 : 1) + (z < 0 ? -1 : 0);
+
+    i64 actual_x = x < 0 ? x + 1 : x;
+    i64 actual_y = y < 0 ? y + 1 : y;
+    i64 actual_z = z < 0 ? z + 1 : z;
 
     if (chunk_pos_x < 0 || chunk_pos_y < 0 || chunk_pos_z < 0) {
         return false;
@@ -86,6 +102,7 @@ constexpr bool getVoxel(const VoxelWorldType& world, i64 x, i64 y, i64 z, VoxelT
     u64 chunk_index = world.getChunkIndex(chunk_pos_x, chunk_pos_y, chunk_pos_z);
     
     *voxel_ptr = &world.chunks[chunk_index].voxels[get_zxy_index(((x % CS) + CS) % CS, ((y % CS) + CS) % CS, ((z % CS) + CS) % CS)];
+    // *voxel_ptr = &world.chunks[chunk_index].voxels[get_zxy_index(((actual_x % CS) + CS) % CS, ((actual_y % CS) + CS) % CS, ((actual_z % CS) + CS) % CS)];
 
     return true;
 }

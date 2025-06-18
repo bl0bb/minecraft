@@ -358,14 +358,14 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                             EmbeddedVoxel* voxel = blocks[get_zxy_index_p(voxel_pos.x, voxel_pos.y, voxel_pos.z)];
                             if (!voxel) {
                                 RGBIS4* lightPtr;
-                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : 0;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : Colors::createRGBIS4(Colors::COLOR4_MAX);
                                 continue;
                             }
 
                             // ao
                             if (voxel->type == BlockTypes::AIR) {
                                 RGBIS4* lightPtr;
-                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : 0;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : Colors::createRGBIS4(Colors::COLOR4_MAX);
                                 continue;
                             }
 
@@ -373,7 +373,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
                             if (blockData.transparent) {
                                 RGBIS4* lightPtr;
-                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : 0;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : Colors::createRGBIS4(Colors::COLOR4_MAX);
                                 continue;
                             }
 
@@ -381,7 +381,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                             BlockMesh blockMesh = BLOCK_MESHES[blockData.meshType](*state);
                             if (!blockMesh.culls(0)) {
                                 RGBIS4* lightPtr;
-                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : 0;
+                                lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : Colors::createRGBIS4(Colors::COLOR4_MAX);
                                 continue;
                             }
 

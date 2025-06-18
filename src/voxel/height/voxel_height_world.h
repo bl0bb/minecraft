@@ -32,6 +32,7 @@ public:
 
     void calculateHeightmap(const VoxelBlockWorld& world, const VoxelBlockStateWorld& stateWorld) {
         bool found_block;
+        printf("%i %i\n", pos.x, pos.y);
         for (u8 x = 0; x < CS; x++) {
             for (u8 z = 0; z < CS; z++) {
                 found_block = false;

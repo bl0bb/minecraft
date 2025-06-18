@@ -40,20 +40,40 @@ namespace Colors {
         return (u64(b) << 8) | (u64(g) << 4) | u64(r);
     }
 
+    constexpr inline RGB4 createRGB4(u8 val) {
+        return createRGB4(val, val, val);
+    }
+
     constexpr inline RGBI4 createRGBI4(u8 r, u8 g, u8 b, u8 i) {
         return (u64(i) << 12) | (u64(b) << 8) | (u64(g) << 4) | u64(r);
+    }
+
+    constexpr inline RGBI4 createRGBI4(u8 val) {
+        return createRGBI4(val, val, val, val);
     }
 
     constexpr inline RGBIS4 createRGBIS4(u8 r, u8 g, u8 b, u8 i, u8 s) {
         return (u64(s) << 16) | (u64(i) << 12) | (u64(b) << 8) | (u64(g) << 4) | u64(r);
     }
 
+    constexpr inline RGBIS4 createRGBIS4(u8 val) {
+        return createRGBIS4(val, val, val, val, val);
+    }
+
     constexpr inline RGB8 createRGB8(u8 r, u8 g, u8 b) {
         return (u64(b) << 16) | (u64(g) << 8) | u64(r);
     }
 
+    constexpr inline RGB8 createRGB8(u8 val) {
+        return createRGB8(val, val, val);
+    }
+
     constexpr inline RGBI8 createRGBI8(u8 r, u8 g, u8 b, u8 i) {
         return (u64(i) << 24) | (u64(b) << 16) | (u64(g) << 8) | u64(r);
+    }
+
+    constexpr inline RGBI8 createRGBI8(u8 val) {
+        return createRGBI8(val, val, val, val);
     }
 
     template<typename T>

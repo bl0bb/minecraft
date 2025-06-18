@@ -1063,8 +1063,8 @@ public:
                 f32 peaks = calculatePV(weirdnessNoise.GetNoise(world_x, world_z));
 
 
-                heightValue += continentalnessAmplitudes[u8(getContinent(cont))];
-                heightValue += continentalnessAmplitudes[u8(getContinent(cont))];
+                heightValue += continentalnessAmplitudes[u8(getContinent(cont))] * 0.5f;
+                heightValue += pvAmplitudes[u8(getPV(peaks))] * 0.5f;
 
 
 
@@ -1072,7 +1072,8 @@ public:
 
 
                 heightValue = (heightValue + 1.0f) / 2.0f; // Normalize to 0..1
-                heightMap[z + x * CS] = heightValue * 64.0f; // (heightValue * CS * 2) - (chunk_y * CS); // (heightValue * CS) - (chunk_y * CS);
+                heightMap[z + x * CS] = heightValue * 32.0f; // (heightValue * CS * 2) - (chunk_y * CS); // (heightValue * CS) - (chunk_y * CS);
+                printf("%i\n", heightMap[z + x * CS]);
             }
         }
 
@@ -1122,7 +1123,7 @@ public:
                 i64 world_x = (chunk_x * CS) + x;
                 i64 world_z = (chunk_z * CS) + z;
 
-                int surfaceY = heightMap[z + x * CS];
+                int surfaceY = heightMap[z + x * CS] - chunk_y * CS;
 
                 if (surfaceY < 0) {
                     continue;
@@ -1149,7 +1150,7 @@ public:
                 //     case BiomeType::FOREST: type = BlockTypes::GRASS; break;
                 // }
 
-                terrain[get_zxy_index(x, 0, z)] = EmbeddedVoxel(type);
+                terrain[get_zxy_index(x, surfaceY, z)] = EmbeddedVoxel(type);
             }
         }
     }

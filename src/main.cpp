@@ -472,7 +472,16 @@ int main() {
     VoxelLightWorld voxelLightWorld = VoxelLightWorld(world_size);
     VoxelHeightWorld voxelHeightWorld = VoxelHeightWorld(height_size);
     VoxelWorldRenderer voxelWorldRenderer = VoxelWorldRenderer(world_size);
-    
+
+    {
+        EmbeddedVoxel* voxel;
+        VoxelWorlds::getVoxel(voxelBlockWorld, -32, -32, -32, &voxel);
+
+        if (false) {
+            return 0;
+        }
+    }
+
     // setup
     for (u64 y = 0; y < world_size.y; y++) {
         for (u64 x = 0; x < world_size.x; x++) {
@@ -519,7 +528,7 @@ int main() {
     // }
 
 
-    if (false) {
+    if (true) {
         // terrain generation
         TerrainGen terrainGen = TerrainGen();
         terrainGen.setSeed(69420);
