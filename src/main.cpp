@@ -461,7 +461,7 @@ int main() {
 
 
     // world size in chunks
-    Vec3<u64> world_size = {2, 2, 2};
+    Vec3<u64> world_size = {4, 2, 4};
     Vec3<i64> world_chunk_center = world_size / 2;
 
     Vec2<u64> height_size = {world_size.x, world_size.z};
@@ -986,6 +986,8 @@ int main() {
                 VoxelBlockChunk& blockChunk = voxelBlockWorld.chunks[voxelBlockWorld.getChunkIndex(x, y, z)];
                 VoxelLightChunk& lightChunk = voxelLightWorld.chunks[voxelLightWorld.getChunkIndex(x, y, z)];
 
+
+
                 auto start = std::chrono::high_resolution_clock::now();
 
                 ChunkLight::apply_light(voxelBlockWorld, voxelHeightWorld, voxelLightWorld, blockChunk, heightChunk, lightChunk);
@@ -1055,7 +1057,7 @@ int main() {
   
     float forwardMove = 0.0f;
     float rightMove = 0.0f;
-    float noclipSpeed = 10.0f;
+    float noclipSpeed = 64.0f;
   
     float deltaTime = 0.0f;
   

@@ -262,7 +262,7 @@ namespace ChunkLight {
                                 hasY = true;
                                 foundY = heightChunk.heightAt(dir_pos_chunk.x, dir_pos_chunk.z);
                             } else {
-                                Vec2<i64> heightChunkPos = Vec2<i64>(dir_pos_world.x, dir_pos_world.y);
+                                Vec2<i64> heightChunkPos = Vec2<i64>(dir_pos_world.x, dir_pos_world.z);
                                 if (heightWorld.isChunkPosInWorld(heightChunkPos)) {
                                     hasY = true;
                                     foundY = heightWorld.heightAt(dir_pos_world.x, dir_pos_world.z);
@@ -337,6 +337,7 @@ namespace ChunkLight {
         //         }
         //     }
         // }
+
 
 
         

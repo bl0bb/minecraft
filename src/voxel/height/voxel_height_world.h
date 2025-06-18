@@ -32,7 +32,8 @@ public:
 
     void calculateHeightmap(const VoxelBlockWorld& world, const VoxelBlockStateWorld& stateWorld) {
         bool found_block;
-        printf("%i %i\n", pos.x, pos.y);
+        // printf("%i %i\n", pos.x, pos.y);
+        // printf("start\n");
         for (u8 x = 0; x < CS; x++) {
             for (u8 z = 0; z < CS; z++) {
                 found_block = false;
@@ -40,6 +41,7 @@ public:
 
                 for (i8 chunk_y = world.size.y - 1; chunk_y >= 0; chunk_y--) {
                     i8 chunk_y_world = -world.size.y / 2 + chunk_y;
+                    // printf("%i\n", chunk_y_world);
                     const auto& chunk = world.chunks[world.chunkPosToChunkIndex(pos.x, chunk_y_world, pos.y)];
                     const auto& stateChunk = stateWorld.chunks[stateWorld.chunkPosToChunkIndex(pos.x, chunk_y_world, pos.y)];
 
@@ -69,6 +71,7 @@ public:
                 }
             }
         }
+        // printf("end\n");
     }
 };
 

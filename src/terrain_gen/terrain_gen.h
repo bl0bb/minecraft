@@ -9,6 +9,72 @@
 
 
 
+
+const BlockType terrainSurfaceBlockTypes[] = {
+    // none
+    BlockTypes::OAK_PLANKS, // NONE,
+    // offshore biomes
+    BlockTypes::SAND, // OCEAN,
+    BlockTypes::SAND, // DEEP_OCEAN,
+    BlockTypes::SAND, // WARM_OCEAN,
+    BlockTypes::SAND, // LUKEWARM_OCEAN,
+    BlockTypes::SAND, // DEEP_LUKEWARM_OCEAN,
+    BlockTypes::SAND, // COLD_OCEAN,
+    BlockTypes::SAND, // DEEP_COLD_OCEAN,
+    BlockTypes::SAND, // FROZEN_OCEAN,
+    BlockTypes::SAND, // DEEP_FROZEN_OCEAN,
+    BlockTypes::GRASS, // MUSHROOM_FIELDS,
+    // highland biomes
+    BlockTypes::GRASS, // JAGGED_PEAKS,
+    BlockTypes::GRASS, // FROZEN_PEAKS,
+    BlockTypes::GRASS, // STONY_PEAKS,
+    BlockTypes::GRASS, // MEADOW,
+    BlockTypes::GRASS, // CHERRY_GROVE,
+    BlockTypes::GRASS, // GROVE,
+    BlockTypes::GRASS, // SNOWY_SLOPES,
+    BlockTypes::GRASS, // WINDSWEPT_HILLS,
+    BlockTypes::STONE, // WINDSWEPT_GRAVELLY_HILLS,
+    BlockTypes::GRASS, // WINDSWEPT_FOREST,
+    // woodland biomes
+    BlockTypes::GRASS, // FOREST,
+    BlockTypes::GRASS, // FLOWER_FOREST,
+    BlockTypes::GRASS, // TAIGA,
+    BlockTypes::GRASS, // OLD_GROWTH_PINE_TAIGA,
+    BlockTypes::GRASS, // OLD_GROWTH_SPRUCE_TAIGA,
+    BlockTypes::GRASS, // SNOWY_TAIGA,
+    BlockTypes::GRASS, // BIRCH_FOREST,
+    BlockTypes::GRASS, // OLD_GROWTH_BIRCH_FOREST,
+    BlockTypes::GRASS, // DARK_FOREST,
+    BlockTypes::GRASS, // PALE_GARDEN,
+    BlockTypes::GRASS, // JUNGLE,
+    BlockTypes::GRASS, // SPARSE_JUNGLE,
+    BlockTypes::GRASS, // BAMBOO_JUNGLE,
+    // wetland biomes
+    BlockTypes::SAND, // RIVER,
+    BlockTypes::SAND, // FROZEN_RIVER,
+    BlockTypes::SAND, // SWAMP,
+    BlockTypes::SAND, // MANGROVE_SWAMP,
+    BlockTypes::SAND, // BEACH,
+    BlockTypes::SAND, // SNOWY_BEACH,
+    BlockTypes::STONE, // STONY_SHORE,
+    // flatland biomes
+    BlockTypes::GRASS, // PLAINS,
+    BlockTypes::GRASS, // SUNFLOWER_PLAINS,
+    BlockTypes::GRASS, // SNOWY_PLAINS,
+    BlockTypes::SNOW, // ICE_SPIKES,
+    // arid land biomes
+    BlockTypes::SAND, // DESERT,
+    BlockTypes::SAND, // SAVANNA,
+    BlockTypes::SAND, // SAVANNA_PLATEAU,
+    BlockTypes::SAND, // WINDSWEPT_SAVANNA,
+    BlockTypes::SAND, // BADLANDS,
+    BlockTypes::GRASS, // WOODED_BADLANDS,
+    BlockTypes::SAND, // ERODED_BADLANDS,
+};
+
+
+
+
 const f32 continentalnessAmplitudes[] = {
     1.0f,
     0.5f,
@@ -995,6 +1061,10 @@ public:
 
 
 
+    
+
+
+
     f32 calculatePV(f32 x) {
         return 1.0f - std::abs(3.0f * std::abs(x) - 2.0f);
     }
@@ -1060,11 +1130,14 @@ public:
 
                 f32 cont = continentalnessNoise.GetNoise(world_x, world_z);
                 f32 eros = erosionNoise.GetNoise(world_x, world_z);
-                f32 peaks = calculatePV(weirdnessNoise.GetNoise(world_x, world_z));
+                f32 weird = weirdnessNoise.GetNoise(world_x, world_z);
+                f32 peaks = calculatePV(weird);
 
 
-                heightValue += continentalnessAmplitudes[u8(getContinent(cont))] * 0.5f;
-                heightValue += pvAmplitudes[u8(getPV(peaks))] * 0.5f;
+
+
+                heightValue += eros * continentalnessAmplitudes[u8(getContinent(cont))] * 0.5f;
+                heightValue += eros * pvAmplitudes[u8(getPV(peaks))] * 0.5f;
 
 
 
@@ -1072,8 +1145,7 @@ public:
 
 
                 heightValue = (heightValue + 1.0f) / 2.0f; // Normalize to 0..1
-                heightMap[z + x * CS] = heightValue * 32.0f; // (heightValue * CS * 2) - (chunk_y * CS); // (heightValue * CS) - (chunk_y * CS);
-                printf("%i\n", heightMap[z + x * CS]);
+                heightMap[z + x * CS] = heightValue * 64.0f;
             }
         }
 
@@ -1103,7 +1175,8 @@ public:
                             type = BlockTypes::AIR;
                         }
                     } else if (world_y == surfaceY) {
-                        type = BlockTypes::DIRT;  // Placeholder; will be overwritten in surface layer
+                        type = BlockTypes::AIR;
+                        // type = BlockTypes::DIRT; // Placeholder; will be overwritten in surface layer
                     } else if (world_y > surfaceY - 3) {
                         type = BlockTypes::DIRT;
                     } else {
@@ -1143,12 +1216,7 @@ public:
 
                 BiomeType biome = getBiome(cont, pv, erosion, temp, hum, weird);
 
-                BlockType type = BlockTypes::GRASS;
-                // switch (biome) {
-                //     case BiomeType::PLAINS: type = BlockTypes::GRASS; break;
-                //     case BiomeType::DESERT: type = BlockTypes::SAND; break;
-                //     case BiomeType::FOREST: type = BlockTypes::GRASS; break;
-                // }
+                BlockType type = terrainSurfaceBlockTypes[u8(biome)];
 
                 terrain[get_zxy_index(x, surfaceY, z)] = EmbeddedVoxel(type);
             }
