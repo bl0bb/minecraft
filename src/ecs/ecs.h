@@ -1,193 +1,178 @@
-#ifndef ECS_H
-#define ECS_H
-
+#include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <typeindex>
 #include <memory>
-#include <iostream>
+#include <bitset>
+#include <typeindex>
+#include <type_traits>
+#include <functional>
 
-using Entity = std::uint32_t;
-const Entity MAX_ENTITIES = 5000;
+constexpr u64 MAX_COMPONENTS = 5000;
+using EntityID = u32;
+using ComponentMask = std::bitset<MAX_COMPONENTS>;
 
 class IComponentArray {
 public:
     virtual ~IComponentArray() = default;
-    virtual void EntityDestroyed(Entity entity) = 0;
+    virtual void remove(EntityID id) = 0;
 };
 
 template<typename T>
 class ComponentArray : public IComponentArray {
 private:
-    std::unordered_map<Entity, T> componentMap;
+    std::vector<T> components;
+    std::vector<bool> valid;
+
 public:
-    void InsertData(Entity entity, T component) {
-        componentMap[entity] = component;
+    void insert(EntityID id, T component) {
+        if (id >= components.size()) components.resize(id + 1);
+        components[id] = component;
+        valid[id] = true;
     }
 
-    void RemoveData(Entity entity) {
-        componentMap.erase(entity);
+    void remove(EntityID id) override {
+        if (id < valid.size()) valid[id] = false;
     }
 
-    T& GetData(Entity entity) {
-        return componentMap.at(entity);
-    }
-
-    bool HasData(Entity entity) {
-        return componentMap.find(entity) != componentMap.end();
-    }
-
-    void EntityDestroyed(Entity entity) override {
-        componentMap.erase(entity);
+    T* get(EntityID id) {
+        if (id < components.size() && valid[id]) return &components[id];
+        return nullptr;
     }
 };
 
 class ComponentManager {
 private:
-    std::unordered_map<std::type_index, std::shared_ptr<IComponentArray>> componentArrays;
+    std::unordered_map<std::type_index, std::unique_ptr<IComponentArray>> arrays;
+    std::unordered_map<EntityID, ComponentMask> entityMasks;
 
     template<typename T>
-    std::shared_ptr<ComponentArray<T>> GetComponentArray() {
-        std::type_index typeName = typeid(T);
-        if (componentArrays.find(typeName) == componentArrays.end()) {
-            componentArrays[typeName] = std::make_shared<ComponentArray<T>>();
+    ComponentArray<T>* getArray() {
+        std::type_index type = typeid(T);
+        if (!arrays.count(type)) {
+            arrays[type] = std::make_unique<ComponentArray<T>>();
         }
-        return std::static_pointer_cast<ComponentArray<T>>(componentArrays[typeName]);
-    }
-
-public:
-    template<typename T>
-    void AddComponent(Entity entity, T component) {
-        GetComponentArray<T>()->InsertData(entity, component);
+        return static_cast<ComponentArray<T>*>(arrays[type].get());
     }
 
     template<typename T>
-    void RemoveComponent(Entity entity) {
-        GetComponentArray<T>()->RemoveData(entity);
-    }
-
-    template<typename T>
-    T& GetComponent(Entity entity) {
-        return GetComponentArray<T>()->GetData(entity);
-    }
-
-    template<typename T>
-    bool HasComponent(Entity entity) {
-        return GetComponentArray<T>()->HasData(entity);
-    }
-
-    void EntityDestroyed(Entity entity) {
-        for (auto& pair : componentArrays) {
-            pair.second->EntityDestroyed(entity);
-        }
-    }
-};
-
-class EntityManager {
-private:
-    Entity nextEntity = 0;
-    std::unordered_set<Entity> activeEntities;
-public:
-    Entity CreateEntity() {
-        Entity id = nextEntity++;
-        activeEntities.insert(id);
+    size_t getComponentTypeID() {
+        static size_t id = componentCounter++;
         return id;
     }
 
-    void DestroyEntity(Entity entity) {
-        activeEntities.erase(entity);
+    inline static size_t componentCounter = 0;
+
+public:
+    template<typename T>
+    void addComponent(EntityID id, T component) {
+        getArray<T>()->insert(id, component);
+        entityMasks[id].set(getComponentTypeID<T>(), true);
     }
 
-    bool IsValid(Entity entity) {
-        return activeEntities.find(entity) != activeEntities.end();
+    template<typename T>
+    void removeComponent(EntityID id) {
+        getArray<T>()->remove(id);
+        entityMasks[id].set(getComponentTypeID<T>(), false);
+    }
+
+    template<typename T>
+    T* getComponent(EntityID id) {
+        return getArray<T>()->get(id);
+    }
+
+    ComponentMask getMask(EntityID id) const {
+        auto it = entityMasks.find(id);
+        return it != entityMasks.end() ? it->second : ComponentMask();
     }
 };
 
 class System {
+protected:
+    std::unordered_set<EntityID> entities;
+
 public:
-    std::unordered_set<Entity> entities;
+    virtual ~System() = default;
+    virtual void init(EntityID) {}
+    virtual void destroy(EntityID) {}
+    virtual void tick(float) {}
+    virtual void render() {}
 
-    virtual void Init() {}
-    virtual void Destroy() {}
-
-    virtual void OnEntityAdded(Entity) {}
-    virtual void OnEntityRemoved(Entity) {}
-
-    virtual void Tick(ComponentManager&) {}
-    virtual void Render(ComponentManager&) {}
-};
-
-class SystemManager {
-private:
-    std::vector<std::shared_ptr<System>> systems;
-public:
-    void AddSystem(std::shared_ptr<System> system) {
-        systems.push_back(system);
-        system->Init();
+    void registerEntity(EntityID id) {
+        if (entities.insert(id).second) init(id);
     }
 
-    void TickAll(ComponentManager& components) {
-        for (auto& system : systems) {
-            system->Tick(components);
-        }
+    void unregisterEntity(EntityID id) {
+        if (entities.erase(id)) destroy(id);
     }
 
-    void RenderAll(ComponentManager& components) {
-        for (auto& system : systems) {
-            system->Render(components);
-        }
-    }
-
-    void DestroyAll() {
-        for (auto& system : systems) {
-            system->Destroy();
-        }
-    }
+    virtual ComponentMask getSignature() const = 0;
 };
 
 class ECS {
-public:
-    EntityManager entityManager;
+private:
+    EntityID nextID = 0;
     ComponentManager componentManager;
-    SystemManager systemManager;
+    std::unordered_map<std::type_index, std::unique_ptr<System>> systems;
 
-    Entity CreateEntity() {
-        return entityManager.CreateEntity();
+    void updateEntitySystems(EntityID id) {
+        auto mask = componentManager.getMask(id);
+        for (auto& [_, sys] : systems) {
+            auto sig = sys->getSignature();
+            if ((mask & sig) == sig)
+                sys->registerEntity(id);
+            else
+                sys->unregisterEntity(id);
+        }
     }
 
-    void DestroyEntity(Entity entity) {
-        entityManager.DestroyEntity(entity);
-        componentManager.EntityDestroyed(entity);
+public:
+    EntityID createEntity() {
+        EntityID id = nextID++;
+        for (auto& [type, sys] : systems) {
+            auto sig = sys->getSignature();
+            if ((componentManager.getMask(id) & sig) == sig)
+                sys->registerEntity(id);
+        }
+        return id;
+    }
+
+    void destroyEntity(EntityID id) {
+        for (auto& [type, sys] : systems) {
+            sys->unregisterEntity(id);
+        }
     }
 
     template<typename T>
-    void AddComponent(Entity entity, T component) {
-        componentManager.AddComponent<T>(entity, component);
+    void addComponent(EntityID id, T component) {
+        componentManager.addComponent<T>(id, component);
+        updateEntitySystems(id);
     }
 
     template<typename T>
-    T& GetComponent(Entity entity) {
-        return componentManager.GetComponent<T>(entity);
+    void removeComponent(EntityID id) {
+        componentManager.removeComponent<T>(id);
+        updateEntitySystems(id);
     }
 
     template<typename T>
-    bool HasComponent(Entity entity) {
-        return componentManager.HasComponent<T>(entity);
+    T* getComponent(EntityID id) {
+        return componentManager.getComponent<T>(id);
     }
 
-    void Tick() {
-        systemManager.TickAll(componentManager);
+    template<typename T, typename... Args>
+    T* addSystem(Args&&... args) {
+        auto sys = std::make_unique<T>(std::forward<Args>(args)...);
+        T* ptr = sys.get();
+        systems[typeid(T)] = std::move(sys);
+        return ptr;
     }
 
-    void Render() {
-        systemManager.RenderAll(componentManager);
+    void tick(float dt) {
+        for (auto& [_, sys] : systems) sys->tick(dt);
     }
 
-    void Shutdown() {
-        systemManager.DestroyAll();
+    void render() {
+        for (auto& [_, sys] : systems) sys->render();
     }
 };
-
-
-#endif

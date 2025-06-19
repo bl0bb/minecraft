@@ -92,6 +92,7 @@
         "span": "cpp",
         "memory_resource": "cpp",
         "text_encoding": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "unordered_set": "cpp"
     }
 }
