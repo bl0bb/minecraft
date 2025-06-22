@@ -1,178 +1,310 @@
-#include <iostream>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
-#include <memory>
-#include <bitset>
-#include <typeindex>
-#include <type_traits>
-#include <functional>
+#ifndef ECS_H
+#define ECS_H
 
-constexpr u64 MAX_COMPONENTS = 5000;
-using EntityID = u32;
-using ComponentMask = std::bitset<MAX_COMPONENTS>;
+#include "../core/types.h"
+#include "../core/bitmap.h"
 
-class IComponentArray {
-public:
-    virtual ~IComponentArray() = default;
-    virtual void remove(EntityID id) = 0;
+#include "components.h"
+
+#include <cstring>
+#include <cassert>
+
+// some memory alignment stuff
+// idk if i need it
+// better safe than sorry
+#define ECS_TAG_SIZE 16
+
+// c++ cries about arithmetic with void*
+using ECSTag = u64;
+
+inline ECSTag *ECS_PTAG(void *p) {
+    return ((ECSTag*)p - ECS_TAG_SIZE);
+}
+
+inline ECSTag ECS_TAG(void *p) {
+    return *ECS_PTAG(p);
+    // return *((ECSTag*)p - ECS_TAG_SIZE);
+}
+
+enum ECSTagValues {
+    ECS_TAG_USED = 1 << 0
 };
 
-template<typename T>
-class ComponentArray : public IComponentArray {
-private:
-    std::vector<T> components;
-    std::vector<bool> valid;
 
+
+
+#define ENTITY_NONE 0
+
+
+
+
+typedef void (*ECSSubscriber)(void *component, ECSEntity entity);
+
+
+
+// typedef u64 EntityID;
+using EntityID = u64;
+
+struct ECSEntity {
+    // id of the entity
+    EntityID id;
+
+    // index for lookup in component arrays
+    u64 index;
+
+    // the system this entity is part of
+    ECS *ecs;
+};
+
+
+
+
+
+#define ECSEVENT_LAST ECS_TICK
+enum ECSEvent {
+    ECS_INIT = 0, ECS_DESTROY, ECS_RENDER, ECS_UPDATE, ECS_TICK
+};
+
+class ECSSystem {
 public:
-    void insert(EntityID id, T component) {
-        if (id >= components.size()) components.resize(id + 1);
-        components[id] = component;
-        valid[id] = true;
+    ECSSubscriber init, destroy, render, update, tick;
+    ECSSubscriber subscribers[ECSEVENT_LAST + 1];
+};
+
+
+
+class ECSComponentList {
+public:
+    // members
+    // reference to the system this component is part of
+    ECSSystem *system;
+
+    // array of pointers to the components
+    void *components;
+
+    // size of each component individually
+    i64 componentSize;
+
+
+    // constructors
+    ECSComponentList() {}
+    ECSComponentList(i64 _componentSize, ECSSystem *_system) : componentSize(_componentSize), system(_system) {}
+
+
+    // methods
+    i64 getComponentSize() {
+        return componentSize + ECS_TAG_SIZE;
     }
 
-    void remove(EntityID id) override {
-        if (id < valid.size()) valid[id] = false;
-    }
-
-    T* get(EntityID id) {
-        if (id < components.size() && valid[id]) return &components[id];
-        return nullptr;
+    void *getComponentInList(u64 index) {
+        return (u8*)components + ((index + ECS_TAG_SIZE) * getComponentSize()) + ECS_TAG_SIZE;
     }
 };
 
-class ComponentManager {
-private:
-    std::unordered_map<std::type_index, std::unique_ptr<IComponentArray>> arrays;
-    std::unordered_map<EntityID, ComponentMask> entityMasks;
 
-    template<typename T>
-    ComponentArray<T>* getArray() {
-        std::type_index type = typeid(T);
-        if (!arrays.count(type)) {
-            arrays[type] = std::make_unique<ComponentArray<T>>();
-        }
-        return static_cast<ComponentArray<T>*>(arrays[type].get());
-    }
-
-    template<typename T>
-    size_t getComponentTypeID() {
-        static size_t id = componentCounter++;
-        return id;
-    }
-
-    inline static size_t componentCounter = 0;
-
-public:
-    template<typename T>
-    void addComponent(EntityID id, T component) {
-        getArray<T>()->insert(id, component);
-        entityMasks[id].set(getComponentTypeID<T>(), true);
-    }
-
-    template<typename T>
-    void removeComponent(EntityID id) {
-        getArray<T>()->remove(id);
-        entityMasks[id].set(getComponentTypeID<T>(), false);
-    }
-
-    template<typename T>
-    T* getComponent(EntityID id) {
-        return getArray<T>()->get(id);
-    }
-
-    ComponentMask getMask(EntityID id) const {
-        auto it = entityMasks.find(id);
-        return it != entityMasks.end() ? it->second : ComponentMask();
-    }
-};
-
-class System {
-protected:
-    std::unordered_set<EntityID> entities;
-
-public:
-    virtual ~System() = default;
-    virtual void init(EntityID) {}
-    virtual void destroy(EntityID) {}
-    virtual void tick(float) {}
-    virtual void render() {}
-
-    void registerEntity(EntityID id) {
-        if (entities.insert(id).second) init(id);
-    }
-
-    void unregisterEntity(EntityID id) {
-        if (entities.erase(id)) destroy(id);
-    }
-
-    virtual ComponentMask getSignature() const = 0;
-};
 
 class ECS {
-private:
-    EntityID nextID = 0;
-    ComponentManager componentManager;
-    std::unordered_map<std::type_index, std::unique_ptr<System>> systems;
-
-    void updateEntitySystems(EntityID id) {
-        auto mask = componentManager.getMask(id);
-        for (auto& [_, sys] : systems) {
-            auto sig = sys->getSignature();
-            if ((mask & sig) == sig)
-                sys->registerEntity(id);
-            else
-                sys->unregisterEntity(id);
-        }
-    }
-
 public:
-    EntityID createEntity() {
-        EntityID id = nextID++;
-        for (auto& [type, sys] : systems) {
-            auto sig = sys->getSignature();
-            if ((componentManager.getMask(id) & sig) == sig)
-                sys->registerEntity(id);
+    // members
+    ECSComponentList lists[ECSCOMPONENT_LAST + 1];
+    EntityID *ids;
+    Bitmap used;
+    i64 capacity;
+    EntityID nextEntityID;
+
+    void init(/*struct World *world*/) {
+        capacity = 64;
+        ids = (EntityID*)calloc(capacity, sizeof(EntityID));
+        used = Bitmap::createWithInit(capacity, 1);
+        nextEntityID = 1;
+        // world = world;
+
+        // defined in ecs.h
+        _ecs_init_internal(this);
+    }
+
+    void event(enum ECSEvent event) {
+        for (i64 i = 0; i <= ECSCOMPONENT_LAST; i++) {
+            ECSComponentList* list = &lists[i];
+            
+            // get this component's subscriber for this event
+            ECSSubscriber func = list->system->subscribers[event];
+            if (func == NULL) {
+                continue;
+            }
+
+            for (i64 j = 0; j < capacity; j++) {
+                void *component = list->getComponentInList(j); // ECSCL_GET(list, j);
+                if (ECS_TAG(component) & ECS_TAG_USED) {
+                    // func(component, (ECSEntity) { .id = ids[j], .index = j, .ecs = self });
+                    func(component, ECSEntity(ids[j], j, this));
+                }
+            }
         }
-        return id;
     }
 
-    void destroyEntity(EntityID id) {
-        for (auto& [type, sys] : systems) {
-            sys->unregisterEntity(id);
+
+    // register components
+    void _ecs_register_internal(enum ECSComponent id, i64 componentSize, ECSSystem *system) {
+        ECSComponentList list = ECSComponentList(componentSize, system);
+        list.components = calloc(capacity, list.getComponentSize());
+        lists[id] = list;
+    }
+
+
+
+    // entity functions
+    // create a new entity
+    ECSEntity createEntity() {
+        // entity index
+        i64 i;
+
+        // search for an open id (checking 64 bits at a time)
+        for (i = 0; i < capacity; i += 64) {
+            if (((u64*)used.data)[(i / 64)] != 0xFFFFFFFFFFFFFFFF) {
+                break;
+            }
+        }
+
+        if (i == capacity) {
+            // we reached end of array which means we need to allocate more space
+            i64 old_capacity = capacity;
+            capacity *= 2;
+
+            // reallocate bitmap, clear new allocation
+            used.reAlloc(capacity);
+            std::memset(
+                ((u8*)used.data) + (BITMAP_SIZE_TO_BYTES(old_capacity)),
+                0, BITMAP_SIZE_TO_BYTES(capacity) - BITMAP_SIZE_TO_BYTES(old_capacity));
+            
+            // reallocate index -> ID map, clear new allocation
+            ids = (EntityID*)realloc(ids, capacity * sizeof(u64));
+            std::memset(
+                ids + old_capacity, 0,
+                (capacity - old_capacity) * sizeof(u64));
+
+            // reallocate component lists
+            for (i64 j = 0; j <= ECSCOMPONENT_LAST; j++) {
+                ECSComponentList* list = &lists[j];
+                list->components = realloc(
+                    list->components,
+                    capacity * list->getComponentSize());
+
+                // initialize new allocation
+                std::memset(
+                    (u8*)list->components + (old_capacity * list->getComponentSize()), 0,
+                    (capacity - old_capacity) * list->getComponentSize()); 
+            }
+        } else {
+            // we checked 64 bits at a time earlier
+            // but we dont know which one of the bits are vacant
+            // so thats what were finding now
+            for (; i < capacity; i++) {
+                if (!used.get(i)) {
+                    break;
+                }
+            }
+        }
+
+        // mark this entity as used
+        used.set(i);
+
+        EntityID id = nextEntityID++;
+        ids[i] = id;
+
+        return ECSEntity(id, i, this);
+
+        // return (ECSEntity) {
+        //     .id = id,
+        //     .index = i,
+        //     .ecs = this
+        // };
+    }
+
+    void deleteEntity(ECSEntity entity) {
+        assert(used.get(entity.index));
+
+        // remove components
+        for (size_t j = 0; j <= ECSCOMPONENT_LAST; j++) {
+            ECSComponentList* list = &lists[j];
+            ECSSubscriber destroy = list->system->destroy;
+
+            // mark this component as unused
+            void *component = list->getComponentInList(entity.index); // ECSCL_GET(list, entity.index);
+            *ECS_PTAG(component) &= ~ECS_TAG_USED;
+
+            // run destructor if non-null
+            if (destroy != NULL) {
+                destroy(component, entity);
+            }
+        }
+
+        // mark this entity's index as unused
+        used.clr(entity.index);
+
+        // remove this id map entry
+        ids[entity.index] = ENTITY_NONE;
+    }
+
+
+
+
+
+    // entity component functions
+    void entityAddComponent(ECSEntity entity, enum ECSComponent component_id, void *value) {
+        ECSComponentList* list = &entity.ecs->lists[component_id];
+        ECSSubscriber init = list->system->init;
+        void *component = list->getComponentInList(entity.index); // ECSCL_GET(list, entity.index);
+
+        // mark the component as used
+        assert(!(ECS_TAG(component) & ECS_TAG_USED));
+        *ECS_PTAG(component) |= ECS_TAG_USED;
+
+        if (value != NULL) {
+            memcpy(component, value, list->componentSize);
+        }
+
+        // run the initializer if it is not null
+        if (init != NULL) {
+            init(component, entity);
         }
     }
 
-    template<typename T>
-    void addComponent(EntityID id, T component) {
-        componentManager.addComponent<T>(id, component);
-        updateEntitySystems(id);
+    void entityRemoveComponent(ECSEntity entity, enum ECSComponent component_id) {
+        ECSComponentList* list = &entity.ecs->lists[component_id];
+        ECSSubscriber destroy = list->system->destroy;
+        void *component = list->getComponentInList(entity.index); // ECSCL_GET(list, entity.index);
+
+        // mark the component as unused
+        assert(ECS_TAG(component) & ECS_TAG_USED);
+        *ECS_PTAG(component) &= ~ECS_TAG_USED;
+
+        // run the destructor if it is not null
+        if (destroy != NULL) {
+            destroy(component, entity);
+        }
     }
 
-    template<typename T>
-    void removeComponent(EntityID id) {
-        componentManager.removeComponent<T>(id);
-        updateEntitySystems(id);
+    bool entityHasComponent(ECSEntity entity, enum ECSComponent component) {
+        // return ECS_TAG(ECSCL_GET(&entity.ecs->lists[component], entity.index)) & ECS_TAG_USED;
+        return ECS_TAG(entity.ecs->lists[component]->getComponentInList(entity.index)) & ECS_TAG_USED;
     }
 
-    template<typename T>
-    T* getComponent(EntityID id) {
-        return componentManager.getComponent<T>(id);
+    void* entityGetComponent(ECSEntity entity, enum ECSComponent component) {
+        assert(entityHasComponent(entity, component));
+        return entity.ecs->lists[component]->getComponentInList(entity.index); // ECSCL_GET(&entity.ecs->lists[component], entity.index);
     }
 
-    template<typename T, typename... Args>
-    T* addSystem(Args&&... args) {
-        auto sys = std::make_unique<T>(std::forward<Args>(args)...);
-        T* ptr = sys.get();
-        systems[typeid(T)] = std::move(sys);
-        return ptr;
-    }
 
-    void tick(float dt) {
-        for (auto& [_, sys] : systems) sys->tick(dt);
-    }
+    // clean up
+    void destroy(struct ECS *self) {
+        used.destroy();
+        free(ids);
 
-    void render() {
-        for (auto& [_, sys] : systems) sys->render();
+        for (size_t i = 0; i <= ECSCOMPONENT_LAST; i++) {
+            free(lists[i].components);
+        }
     }
-};
+}
+
+#endif

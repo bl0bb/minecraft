@@ -1,0 +1,16 @@
+ECS: the "mother" class of all the ECS logic
+contains an array of all the component systems (ECSComponentList)
+
+ECSComponentList: the class that handles one type of component / system
+contains functions for each ecs event an entity with this component might encounter (init, destroy, tick, render)
+contains a void* array that has one index reserved for each entity that scales as more entities are added
+has the size of the component (in bytes) to index properly
+e.g. Physics, will apply gravity and update the "Position" component accordingly on each tick
+
+ECSSystem: the class that contains logic about how components behave
+e.g. init, destroy, tick, render events
+
+ECSEntity: an entity in the ECS system
+contains the id of the entity to differentiate them
+contains an index for lookup in component arrays
+contains a reference to the ECS system this entity is part of
