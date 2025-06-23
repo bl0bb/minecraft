@@ -11,7 +11,7 @@
 #include <cassert>
 
 // register define
-#define ecs_register(_id, _C, _ecs, _system) _ecs._ecs_register_internal((_id), sizeof(_C), (_system))
+#define ecs_register(_id, _C, _ecs, _system) _ecs->_ecs_register_internal((_id), sizeof(_C), (_system))
 
 
 // some memory alignment stuff

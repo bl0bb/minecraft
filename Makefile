@@ -24,18 +24,18 @@ LIBS = -lz
 
 
 # windows
-CXX = g++
-CC = gcc
-LIBS += -Idep/include -Ldep/lib -lglfw3dll
-GL_API = 0
+# CXX = g++
+# CC = gcc
+# LIBS += -Idep/include -Ldep/lib -lglfw3dll
+# GL_API = 0
 
 # macos
-# CXX = clang++
-# CC = clang
-# GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
-# GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
-# LIBS += -lglfw -L$(GLFW_LIB_DIR) -I$(GLFW_INCLUDE_DIR)
-# GL_API = 1
+CXX = clang++
+CC = clang
+GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
+GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
+LIBS += -lglfw -L$(GLFW_LIB_DIR) -I$(GLFW_INCLUDE_DIR)
+GL_API = 1
 
 
 # define GL api
