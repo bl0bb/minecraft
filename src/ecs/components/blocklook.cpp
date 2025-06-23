@@ -1,8 +1,10 @@
 #include "blocklook.h"
 #include "../ecs.h"
 
+#include "../../physics/raycast/raycast.h"
+
 static void tick(ECSBlockLook *component, const ECSEntity& entity) {
-    RaycastResult raycastResult = raycast(entity.world, camera->position, camera->front * 16);
+    RaycastResult raycastResult = raycast(entity.ecs->world, camera->position, camera->front * 16);
     component->hasBlock = raycastResult.success;
     if (component->hasBlock) {
         component->pos = raycastResult.blockPos;
