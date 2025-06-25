@@ -1257,15 +1257,7 @@ int main() {
             lastFrame = currentFrame;
 
             // look block
-            {
-                RaycastResult raycastResult = raycast(voxelBlockWorld, camera->position, camera->front * 16);
-                hasLookBlock = raycastResult.success;
-                if (hasLookBlock) {
-                    lookBlockPos = raycastResult.blockPos;
-                    blockOutline.pos = lookBlockPos;
-                    lookBlockDir = raycastResult.dir;
-                }
-            }
+            // TODO
 
             // debugging / actions
             if (currentKeyStates[GLFW_KEY_ESCAPE] && wasKeyStateChanged(GLFW_KEY_ESCAPE)) {
