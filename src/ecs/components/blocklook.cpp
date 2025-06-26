@@ -4,7 +4,8 @@
 #include "../../physics/raycast/raycast.h"
 
 static void tick(ECSBlockLook *component, const ECSEntity& entity) {
-    RaycastResult raycastResult = raycast(entity.ecs->world, camera->position, camera->front * 16);
+    ECSCamera& camera = *(ECSCamera*)entity.ecs->entityGetComponent(entity, ECS_CAMERA);
+    RaycastResult raycastResult = raycast(*(VoxelBlockWorld*)entity.ecs->world, camera.camera.position, camera.camera.front * 16);
     component->hasBlock = raycastResult.success;
     if (component->hasBlock) {
         component->pos = raycastResult.blockPos;

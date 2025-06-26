@@ -2,7 +2,7 @@
 #define ECS_COMPONENTS_H
 
 #include "components/position.h"
-// #include "components/camera.h"
+#include "components/camera.h"
 // #include "components/control.h"
 #include "components/physics.h"
 // #include "components/movement.h"
@@ -16,7 +16,7 @@
 
 static inline void _ecs_init_internal(ECS *ecs) {
     _ECS_DECL_COMPONENT(position);
-    // _ECS_DECL_COMPONENT(camera);
+    _ECS_DECL_COMPONENT(camera);
     // _ECS_DECL_COMPONENT(control);
     _ECS_DECL_COMPONENT(physics);
     // _ECS_DECL_COMPONENT(movement);
@@ -32,7 +32,7 @@ static inline void _ecs_init_internal(ECS *ecs) {
 
 enum ECSComponent {
     ECS_POSITION = 0,
-    // ECS_CAMERA,
+    ECS_CAMERA,
     // ECS_CONTROL,
     ECS_PHYSICS,
     // ECS_MOVEMENT,

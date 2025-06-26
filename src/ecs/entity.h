@@ -4,6 +4,7 @@
 #include "../core/types.h"
 
 class ECS;
+class ECSWorld;
 
 #define ENTITY_NONE 0
 

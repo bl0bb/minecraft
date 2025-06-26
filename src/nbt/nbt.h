@@ -49,15 +49,9 @@ public:
     NBT(NBT_Tag type, const std::string& name, NBTValue val)
         : tagType(type), name(name), value(std::move(val)) {}
 
-    const NBTValue& getValue() const { return value; }
+    inline const NBTValue& getValue() const { return value; }
 
-    NBT* getCompoundTag(const std::string& key) const {
-        if (tagType != TAG_Compound) return nullptr;
-        const auto& compound = std::get<std::map<std::string, NBT*>>(value);
-        auto it = compound.find(key);
-        if (it != compound.end()) return it->second;
-        return nullptr;
-    }
+    NBT* getCompoundTag(const std::string& key) const;
 };
 
 #endif

@@ -98,6 +98,11 @@ public:
 };
 
 
+class ECSWorld {
+public:
+
+};
+
 
 class ECS {
 public:
@@ -107,6 +112,12 @@ public:
     Bitmap used;
     i64 capacity;
     EntityID nextEntityID;
+
+    // the world this entity is part of
+    // can be any type of world
+    // e.g. a world with different screen and window properties / functions for a UI system
+    // or a world with blocks and entities for the 3d game world
+    void *world;
 
     void init(/*struct World *world*/);
 

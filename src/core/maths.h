@@ -84,6 +84,30 @@ struct Vec2 {
         return Vec2<T>(x / scalar, y / scalar);
     }
 
+    Vec2<T>& operator+=(const Vec2<T>& other) {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+
+    Vec2<T>& operator-=(const Vec2<T>& other) {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+
+    Vec2<T>& operator*=(const Vec2<T>& other) {
+        x *= other.x;
+        y *= other.y;
+        return *this;
+    }
+
+    Vec2<T>& operator/=(const Vec2<T>& other) {
+        x /= other.x;
+        y /= other.y;
+        return *this;
+    }
+
     // Dot product
     constexpr inline T dot(const Vec2<T>& other) const {
         return x * other.x + y * other.y;
@@ -227,6 +251,34 @@ struct Vec3 {
     template<typename T1>
     constexpr inline Vec3<T> operator/(T1 scalar) const {
         return Vec3<T>(x / scalar, y / scalar, z / scalar);
+    }
+
+    Vec3<T>& operator+=(const Vec3<T>& other) {
+        x += other.x;
+        y += other.y;
+        z += other.z;
+        return *this;
+    }
+
+    Vec3<T>& operator-=(const Vec3<T>& other) {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+        return *this;
+    }
+
+    Vec3<T>& operator*=(const Vec3<T>& other) {
+        x *= other.x;
+        y *= other.y;
+        z *= other.z;
+        return *this;
+    }
+
+    Vec3<T>& operator/=(const Vec3<T>& other) {
+        x /= other.x;
+        y /= other.y;
+        z /= other.z;
+        return *this;
     }
 
     // Dot product
