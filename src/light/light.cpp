@@ -1,3 +1,5 @@
+#include "light.h"
+
 // TODO: ugly ahh way of getting element at index in queue
 template <typename T>
 T getElementAt(std::queue<T> q, size_t index) {

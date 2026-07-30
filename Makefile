@@ -1,12 +1,8 @@
 # run on windows
-# clear && if [ -f build/main.o ]; then rm build/main.o; fi && time make
+# mingw32-make.exe clean all && ./bin/main.exe
 
 # run on mac / linux
 # clear && time make
-
-
-
-
 
 # Flags
 CXXFLAGS = -std=c++20
@@ -24,18 +20,18 @@ LIBS = -lz
 
 
 # windows
-# CXX = g++
-# CC = gcc
-# LIBS += -Idep/include -Ldep/lib -lglfw3dll
-# GL_API = 0
+CXX = g++
+CC = gcc
+LIBS += -Idep/include -Ldep/lib -lglfw3dll
+GL_API = 0
 
 # macos
-CXX = clang++
-CC = clang
-GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
-GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
-LIBS += -lglfw -L$(GLFW_LIB_DIR) -I$(GLFW_INCLUDE_DIR)
-GL_API = 1
+# CXX = clang++
+# CC = clang
+# GLFW_INCLUDE_DIR = /opt/homebrew/opt/glfw/include
+# GLFW_LIB_DIR = /opt/homebrew/opt/glfw/lib
+# LIBS += -lglfw -L$(GLFW_LIB_DIR) -I$(GLFW_INCLUDE_DIR)
+# GL_API = 1
 
 
 # define GL api
@@ -46,6 +42,7 @@ LIBS += -DGL_API=$(GL_API)
 
 # Source files (recursive)
 CPP_SOURCES = $(shell find $(SRC_DIR) -name '*.cpp')
+H_SOURCES = $(shell find $(SRC_DIR) -name '*.h')
 GLAD_SOURCE = $(DEP_DIR)/glad.c
 
 # Object and dependency files

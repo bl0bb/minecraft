@@ -6,7 +6,6 @@
 
 static BlockMesh _getTorchBlockMesh(const BlockStateStruct& state) {
     auto direction = std::get<TorchBlockState>(state).direction;
-    (void)direction;
 
     BlockMesh block(1);
     

@@ -48,21 +48,21 @@ namespace ChunkLight {
         SUN_LIGHT,
     };
 
-    static void add_propagate(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, u32 mask, u32 offset, LightPropagationType type);
+    /*static*/void add_propagate(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, u32 mask, u32 offset, LightPropagationType type);
 
-    static void remove_propagate(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, AllLightQueue& propQueue, u32 mask, u32 offset, LightPropagationType type);
+    /*static*/void remove_propagate(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, AllLightQueue& lightQueue, AllLightQueue& propQueue, u32 mask, u32 offset, LightPropagationType type);
 
-    static void add_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, u8 value, u32 mask, u32 offset, LightPropagationType type);
+    /*static*/void add_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, u8 value, u32 mask, u32 offset, LightPropagationType type);
 
-    static void remove_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, u32 mask, u32 offset, LightPropagationType type);
+    /*static*/void remove_channel(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, u32 mask, u32 offset, LightPropagationType type);
 
-    static void add_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, RGBIS4 light);
+    /*static*/void add_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos, RGBIS4 light);
 
-    static void remove_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos);
+    /*static*/void remove_light(const VoxelBlockWorld& voxelWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos);
 
-    static void update_light(const VoxelBlockWorld& voxelWorld, const VoxelHeightWorld& heightWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos);
+    /*static*/void update_light(const VoxelBlockWorld& voxelWorld, const VoxelHeightWorld& heightWorld, VoxelLightWorld& voxelLightWorld, const Vec3<i64>& pos);
 
-    static void apply_light(const VoxelBlockWorld& voxelWorld, const VoxelHeightWorld& heightWorld, VoxelLightWorld& lightWorld, const VoxelBlockChunk& chunk, const VoxelHeightChunk& heightChunk, VoxelLightChunk& voxelLightChunk);
+    /*static*/void apply_light(const VoxelBlockWorld& voxelWorld, const VoxelHeightWorld& heightWorld, VoxelLightWorld& lightWorld, const VoxelBlockChunk& chunk, const VoxelHeightChunk& heightChunk, VoxelLightChunk& voxelLightChunk);
 };
 
 #endif

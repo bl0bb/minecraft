@@ -1339,6 +1339,8 @@ int main() {
                     playerVel.y += 12.0f;
                 }
 
+                // TODO: physics ecs has similar stuff code to the below here
+
                 // gravity
                 playerVel = playerVel + (Vec3<f32>(0.0f, -32.656f, 0.0f) * deltaTime);
 
