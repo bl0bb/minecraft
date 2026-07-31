@@ -54,9 +54,9 @@ struct StairBlockState : public BlockState {
     // 1 = left
     // 2 = back
     // 3 = front
-    // XYY
-    // where X is if the stair is facing up or down
-    // and YY is which direction the stair is facing
+    // YXX
+    // where Y is if the stair is facing up or down
+    // and XX is which direction the stair is facing
     u8 direction;
 
     StairBlockState() {}

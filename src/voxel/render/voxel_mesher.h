@@ -92,16 +92,23 @@ inline Mat4<f32> getFaceOrig(u8 axis) {
 
 
 u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockStateWorld& voxelBlockStateWorld, const VoxelLightWorld& voxelLightWorld, const Vec3<i64>& chunkPos, VoxelFace* vertices) {
-    VoxelBlockChunk& chunk =           voxelWorld.          chunks[voxelWorld.          chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
+    VoxelBlockChunk&           chunk =           voxelWorld.chunks[          voxelWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
     BlockStateVoxelChunk& stateChunk = voxelBlockStateWorld.chunks[voxelBlockStateWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
-    VoxelLightChunk& lightChunk =      voxelLightWorld.     chunks[voxelLightWorld.     chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
+    VoxelLightChunk&      lightChunk =      voxelLightWorld.chunks[     voxelLightWorld.chunkPosToChunkIndex(chunkPos.x, chunkPos.y, chunkPos.z)];
     (void)lightChunk;
     
+    // how the below 3 arrays work
+    // each element represents a potential visible face to be rendered
+    // a block on the x axis has a right face (positive) and a left face (negative)
+
+    // presence of faces
     // voxel as binary for each x,y,z axis, positive and negative
     u64 axis_cols[3 * CS_P2 * 2] = {0};
     // opaque voxel as binary for each x,y,z axis, positive and negative
+    // keep track of opaque faces as they should be rendered separately from the rest of the faces to make the transparent parts work correctly
     u64 opaque_cols[3 * CS_P2 * 2] = {0};
     // merge voxel as binary for each x,y,z axis, positive and negative
+    // a merge voxel: if two merge voxels are next to each other, the faces should not be visible (e.g. two regular voxels next to each other have the touching faces hidden)
     u64 merge_cols[3 * CS_P2 * 2] = {0};
 
     // the cull mask to perform greedy slicing, based on solids on previous axis_cols
@@ -254,7 +261,6 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                 u64 other_axis_col;
                 u64 other_merge_col;
                 u64 other_opaque_col;
-                (void)other_opaque_col;
 
                 if (j == 0) {
                     // positive
@@ -268,6 +274,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                     other_opaque_col = opaque_col << 1;
                 }
 
+                // get the mask that contains the faces to be rendered
                 u64 mask = axis_col & (              // only create a face if this is an actual block
                     (merge_col & ~other_axis_col) |  // merge meets air
                     (merge_col & ~other_merge_col) | // merge meets non-merge

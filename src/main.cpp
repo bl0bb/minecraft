@@ -608,35 +608,54 @@ int main() {
             // stairs
             VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 12, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
             VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 12, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(0))));
+            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 14, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 14, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(1))));
             VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 16, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 16, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(1))));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 16, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(2))));
             VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 18, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 18, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(2))));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 18, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(3))));
             VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 20, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 20, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(3))));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 20, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(4))));
             VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 22, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 22, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(4))));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 22, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(5))));
             VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 24, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 24, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(5))));
-            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 28, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 28, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(6))));
-            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 30, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 30, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(7))));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 24, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(6))));
+            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 26, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_STAIRS));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 26, 6,  start_z, BlockStateVoxel(new BlockStateStruct(StairBlockState(7))));
 
             // block that torches attaches to
             VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 32, 6,  0, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
 
             // torch
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 34, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 34, 7,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+            // VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 34, 7,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(0))));
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 35, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 36, 6,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+            // VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 36, 6,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(1))));
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 37, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 38, 6,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+            // VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 38, 6,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(2))));
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 39, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 40, 6,  start_z/* + 1*/, EmbeddedVoxel(BlockTypes::TORCH));
+            // VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 40, 6,  start_z/* + 1*/, BlockStateVoxel(new BlockStateStruct(TorchBlockState(3))));
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 41, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
+            // VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 42, 6,  start_z/* - 1*/, EmbeddedVoxel(BlockTypes::TORCH));
+            // VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 42, 6,  start_z/* - 1*/, BlockStateVoxel(new BlockStateStruct(TorchBlockState(4))));
+
+            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 34, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_PLANKS));
             VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 34, 7,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
             VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 34, 7,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(0))));
-            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 36, 6,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 36, 6,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(1))));
-            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 38, 6,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 38, 6,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(2))));
-            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 40, 6,  start_z + 1, EmbeddedVoxel(BlockTypes::TORCH));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 40, 6,  start_z + 1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(3))));
-            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 42, 6,  start_z - 1, EmbeddedVoxel(BlockTypes::TORCH));
-            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 42, 6,  start_z - 1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(4))));
+            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 35, 6,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 35, 6,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(1))));
+            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 33, 6,  start_z, EmbeddedVoxel(BlockTypes::TORCH));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 33, 6,  start_z, BlockStateVoxel(new BlockStateStruct(TorchBlockState(2))));
+            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 34, 6,  start_z + 1, EmbeddedVoxel(BlockTypes::TORCH));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 34, 6,  start_z + 1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(3))));
+            VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 34, 6,  start_z - 1, EmbeddedVoxel(BlockTypes::TORCH));
+            VoxelWorlds::placeVoxel(voxelBlockStateWorld, start_x + 34, 6,  start_z - 1, BlockStateVoxel(new BlockStateStruct(TorchBlockState(4))));
+
+
 
             // oak log
             VoxelWorlds::placeVoxel(voxelBlockWorld,      start_x + 44, 6,  start_z, EmbeddedVoxel(BlockTypes::OAK_LOG));

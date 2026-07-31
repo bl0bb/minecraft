@@ -21,6 +21,12 @@ enum BlockMeshTypeEnum {
 }
 
 struct BlockFace {
+    // 0 = right
+    // 1 = left
+    // 2 = top
+    // 3 = bottom
+    // 4 = back
+    // 5 = front
     u8 dir;
     u8 culls;
 
