@@ -1,45 +1,22 @@
 #if OGL_VERSION == 46
 #define DATA_LAYOUT \
 struct QuadData {\
-  uint x;\
-  uint y;\
-  uint z;\
-  float face_x;\
-  float face_y;\
-  float face_z;\
-  float face_width;\
-  float face_height;\
-  float face_rot_x;\
-  float face_rot_y;\
-  float face_rot_z;\
-  uint uv_rot;\
   uint uv_x;\
   uint uv_y;\
   uint uv_w;\
   uint uv_h;\
+  uint uv_rot;\
   uint dir;\
-  uint type;\
-  uint light[9];\
-  uint ao;\
 };\
 layout(std430, binding = 0) readonly buffer instanceDataBuffer {\
   QuadData instanceData[];\
 };
 #elif OGL_VERSION == 41
 #define DATA_LAYOUT \
-layout(location =  0) in uvec3 data_pos;\
-layout(location =  1) in  vec3 data_face_pos;\
-layout(location =  2) in  vec2 data_face_size;\
-layout(location =  3) in  vec3 data_face_rot;\
-layout(location =  4) in  uint data_uv_rot;\
-layout(location =  5) in uvec2 data_uv_pos;\
-layout(location =  6) in uvec2 data_uv_size;\
-layout(location =  7) in  uint data_dir;\
-layout(location =  8) in  uint data_type;\
-layout(location =  9) in uvec3 data_light_0_1_2;\
-layout(location = 10) in uvec3 data_light_3_4_5;\
-layout(location = 11) in uvec3 data_light_6_7_8;\
-layout(location = 12) in  uint data_ao;
+layout(location =  0) in uvec2 data_uv_pos;\
+layout(location =  1) in uvec2 data_uv_size;\
+layout(location =  2) in  uint data_uv_rot;\
+layout(location =  3) in  uint data_dir;
 #endif
 
 
@@ -47,18 +24,6 @@ flat out int texIndex;
 out vec2 texUv;
 flat out uint Axis;
 out vec2 FaceUV;
-
-
-
-flat out uint Light0;
-flat out uint Light1;
-flat out uint Light2;
-flat out uint Light3;
-flat out uint Light4;
-flat out uint Light5;
-flat out uint Light6;
-flat out uint Light7;
-flat out uint Light8;
 
 
 
@@ -169,9 +134,6 @@ void main() {
   uvec2 data_uv_size = uvec2(data.uv_w, data.uv_h);
   uint data_dir = data.dir;
   uint data_type = data.type;
-  uvec3 data_light_0_1_2 = uvec3(data.light[0], data.light[1], data.light[2]);
-  uvec3 data_light_3_4_5 = uvec3(data.light[3], data.light[4], data.light[5]);
-  uvec3 data_light_6_7_8 = uvec3(data.light[6], data.light[7], data.light[8]);
   uint data_ao = data.ao;
   #elif OGL_VERSION == 41
 
@@ -202,7 +164,6 @@ void main() {
 
 
 
-  texIndex = int(data_type);
 
   texUv = uvOffset + aPos * uvSize;
   texUv.x = 1 - texUv.x;
@@ -216,20 +177,6 @@ void main() {
   } else if (uvRot == 3) {
     texUv = vec2(1.0 - texUv.y, texUv.x);
   }
-
-
-
-
-  // light
-  Light0 = data_light_0_1_2.x;
-  Light1 = data_light_0_1_2.y;
-  Light2 = data_light_0_1_2.z;
-  Light3 = data_light_3_4_5.x;
-  Light4 = data_light_3_4_5.y;
-  Light5 = data_light_3_4_5.z;
-  Light6 = data_light_6_7_8.x;
-  Light7 = data_light_6_7_8.y;
-  Light8 = data_light_6_7_8.z;
 
 
 

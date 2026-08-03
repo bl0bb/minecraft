@@ -370,6 +370,7 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
                             }
 
                             // ao
+                            // TODO: is hardcoded air checking needed?
                             if (voxel->type == BlockTypes::AIR) {
                                 RGBIS4* lightPtr;
                                 lightSources[neighbor_i] = VoxelWorlds::getVoxel(voxelLightWorld, voxel_pos_world.x, voxel_pos_world.y, voxel_pos_world.z, &lightPtr) ? *lightPtr : Colors::createRGBIS4(Colors::COLOR4_MAX);

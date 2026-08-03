@@ -74,6 +74,7 @@ public:
         #if GL_API == 0
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, voxel_ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, CS_P3 * sizeof(VoxelFace), voxel_faces, GL_STATIC_DRAW); // TODO: "voxel_count * sizeof(VoxelFace)" instead of "CS_P3 * sizeof(VoxelFace)"
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, voxel_ssbo);
         #elif GL_API == 1
         glBindVertexArray(voxel_data_vao);
         glBindBuffer(GL_ARRAY_BUFFER, voxel_data_vbo);

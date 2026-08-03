@@ -344,9 +344,16 @@ GLFWwindow* init_window() {
 }
 
 int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight, i32& nrChannels) {
+    // flip images loaded by stbi (cause opengl 0,0 coordinate is bottom left instead of top left)
+    // only flip here since its the texture call
+    stbi_set_flip_vertically_on_load(true);
+
     // Load and create a texture
     int width, height;
     u8* data = stbi_load(path, &width, &height, &nrChannels, 0);
+
+    // flip back
+    stbi_set_flip_vertically_on_load(false);
 
     if (width != texWidth) {
         printf("LOADED IMAGE HAS INCORRECT WIDTH: %i %i\n", width, texWidth);
@@ -378,7 +385,7 @@ int load_texture(const char* path, u16 texIdx, u8 texWidth, u8 texHeight, i32& n
     }
 
     glTexSubImage3D(
-        GL_TEXTURE_2D_ARRAY, 0, // target, level
+        GL_TEXTURE_2D_ARRAY, 0, // target, level (lod: level of detail)
         0, 0, texIdx, // x offset, y offset, z offset
         texWidth, texHeight, 1, // width, height, depth
         format, GL_UNSIGNED_BYTE, data // format, type, pixels
