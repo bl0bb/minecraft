@@ -465,13 +465,15 @@ u32 generate_voxel_mesh(const VoxelBlockWorld& voxelWorld, const VoxelBlockState
 
                                 Mat4<f32> startPos = Mat4<f32>::identity().translate(fromX, fromY, fromZ);
 
-                                Mat4<f32> translated = origMat * Mat4<f32>::identity().translateWorld(element.rotOrig() / 16.0f * -1.0f) * startPos; // move to the rotation origin and rotate, then 
+                                // (this note is for the singular line below)
+                                // NOTE: note that when translating matrices, you read RIGHT TO LEFT: move to the start pos of the block, move opposite of rotation origin (so that 0,0 is at the origin), then apply rotation
+                                Mat4<f32> translated = origMat * Mat4<f32>::identity().translateWorld(element.rotOrig() / 16.0f * -1.0f) * startPos;
 
                                 Mat4<f32> faceOrig = getFaceOrig(dir); // vertex pos for face
                                 Vec3<f32> origPos = faceOrig.extractPosition(); // get only the pos
                                 translated = translated.translate(origPos.x * sizeX, origPos.y * sizeY, origPos.z * sizeZ); // move the face to fit the cube
                                 translated = translated * faceOrig.translateWorld(origPos * -1.0f); // remove the position from the face matrix and rotate the face to fit the cube
-
+                                
                                 translated = translated.translateWorld(element.rotOrig() / 16.0f); // move back from the rotation origin
 
                                 Vec3<f32> translatedPos = translated.extractPosition() * 16.0f;

@@ -1,14 +1,29 @@
 #if OGL_VERSION == 46
 #define DATA_LAYOUT \
+struct ElementData {\
+  float pos_x;\
+  float pos_y;\
+  float pos_z;\
+  float rot_x;\
+  float rot_y;\
+  float rot_z;\
+  float size_x;\
+  float size_y;\
+  float size_z;\
+};\
+layout(std430, binding = 0) readonly buffer elementDataBuffer {\
+  ElementData elementData[];\
+};\
 struct QuadData {\
+  uint element;\
+  uint uv_rot;\
   uint uv_x;\
   uint uv_y;\
   uint uv_w;\
   uint uv_h;\
-  uint uv_rot;\
   uint dir;\
 };\
-layout(std430, binding = 0) readonly buffer instanceDataBuffer {\
+layout(std430, binding = 1) readonly buffer instanceDataBuffer {\
   QuadData instanceData[];\
 };
 #elif OGL_VERSION == 41
@@ -20,14 +35,12 @@ layout(location =  3) in  uint data_dir;
 #endif
 
 
-flat out int texIndex;
 out vec2 texUv;
 flat out uint Axis;
 out vec2 FaceUV;
 
 
 
-flat out uint Ao;
 out vec3 FragPos;
 
 DATA_LAYOUT
@@ -37,8 +50,6 @@ uniform mat4 u_projection;
 
 uniform ivec3 eye_position_int;
 
-uniform ivec3 chunk_pos;
-
 const vec2 vertexLookup[4] = vec2[4](
   vec2(0,  0),
   vec2(1,  0),
@@ -46,21 +57,11 @@ const vec2 vertexLookup[4] = vec2[4](
   vec2(0,  1)
 );
 
-const vec3 normalLookup[6] = vec3[6](
-  vec3( 1,  0,  0 ),
-  vec3(-1,  0,  0 ),
-  vec3( 0,  1,  0 ),
-  vec3( 0, -1,  0 ),
-  vec3( 0,  0,  1 ),
-  vec3( 0,  0, -1 )
-);
 
-const float aoLookup[] = float[](
-  1.0,
-  0.7,
-  0.5,
-  0.15
-);
+
+
+
+
 
 
 
@@ -72,6 +73,17 @@ float deg_to_rad(float deg) {
 
 float rad_to_deg(float rad) {
   return rad * (180.0 / M_PI);
+}
+
+mat4 mat3RotToMat4(mat3 rotation) {
+  vec3 position = vec3(0.0, 0.0, 0.0);
+
+  return mat4(
+    vec4(rotation[0], 0.0),  // First column
+    vec4(rotation[1], 0.0),  // Second column
+    vec4(rotation[2], 0.0),  // Third column
+    vec4(position, 1.0)      // Translation column
+  );
 }
 
 mat3 rotationMatrix(vec3 r) {
@@ -100,6 +112,49 @@ mat3 rotationMatrix(vec3 r) {
   return Rx * Ry * Rz;  // Rotation order: XYZ
 }
 
+mat4 rotationMatrixMat4(vec3 r) {
+  return mat3RotToMat4(rotationMatrix(r));
+}
+
+mat4 translationMatrix(vec3 position) {
+  return mat4(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    position.x, position.y, position.z, 1.0
+  );
+}
+
+
+
+
+
+
+mat4 getFaceOrig(uint axis) {
+  mat4 orig = mat4(1.0);
+  orig = orig * translationMatrix(vec3(0.5, 0.5, 0.5));
+  if (axis == 0) {
+      orig = orig * rotationMatrixMat4(vec3(0, deg_to_rad(90), 0));
+  } else if (axis == 1) {
+      orig = orig * rotationMatrixMat4(vec3(0, deg_to_rad(-90), 0));
+  } else if (axis == 2) {
+      orig = orig * rotationMatrixMat4(vec3(deg_to_rad(-90), 0, 0));
+  } else if (axis == 3) {
+      orig = orig * rotationMatrixMat4(vec3(deg_to_rad(90), 0, 0));
+  } else if (axis == 4) {
+      orig = orig * rotationMatrixMat4(vec3(0, deg_to_rad(180), 0));
+  } else {
+      orig = orig * rotationMatrixMat4(vec3(0, deg_to_rad(0), 0));
+  }
+  orig = orig * translationMatrix(vec3(-0.5, -0.5, -0.5));
+  return orig;
+}
+
+
+
+
+
+
 void main() {
   uint vertexId = gl_VertexID % 6;
   uint faceId = gl_VertexID / 6;
@@ -113,28 +168,19 @@ void main() {
   } else { // vertexId == 4
     aPos = vertexLookup[3];
   }
-  // if (vertexId == 0 || vertexId == 5) {
-  //   aPos = vertexLookup[0];
-  // } else if (vertexId == 1) {
-  //   aPos = vertexLookup[3];
-  // } else if (vertexId == 2 || vertexId == 3) {
-  //   aPos = vertexLookup[2];
-  // } else { // vertexId == 4
-  //   aPos = vertexLookup[1];
-  // }
 
   #if OGL_VERSION == 46
+  ElementData element_data = elementData[faceId];
+  vec3 element_data_pos = vec3(element_data.pos_x, element_data.pos_y, element_data.pos_z);
+  vec3 element_data_rot = vec3(element_data.rot_x, element_data.rot_y, element_data.rot_z);
+  vec3 element_data_size = vec3(element_data.size_x, element_data.size_y, element_data.size_z);
+
   QuadData data = instanceData[faceId];
-  uvec3 data_pos = uvec3(data.x, data.y, data.z);
-  vec3 data_face_pos = vec3(data.face_x, data.face_y, data.face_z);
-  vec2 data_face_size = vec2(data.face_width, data.face_height);
-  vec3 data_face_rot = vec3(data.face_rot_x, data.face_rot_y, data.face_rot_z);
+  uint data_element = data.element;
   uint data_uv_rot = data.uv_rot;
   uvec2 data_uv_pos = uvec2(data.uv_x, data.uv_y);
   uvec2 data_uv_size = uvec2(data.uv_w, data.uv_h);
   uint data_dir = data.dir;
-  uint data_type = data.type;
-  uint data_ao = data.ao;
   #elif OGL_VERSION == 41
 
   #endif
@@ -144,21 +190,16 @@ void main() {
 
 
 
-  vec3 offset = data_pos;
-
-  vec3 face_pos = data_face_pos / 16.0;
-  vec2 face_size = data_face_size / 16.0;
-  vec3 face_rot = data_face_rot;
 
   vec2 uvOffset = data_uv_pos / 16.0;
   vec2 uvSize = data_uv_size / 16.0;
 
   uint axis = data_dir;
-  uint isNegative = axis & 1u;
+  // uint isNegative = axis & 1u;
 
-  vec3 vertexPos = face_pos + (rotationMatrix(face_rot) * vec3(aPos * face_size, 0));
+  vec3 vertexPos = vec3(mat3RotToMat4(rotationMatrix(element_data_rot)) * getFaceOrig(axis) * vec4(aPos, 0.0, 1.0));
 
-  gl_Position = u_projection * u_view * vec4(chunk_pos * 32 + offset + vertexPos, 1.0);
+  gl_Position = u_projection * u_view * vec4(vertexPos, 1.0);
 
 
 
@@ -181,11 +222,8 @@ void main() {
 
 
 
-  // ao
-  Ao = data_ao;
 
   // other
-  FaceUV = aPos;
   Axis = axis;
   FragPos = vec3(gl_Position);
 }

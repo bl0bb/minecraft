@@ -109,6 +109,17 @@ float rad_to_deg(float rad) {
   return rad * (180.0 / M_PI);
 }
 
+mat4 mat3RotToMat4(mat3 rotation) {
+  vec3 position = vec3(0.0, 0.0, 0.0);
+
+  return mat4(
+    vec4(rotation[0], 0.0),  // First column
+    vec4(rotation[1], 0.0),  // Second column
+    vec4(rotation[2], 0.0),  // Third column
+    vec4(position, 1.0)      // Translation column
+  );
+}
+
 mat3 rotationMatrix(vec3 r) {
   float cx = cos(r.x), sx = sin(r.x);
   float cy = cos(r.y), sy = sin(r.y);
@@ -134,6 +145,48 @@ mat3 rotationMatrix(vec3 r) {
 
   return Rx * Ry * Rz;  // Rotation order: XYZ
 }
+
+mat4 rotationMatrixMat4(vec3 r) {
+  return mat3RotToMat4(rotationMatrix(r));
+}
+
+mat4 translationMatrix(vec3 position) {
+  return mat4(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    position.x, position.y, position.z, 1.0
+  );
+}
+
+
+
+
+
+
+mat4 getFaceOrig(uint axis) {
+  mat4 orig = mat4(1.0);
+  orig = orig * translationMatrix(vec3(0.5, 0.5, 0.5));
+  if (axis == 0) {
+      orig = orig * rotationMatrixMat4(vec3(0, deg_to_rad(90), 0));
+  } else if (axis == 1) {
+      orig = orig * rotationMatrixMat4(vec3(0, deg_to_rad(-90), 0));
+  } else if (axis == 2) {
+      orig = orig * rotationMatrixMat4(vec3(deg_to_rad(-90), 0, 0));
+  } else if (axis == 3) {
+      orig = orig * rotationMatrixMat4(vec3(deg_to_rad(90), 0, 0));
+  } else if (axis == 4) {
+      orig = orig * rotationMatrixMat4(vec3(0, deg_to_rad(180), 0));
+  } else {
+      orig = orig * rotationMatrixMat4(vec3(0, deg_to_rad(0), 0));
+  }
+  orig = orig * translationMatrix(vec3(-0.5, -0.5, -0.5));
+  return orig;
+}
+
+
+
+
 
 void main() {
   uint vertexId = gl_VertexID % 6;
@@ -195,6 +248,7 @@ void main() {
   uint isNegative = axis & 1u;
 
   vec3 vertexPos = face_pos + (rotationMatrix(face_rot) * vec3(aPos * face_size, 0));
+  // vec3 vertexPos = face_pos + vec3(mat3RotToMat4(rotationMatrix(face_rot)) * getFaceOrig(axis) * vec4(aPos * face_size, 0.0, 1.0));
 
   gl_Position = u_projection * u_view * vec4(chunk_pos * 32 + offset + vertexPos, 1.0);
 

@@ -39,6 +39,9 @@
 #include "physics/raycast/raycast.h"
 #include "physics/aabb/aabb.h"
 
+#include "entity/entity_model.h"
+#include "entity_models/player.h"
+
 #include "terrain_gen/terrain_gen.h"
 
 #include "gui/text/text_renderer.h"
@@ -48,6 +51,8 @@
 #include "gui_elements/hotbar/hotbar.h"
 
 #include "renderers/block_outline/block_outline_renderer.h"
+#include "renderers/entity/entity_mesh.h"
+#include "renderers/entity/entity_renderer.h"
 
 #include "nbt/nbt.h"
 
@@ -1207,6 +1212,17 @@ int main() {
 
 
 
+
+    // entity model + shader
+    Shader entityShader = Shader("entity_element/main.vert", "entity_element/main.frag");
+    EntityModel playerModel = getPlayerModel();
+    EntityRenderer playerRenderer = EntityRenderer();
+    playerRenderer.entityModel = &playerModel;
+    playerRenderer.init();
+
+
+
+
     // ui
 
     // image shader
@@ -1254,10 +1270,15 @@ int main() {
     HotbarUI hotbarUI(Vec2<f32>(0.0f, WINDOW_HEIGHT / 2 - 20.0f), 0, 40.0f, imageShader);
 
 
+
     #elif GL_API == 2
     // TODO
     #endif
 
+
+
+
+    // stuff
     bool hasLookBlock = false;
     Vec3<i64> lookBlockPos;
     u8 lookBlockDir;
@@ -1505,12 +1526,12 @@ int main() {
             // bind textures
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
-            geometryShader.setInt("texArray", 0);
+            // geometryShader.setInt("texArray", 0);
 
-            // ao
-            geometryShader.setInt("gPosition", 1);
-            geometryShader.setInt("gNormal", 2);
-            geometryShader.setInt("texNoise", 3);
+            // // ao
+            // geometryShader.setInt("gPosition", 1);
+            // geometryShader.setInt("gNormal", 2);
+            // geometryShader.setInt("texNoise", 3);
             #elif GL_API == 2
             // TODO
             #endif
@@ -1522,14 +1543,28 @@ int main() {
                 blockOutline.render(proj_mat, view_mat);
             }
 
+            #elif GL_API == 2
+            // TODO
+            #endif
+
+            #if GL_API == 0 || GL_API == 1
+            entityShader.use();
+            entityShader.setMat4("u_projection", proj_mat);
+            entityShader.setMat4("u_view", view_mat);
+            entityShader.setVec3("eye_position", camera->position);
+            playerRenderer.render(entityShader);
+            #elif GL_API == 2
+            // TODO
+            #endif
+            
+
+            #if GL_API == 0 || GL_API == 1
             // glBindFramebuffer(GL_FRAMEBUFFER, 0);
             // --------------------------------------
             #elif GL_API == 2
             // TODO
             #endif
 
-
-            auto renderEnd = glfwGetTime();
 
 
             // ui
@@ -1543,14 +1578,15 @@ int main() {
 
             // text
             
+            // hotbar
+            hotbarUI.render(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+
+            auto renderEnd = glfwGetTime();
+
             // fps
             fpsUI.addFrame(renderEnd - renderStart);
             fpsUI.render(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-
-
-            // hotbar
-            hotbarUI.render(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
 

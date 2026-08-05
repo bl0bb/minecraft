@@ -52,7 +52,6 @@ struct EntityElement {
         f32 _sizeY,
         f32 _sizeZ,
 
-
         f32 _c0X,
         f32 _c0Y,
         f32 _c0Z,
@@ -60,7 +59,6 @@ struct EntityElement {
         f32 _c1X,
         f32 _c1Y,
         f32 _c1Z,
-
 
         u8 _faceCount) :
         size(_sizeX, _sizeY, _sizeZ),

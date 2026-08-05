@@ -58,6 +58,9 @@ struct EntityMeshFace {
     // element
     u32 element;
 
+    // dir
+    u32 dir;
+
     // uv
     u32 uv_rot;
 
@@ -73,17 +76,23 @@ struct EntityMeshFace {
         // element
         u32 _element,
 
+        // dir
+        u32 _dir,
+
         // uv
+        u32 _uv_rot,
+
         u32 _uv_x,
         u32 _uv_y,
 
         u32 _uv_w,
-        u32 _uv_h,
-
-        u32 _uv_rot
+        u32 _uv_h
     ) :
         // element
         element(_element),
+
+        // dir
+        dir(_dir),
 
         // uv
         uv_rot(_uv_rot),

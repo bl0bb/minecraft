@@ -9,6 +9,7 @@
 #include "entity_mesh.h"
 
 class EntityRenderer {
+public:
     #if GL_API == 0 || GL_API == 1
 
     #if GL_API == 0
@@ -23,7 +24,13 @@ class EntityRenderer {
     // TODO
     #endif
 
-    EntityModel& entityModel;
+    EntityModel *entityModel;
+
+    u32 faceCount;
+
+    EntityRenderer() : faceCount(0), entityModel(nullptr) {
+
+    }
 
     void init() {
         #if GL_API == 0 || GL_API == 1
@@ -42,27 +49,28 @@ class EntityRenderer {
         #endif
     }
 
-    void updateMesh() const {
+    void updateMesh() {
         #if GL_API == 0
-        u32 faceCount = 0;
-        for (u32 i = 0; i < entityModel.elementCount; i++) {
-            faceCount += entityModel.elements[i].faceCount;
+        faceCount = 0;
+        for (u32 i = 0; i < entityModel->elementCount; i++) {
+            faceCount += entityModel->elements[i].faceCount;
         }
 
-        EntityMeshElement *elements = (EntityMeshElement *)malloc(entityModel.elementCount * sizeof(EntityMeshElement));
+        EntityMeshElement *elements = (EntityMeshElement *)malloc(entityModel->elementCount * sizeof(EntityMeshElement));
         EntityMeshFace *faces = (EntityMeshFace *)malloc(faceCount * sizeof(EntityMeshFace));
         u32 faceIdx = 0;
-        for (u32 i = 0; i < entityModel.elementCount; i++) {
-            EntityElement& element = entityModel.elements[i];
+        for (u32 i = 0; i < entityModel->elementCount; i++) {
+            EntityElement& element = entityModel->elements[i];
+            // TODO
             elements[i] = EntityMeshElement(
                 // pos
-                0, 0, 0,
+                i * 1, 10, 0,
 
                 // rot
                 0, 0, 0,
 
                 // size
-                0, 0, 0
+                element.size.x, element.size.y, element.size.z
             );
             for (u32 j = 0; j < element.faceCount; j++) {
                 EntityElementFace& face = element.faces[j];
@@ -70,17 +78,20 @@ class EntityRenderer {
                     // element
                     i,
 
-                    // uv
-                    face.uvFrom.x, face.uvFrom.y,
-                    face.uvTo.x - face.uvFrom.x, face.uvTo.y - face.uvFrom.y,
+                    // dir
+                    face.dir,
 
-                    0
+                    // uv
+                    0,
+
+                    face.uvFrom.x, face.uvFrom.y,
+                    face.uvTo.x - face.uvFrom.x, face.uvTo.y - face.uvFrom.y
                 );
             }
         }
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, element_ssbo);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, entityModel.elementCount * sizeof(EntityMeshElement), elements, GL_STATIC_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, entityModel->elementCount * sizeof(EntityMeshElement), elements, GL_STATIC_DRAW);
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, face_ssbo);
         glBufferData(GL_SHADER_STORAGE_BUFFER, faceCount * sizeof(EntityMeshFace), faces, GL_STATIC_DRAW);
@@ -137,15 +148,14 @@ class EntityRenderer {
         #if GL_API == 0 || GL_API == 1
         // draw
         #if GL_API == 0
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, face_ssbo);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, element_ssbo);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, face_ssbo);
         #elif GL_API == 1
         glBindVertexArray(voxel_data_vao);
         glBindBuffer(GL_ARRAY_BUFFER, voxel_data_vbo);
         #endif
 
-        shaderProgram.setIVec3("chunk_pos", chunk->pos);
-
-        glDrawArrays(GL_TRIANGLES, 0, voxel_count * 6);
+        glDrawArrays(GL_TRIANGLES, 0, faceCount * 6);
         #elif GL_API == 2
         // TODO
         #endif

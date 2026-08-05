@@ -4,7 +4,7 @@
 #include "../entity/entity_model.h"
 
 // loads a female model
-EntityModel _loadPlayerModel() {
+EntityModel getPlayerModel() {
     EntityModel model(6);
 
     // torso

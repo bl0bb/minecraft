@@ -59,16 +59,6 @@ const float lightLookup[6] = float[6](
   0.9
 );
 
-// Hardcoded corners
-vec2 c1 = vec2(1.0, 1.0);
-vec2 c2 = vec2(1.0, 0.5);
-vec2 c3 = vec2(1.0, 0.0);
-vec2 c4 = vec2(0.5, 0.0);
-vec2 c5 = vec2(0.0, 0.0);
-vec2 c6 = vec2(0.0, 0.5);
-vec2 c7 = vec2(0.0, 1.0);
-vec2 c8 = vec2(0.5, 1.0);
-
 // Function to compute AO at each corner
 float getAO(float side1, float side2, float corner) {
   if (side1 == 1.0 && side2 == 1.0)
