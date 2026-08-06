@@ -19,7 +19,10 @@ struct EntityElementFace {
     Vec2<u16> uvFrom;
     Vec2<u16> uvTo;
 
-    EntityElementFace(u8 _dir, u16 _uvFromX, u16 _uvFromY, u16 _uvToX, u16 _uvToY) : dir(_dir), uvFrom(_uvFromX, _uvFromY), uvTo(_uvToX, _uvToY) {}
+    EntityElementFace(u8 _dir, u16 _uvFromX, u16 _uvFromY, u16 _uvToX, u16 _uvToY) :
+    // dir(_dir), uvFrom(_uvFromX, _uvFromY), uvTo(_uvToX, _uvToY)
+    dir(_dir), uvFrom(Vec2<u16>(_uvFromX, _uvFromY)), uvTo(Vec2<u16>(_uvToX, _uvToY))
+    {}
 };
 
 struct EntityElement {
@@ -61,6 +64,7 @@ struct EntityElement {
         f32 _c1Z,
 
         u8 _faceCount) :
+        // size(Vec3<f32>(_sizeX, _sizeY, _sizeZ)),
         size(_sizeX, _sizeY, _sizeZ),
 
         c0(_c0X, _c0Y, _c0Z),
@@ -92,12 +96,43 @@ void populateUnwrappedEntityElementFaceUVs(EntityElement& element, u16 startX, u
     auto x = element.size.x;
     auto y = element.size.y;
     auto z = element.size.z;
-    element.faces[0] = EntityElementFace(0,        0, z,        z, z + y);
-    element.faces[1] = EntityElementFace(1,    z * 2, z,    z * 3, z + y);
-    element.faces[2] = EntityElementFace(2,    z * 1, 0,    z * 2,     z);
-    element.faces[3] = EntityElementFace(3,    z * 2, 0,    z * 3,     z);
-    element.faces[4] = EntityElementFace(4,    z * 3, z,    z * 4, z + y);
-    element.faces[5] = EntityElementFace(5,    z * 1, z,    z * 2, z + y);
+    auto rightStartX  = startX;
+    auto rightStartY  = startY + z;
+    auto rightEndX    = rightStartX + z;
+    auto rightEndY    = rightStartY + y;
+    auto leftStartX   = startX + z + x;
+    auto leftStartY   = startY + z;
+    auto leftEndX     = leftStartX + z;
+    auto leftEndY     = leftStartY + y;
+    auto topStartX    = startX + z;
+    auto topStartY    = startY;
+    auto topEndX      = topStartX + x;
+    auto topEndY      = topStartY + z;
+    auto bottomStartX = startX + z + x;
+    auto bottomStartY = startY;
+    auto bottomEndX   = bottomStartX + x;
+    auto bottomEndY   = bottomStartY + z;
+    auto backStartX   = startX + z * 2 + x;
+    auto backStartY   = startY + z;
+    auto backEndX     = backStartX + x;
+    auto backEndY     = backStartY + y;
+    auto frontStartX  = startX + z;
+    auto frontStartY  = startY + z;
+    auto frontEndX    = frontStartX + x;
+    auto frontEndY    = frontStartY + y;
+    element.faces[0] = EntityElementFace(0, rightStartX, rightStartY, rightEndX, rightEndY);
+    element.faces[1] = EntityElementFace(1, leftStartX, leftStartY, leftEndX, leftEndY);
+    element.faces[2] = EntityElementFace(2, topStartX, topStartY, topEndX, topEndY);
+    element.faces[3] = EntityElementFace(3, bottomStartX, bottomStartY, bottomEndX, bottomEndY);
+    element.faces[4] = EntityElementFace(4, backStartX, backStartY, backEndX, backEndY);
+    element.faces[5] = EntityElementFace(5, frontStartX, frontStartY, frontEndX, frontEndY);
+
+    // element.faces[0] = EntityElementFace(0,                startX, z + startY,                z + startX, z + y + startY);
+    // element.faces[1] = EntityElementFace(1,        z + x + startX, z + startY,        z * 2 + x + startX, z + y + startY);
+    // element.faces[2] = EntityElementFace(2,            z + startX,     startY,            z + x + startX,     z + startY);
+    // element.faces[3] = EntityElementFace(3,        z + x + startX,     startY,        z + x * 2 + startX,     z + startY);
+    // element.faces[4] = EntityElementFace(4,    z * 2 + x + startX, z + startY,    z * 2 + x * 2 + startX, z + y + startY);
+    // element.faces[5] = EntityElementFace(5,            z + startX, z + startY,            z * 2 + startX, z + y + startY);
 }
 
 

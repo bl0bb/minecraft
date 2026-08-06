@@ -1182,7 +1182,6 @@ int main() {
     glGenBuffers(1, &texture_ssbo);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, texture_ssbo);
     glBufferData(GL_SHADER_STORAGE_BUFFER, array_size(block_textures) * sizeof(u32), block_textures_data, GL_STATIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, texture_ssbo);
     #elif GL_API == 1
     // Create array buffer for texture metadata
     GLuint texture_ubo;
@@ -1190,7 +1189,6 @@ int main() {
     glGenBuffers(1, &texture_ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, texture_ubo);
     glBufferData(GL_UNIFORM_BUFFER, array_size(block_textures) * sizeof(u32), block_textures_data, GL_STATIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, texture_ubo);
     #endif
 
 
@@ -1219,6 +1217,52 @@ int main() {
     EntityRenderer playerRenderer = EntityRenderer();
     playerRenderer.entityModel = &playerModel;
     playerRenderer.init();
+
+    #if GL_API == 0 || GL_API == 1
+    // player skin texture
+    GLuint playerSkinTexture;
+    glGenTextures(1, &playerSkinTexture);
+
+    glBindTexture(GL_TEXTURE_2D, playerSkinTexture);
+
+    // repeat
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    // turn off texture smoothing
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    {
+        int width, height, nrChannels;
+        stbi_set_flip_vertically_on_load(true);
+        u8* textureData = stbi_load("assets/textures/player.png", &width, &height, &nrChannels, 0);
+        stbi_set_flip_vertically_on_load(false);
+
+        std::cout << width << " " << height << " " << nrChannels << " " << std::floor(std::log2(std::max(width, height))) + 1 << std::endl;
+
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,                  // mip level
+            GL_RGBA8,           // internal format
+            width,
+            height,
+            0,                  // border (must be 0)
+            GL_RGBA,            // format of supplied data
+            GL_UNSIGNED_BYTE,   // data type
+            textureData
+        );
+        
+
+        stbi_image_free(textureData);
+    }
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    #elif GL_API == 2
+    // TODO
+    #endif
+
+
 
 
 
@@ -1483,16 +1527,6 @@ int main() {
 
 
             auto renderStart = glfwGetTime();
-            // --------------------------------------
-            // GEOMETRY PASS
-            #if GL_API == 0 || GL_API == 1
-            // glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glEnable(GL_DEPTH_TEST);
-            #elif GL_API == 2
-            // TODO
-            #endif
 
             // rendering
             f32 proj_mat[16];
@@ -1501,64 +1535,61 @@ int main() {
             f32 view_mat[16];
             camera->getViewMatrix().toGLMatrix(view_mat);
 
+            // --------------------------------------
+            // GEOMETRY PASS
             #if GL_API == 0 || GL_API == 1
-            geometryShader.use();
-            #elif GL_API == 2
-            // TODO
-            #endif
+            // glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 
-            #if GL_API == 0 || GL_API == 1
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glEnable(GL_DEPTH_TEST);
+
+            geometryShader.use();
+
             geometryShader.setMat4("u_projection", proj_mat);
             geometryShader.setMat4("u_view", view_mat);
             geometryShader.setVec3("eye_position", camera->position);
-            #elif GL_API == 2
-            // TODO
-            #endif
 
-
-            #if GL_API == 0 || GL_API == 1
             geometryShader.setIVec3("eye_position_int", camChunkPos);
-            #elif GL_API == 2
-            // TODO
-            #endif
 
-            #if GL_API == 0 || GL_API == 1
             // bind textures
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, textureArray);
+            #if GL_API == 0
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, texture_ssbo);
+            #elif GL_API == 1
+            glBindBufferBase(GL_UNIFORM_BUFFER, 1, texture_ubo);
+            #endif
             // geometryShader.setInt("texArray", 0);
 
             // // ao
             // geometryShader.setInt("gPosition", 1);
             // geometryShader.setInt("gNormal", 2);
             // geometryShader.setInt("texNoise", 3);
-            #elif GL_API == 2
-            // TODO
-            #endif
 
-            #if GL_API == 0 || GL_API == 1
             voxelWorldRenderer.render(geometryShader);
 
             if (hasLookBlock) {
                 blockOutline.render(proj_mat, view_mat);
             }
 
-            #elif GL_API == 2
-            // TODO
-            #endif
 
-            #if GL_API == 0 || GL_API == 1
+
+
             entityShader.use();
             entityShader.setMat4("u_projection", proj_mat);
             entityShader.setMat4("u_view", view_mat);
             entityShader.setVec3("eye_position", camera->position);
-            playerRenderer.render(entityShader);
-            #elif GL_API == 2
-            // TODO
-            #endif
             
+            // entityShader.setInt("texture0", 0);
 
-            #if GL_API == 0 || GL_API == 1
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, playerSkinTexture);
+
+            playerRenderer.updateMesh();
+            playerRenderer.render(entityShader);
+
+
             // glBindFramebuffer(GL_FRAMEBUFFER, 0);
             // --------------------------------------
             #elif GL_API == 2

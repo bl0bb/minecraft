@@ -64,7 +64,7 @@ public:
             // TODO
             elements[i] = EntityMeshElement(
                 // pos
-                i * 1, 10, 0,
+                i * 1, 8, 0,
 
                 // rot
                 0, 0, 0,

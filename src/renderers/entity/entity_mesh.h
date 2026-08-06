@@ -15,9 +15,9 @@ struct EntityMeshElement {
     f32 rotZ;
 
     // size
-    u32 sizeX;
-    u32 sizeY;
-    u32 sizeZ;
+    f32 sizeX;
+    f32 sizeY;
+    f32 sizeZ;
 
     EntityMeshElement() {}
     
