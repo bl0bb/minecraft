@@ -1,0 +1,45 @@
+stuff to account for:
+hierarchy for EntityElements
+
+classes:
+
+
+EntityPartPose:
+defines the pose of an EntityPart
+data:
+vec3 pos
+vec3 rot
+// vec3 scale // TODO: add later? is it needed?
+
+
+EntityPart:
+defines a movable part (e.g. arm)
+does NOT define the physical appearance, size, textures etc of the part
+data:
+children, a hashmap of EntityPart with their names as keys in the hashmap (e.g. "right_arm")
+cubes, an array of EntityCube containing how this part should be rendered
+pose, EntityPartPose
+
+
+EntityCube:
+defines a cube to be rendered on an entity
+data:
+contains vec3 position offset relative to its EntityPart
+contains vec3 rotation offset relative to its EntityPart
+contains vec3 size of block
+contains a u8, bits 0-5 indicate if that face is visible (right, left, top, etc...), the last 2 bits are unused
+faces static array of 6 EntityElementFace
+comments:
+instead of storing 4 faces next to each other in the faces array like this:
+the directon of each stored face is accessed by the chronologic order of the visible faces bits:
+visible faces: 0b00101101 // visible faces are, from lsb (right) to msb (left): right, top, bottom, front
+which means that the direction of the faces stored in the array are:
+right,empty,top,bottom,empty,front
+we do not cramp them next to each other as this would make things difficult if we would, for example, make the left face visible when it was previously: right, top, we would have to shift the rest to the right, which is not ideal
+
+
+EntityCubeFace:
+contains data related to a face in EntityElement
+data:
+contains vec2 uvFrom
+contains vec2 uvTo
